@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.util;
 
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.awt.*;
@@ -29,6 +30,7 @@ public class ReferenceClassCreator {
         put("Player", Triple.of(s -> "PlayerReference", s -> "new PlayerReference(" + s, s -> s + ".instance")); // 🟡
         put("Level", Triple.of(s -> "LevelReference", s -> "new LevelReference(" + s, s -> s + ".instance")); // 🟡
         put("Block", Triple.of(s -> "BlockReference<?>", s -> "new BlockReference<>(" + s, s -> s + ".instance")); // 🟢
+        put("GameEvent", Triple.of(s -> "GameEventReference", s -> "new GameEventReference(" + s, s -> s + ".instance")); // 🟢
         put("BlockEntity", Triple.of(s -> "BlockEntityReference<?>", s -> "new BlockEntityReference<>(" + s, s -> s + ".instance")); // 🟢
         put("BlockState", Triple.of(s -> "BlockStateReference", s -> "new BlockStateReference(" + s, s -> s + ".instance")); // 🟢
         put("SlotAccess", Triple.of(s -> "SlotAccessReference", s -> "new SlotAccessReference(" + s, s -> s + ".instance")); // 🟢
@@ -248,12 +250,12 @@ public class ReferenceClassCreator {
         return replicatedClass.toString();
     }
 
-//    public static void main(String[] args) {
-//        String clazz = replicateClass(FoodProperties.class, true);
-//
-//        System.out.println(clazz);
-//        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-//        StringSelection selection = new StringSelection(clazz);
-//        clipboard.setContents(selection, null);
-//    }
+/*    public static void main(String[] args) {
+        String clazz = replicateClass(GameEvent.Context.class, true);
+
+        System.out.println(clazz);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection selection = new StringSelection(clazz);
+        clipboard.setContents(selection, null);
+    }*/
 }
