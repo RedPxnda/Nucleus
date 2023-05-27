@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "nucleus",
+  "version": "${version}",
+  "name": "Nucleus",
+  "description": "A library mod focused on making development easier.",
+  "authors": [
+    "RedPxnda"
+  ],
+  "contact": {
+  },
+  "license": "MIT",
+  "icon": "assets/nucleus/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.redpxnda.nucleus.fabric.NucleusFabric"
+    ]
+  },
+  "mixins": [
+    "nucleus.mixins.json",
+    "nucleus-common.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.19.2",
+    "architectury": ">=6.5.77"
+  }
+}
