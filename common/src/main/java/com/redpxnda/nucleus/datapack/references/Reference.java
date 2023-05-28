@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Ref;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,8 +23,8 @@ public abstract class Reference<T> {
         CONTEXT_PROVIDERS.get(clazz).put(str, settings);
     }
 
-    @Label("Disabled until classes refactor to support JSON context. (prob never lol)")
-    public static void register(Class<?> clazz) {
+    // JSON stuff disabled until I refactor classes to support JSON context. (prob never lol)
+    public static void register(Class<?> c) {
 //        CONTEXT_PROVIDERS.put(clazz, new HashMap<>());
 //        loadClassMethods(clazz);
     }

@@ -1,5 +1,7 @@
 package com.redpxnda.nucleus.datapack.constants;
 
+import com.redpxnda.nucleus.datapack.references.Statics;
+import com.redpxnda.nucleus.util.LuaUtil;
 import net.minecraft.resources.ResourceLocation;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
@@ -14,16 +16,21 @@ import org.luaj.vm2.lib.jse.JsePlatform;
 public interface ConstantsAccess {
     default void init(Globals globals) {}
 
-    static Globals globalsWithConstants(ConstantsAccess access) {
-        Globals globals = JsePlatform.standardGlobals();
-        access.init(globals);
-        globals.set("Constants", CoerceJavaToLua.coerce(access));
+    static Globals completeSetup(ConstantsAccess access) {
+        return completeSetup(access, JsePlatform.standardGlobals());
+    }
+    static Globals completeSetup(ConstantsAccess access, Globals globals) {
+        globalsWithConstants(globals, access);
+        globals.set("Statics", CoerceJavaToLua.coerce(Statics.class));
+        globals.set("Utils", CoerceJavaToLua.coerce(LuaUtil.class));
         return globals;
     }
+
+    static Globals globalsWithConstants(ConstantsAccess access) {
+        return globalsWithConstants(JsePlatform.standardGlobals(), access);
+    }
     static Globals globalsWithConstants(Globals globals, ConstantsAccess access) {
-        access.init(globals);
-        globals.set("Constants", CoerceJavaToLua.coerce(access));
-        return globals;
+        return globalsWithConstants(globals, access, "Constants");
     }
     static Globals globalsWithConstants(Globals globals, ConstantsAccess access, String name) {
         access.init(globals);

@@ -7,6 +7,7 @@ import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.*;
 import com.redpxnda.nucleus.util.StatManager;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -26,6 +27,13 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     public Map<String, Object> getStats() {
         return StatManager.entity.evaluate(instance);
+    }
+
+    public boolean is(String str) {
+        return instance.getType().equals(Registry.ENTITY_TYPE.get(new ResourceLocation(str)));
+    }
+    public boolean is(ResourceLocationReference ref) {
+        return instance.getType().equals(Registry.ENTITY_TYPE.get(ref.instance));
     }
 
     // Generated from Entity::getName

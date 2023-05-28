@@ -23,7 +23,6 @@ public class Nucleus {
     public static final String MOD_ID = "nucleus";
 
     public static void init() {
-
     }
 
     private static void reloadListenersStuff() {
