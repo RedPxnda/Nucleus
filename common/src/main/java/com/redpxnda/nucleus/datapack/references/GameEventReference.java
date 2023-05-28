@@ -18,11 +18,6 @@ public class GameEventReference extends Reference<GameEvent> {
         return instance.getName();
     }
 
-    // Generated from GameEvent::toString
-    public String toString() {
-        return instance.toString();
-    }
-
     // Generated from GameEvent::getNotificationRadius
     public int getNotificationRadius() {
         return instance.getNotificationRadius();
@@ -59,11 +54,6 @@ public class GameEventReference extends Reference<GameEvent> {
 
         public Context(GameEvent.Context instance) {
             super(instance);
-        }
-
-        // Generated from Context::toString
-        public String toString() {
-            return instance.toString();
         }
 
         // Generated from Context::affectedState
