@@ -21,8 +21,8 @@ import java.util.function.Consumer;
 import static com.redpxnda.nucleus.util.RenderUtil.*;
 
 public class DynamicParticle extends Particle {
-    private final SpriteSet set;
-    private TextureAtlasSprite sprite;
+    protected final SpriteSet set;
+    protected TextureAtlasSprite sprite;
     protected final Consumer<DynamicParticle> onTick;
     protected final BiConsumer<DynamicParticle, Vector3f[]> onRender;
     public float red;
@@ -49,15 +49,31 @@ public class DynamicParticle extends Particle {
     public int getAge() {
         return age;
     }
+    public float getFriction() {
+        return friction;
+    }
+    public void setFriction(float friction) {
+        this.friction = friction;
+    }
+    public float getGravity() {
+        return gravity;
+    }
+    public void setGravity(float grav) {
+        this.gravity = grav;
+    }
+    public boolean hasPhysics() {
+        return hasPhysics;
+    }
+    public void setPhysics(boolean bl) {
+        this.hasPhysics = bl;
+    }
 
     public void setSprite(TextureAtlasSprite textureAtlasSprite) {
         this.sprite = textureAtlasSprite;
     }
-
     public void pickSprite() {
         this.setSprite(set.get(this.random));
     }
-
     public void setSpriteFromAge() {
         if (!this.removed) {
             this.setSprite(set.get(this.age, this.lifetime));
@@ -89,10 +105,10 @@ public class DynamicParticle extends Particle {
     }
 
     public static class Provider implements ParticleProvider<SimpleParticleType> {
-        private final SpriteSet set;
-        private BiConsumer<DynamicParticle, Vector3f[]> onRender = (p, v) -> {};
-        private Consumer<DynamicParticle> onTick = (p) -> {};
-        private Consumer<DynamicParticle> onSetup = (p) -> {};
+        protected final SpriteSet set;
+        protected BiConsumer<DynamicParticle, Vector3f[]> onRender = (p, v) -> {};
+        protected Consumer<DynamicParticle> onTick = (p) -> {};
+        protected Consumer<DynamicParticle> onSetup = (p) -> {};
 
         public Provider(SpriteSet set, BiConsumer<DynamicParticle, Vector3f[]> onRender) {
             this.set = set;
