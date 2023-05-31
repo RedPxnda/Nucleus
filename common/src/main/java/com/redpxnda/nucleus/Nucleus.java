@@ -1,14 +1,20 @@
 package com.redpxnda.nucleus;
 
 import com.ezylang.evalex.config.ExpressionConfiguration;
+import com.mojang.math.Vector3f;
 import com.redpxnda.nucleus.datapack.json.listeners.ExampleListenerHandler;
 import com.redpxnda.nucleus.datapack.lua.ExampleLuaListener;
 import com.redpxnda.nucleus.datapack.references.entity.PlayerReference;
 import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
+import com.redpxnda.nucleus.registry.particles.DynamicParticle;
+import com.redpxnda.nucleus.util.RenderUtil;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.registry.ReloadListenerRegistry;
+import dev.architectury.registry.client.particle.ParticleProviderRegistry;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Items;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
@@ -24,7 +30,6 @@ public class Nucleus {
 
     public static void init() {
     }
-
     private static void reloadListenersStuff() {
         ReloadListenerRegistry.register(PackType.SERVER_DATA, ExampleListenerHandler.LISTENER);
         ReloadListenerRegistry.register(PackType.SERVER_DATA, new ExampleLuaListener());
