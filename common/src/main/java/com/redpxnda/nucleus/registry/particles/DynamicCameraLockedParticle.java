@@ -19,8 +19,8 @@ import static com.redpxnda.nucleus.util.RenderUtil.*;
 
 public class DynamicCameraLockedParticle extends DynamicParticle {
 
-    protected DynamicCameraLockedParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, SpriteSet set, ClientLevel clientLevel, double x, double y, double z) {
-        super(onSetup, onTick, onRender, set, clientLevel, x, y, z);
+    protected DynamicCameraLockedParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, SpriteSet set, ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        super(onSetup, onTick, onRender, set, clientLevel, x, y, z, xSpeed, ySpeed, zSpeed);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DynamicCameraLockedParticle extends DynamicParticle {
         @Nullable
         @Override
         public Particle createParticle(SimpleParticleType particleOptions, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-            return new DynamicCameraLockedParticle(onSetup, onTick, onRender, set, clientLevel, d, e, f);
+            return new DynamicCameraLockedParticle(onSetup, onTick, onRender, set, clientLevel, d, e, f, g, h, i);
         }
     }
 }

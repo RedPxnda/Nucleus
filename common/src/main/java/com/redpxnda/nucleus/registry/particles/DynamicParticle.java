@@ -31,8 +31,8 @@ public class DynamicParticle extends Particle {
     public float alpha;
     public float scale;
 
-    protected DynamicParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, SpriteSet set, ClientLevel clientLevel, double x, double y, double z) {
-        super(clientLevel, x, y, z);
+    protected DynamicParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, SpriteSet set, ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        super(clientLevel, x, y, z, xSpeed, ySpeed, zSpeed);
         this.onTick = onTick;
         this.onRender = onRender;
         this.set = set;
@@ -136,7 +136,7 @@ public class DynamicParticle extends Particle {
         @Nullable
         @Override
         public Particle createParticle(SimpleParticleType particleOptions, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-            return new DynamicParticle(onSetup, onTick, onRender, set, clientLevel, d, e, f);
+            return new DynamicParticle(onSetup, onTick, onRender, set, clientLevel, d, e, f, g, h, i);
         }
     }
 }
