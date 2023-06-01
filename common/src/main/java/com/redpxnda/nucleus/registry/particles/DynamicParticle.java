@@ -32,8 +32,11 @@ public class DynamicParticle extends Particle {
     public float scale;
 
     protected DynamicParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, SpriteSet set, ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-        super(clientLevel, x, y, z, xSpeed, ySpeed, zSpeed);
+        super(clientLevel, x, y, z);
         this.onTick = onTick;
+        this.xd = xSpeed;
+        this.yd = ySpeed;
+        this.zd = zSpeed;
         this.onRender = onRender;
         this.set = set;
         pickSprite();
@@ -66,6 +69,15 @@ public class DynamicParticle extends Particle {
     }
     public void setPhysics(boolean bl) {
         this.hasPhysics = bl;
+    }
+    public void setXSpeed(double speed) {
+        this.xd = speed;
+    }
+    public void setYSpeed(double speed) {
+        this.yd = speed;
+    }
+    public void setZSpeed(double speed) {
+        this.zd = speed;
     }
 
     public void setSprite(TextureAtlasSprite textureAtlasSprite) {
