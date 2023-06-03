@@ -17,14 +17,4 @@ public class NucleusForge {
         EventBuses.registerModEventBus(MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
         Nucleus.init();
     }
-
-    public static class ClientEvents {
-        @Mod.EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-        public static class ModBus {
-            @SubscribeEvent
-            public static void onShaderRegistration(RegisterShadersEvent event) {
-                event.registerShader(Shaders.TEST_SHADER_FUNC.apply(event.getResourceManager()), shdr -> Shaders.TEST_SHADER = shdr);
-            }
-        }
-    }
 }
