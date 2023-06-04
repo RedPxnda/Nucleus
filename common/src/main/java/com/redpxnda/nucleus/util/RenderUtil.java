@@ -2,21 +2,21 @@ package com.redpxnda.nucleus.util;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.network.chat.Component;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.function.BiFunction;
 
 public class RenderUtil {
-    public static void rotateVectors(Vector3f[] vectors, Quaternion quaternion) {
+    public static void rotateVectors(Vector3f[] vectors, Quaternionf quaternion) {
         for (Vector3f vec : vectors) {
-            vec.transform(quaternion);
+            vec.rotate(quaternion);
         }
     }
     public static void translateVectors(Vector3f[] vectors, float x, float y, float z) {

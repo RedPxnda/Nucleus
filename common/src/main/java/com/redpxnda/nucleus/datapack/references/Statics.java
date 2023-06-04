@@ -1,6 +1,5 @@
 package com.redpxnda.nucleus.datapack.references;
 
-import com.mojang.datafixers.util.Pair;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
 import com.redpxnda.nucleus.datapack.references.block.BlockReference;
 import com.redpxnda.nucleus.datapack.references.effect.MobEffectInstanceReference;
@@ -14,7 +13,7 @@ import com.redpxnda.nucleus.datapack.references.tag.ListTagReference;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -36,8 +35,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static com.redpxnda.nucleus.util.MiscUtil.getMobEffect;
 
@@ -46,10 +43,10 @@ public class Statics {
     public static ItemStackReference EMPTY_ITEM = new ItemStackReference(ItemStack.EMPTY);
 
     public static BlockReference<?> blockOf(String block) {
-        return new BlockReference<>(Registry.BLOCK.get(new ResourceLocation(block)));
+        return new BlockReference<>(BuiltInRegistries.BLOCK.get(new ResourceLocation(block)));
     }
     public static ItemReference<?> itemOf(String item) {
-        return new ItemReference<>(Registry.ITEM.get(new ResourceLocation(item)));
+        return new ItemReference<>(BuiltInRegistries.ITEM.get(new ResourceLocation(item)));
     }
     public static TargetingConditionsReference createTargetingConditions(boolean forCombat) {
         return new TargetingConditionsReference(forCombat ? TargetingConditions.forCombat() : TargetingConditions.forNonCombat());

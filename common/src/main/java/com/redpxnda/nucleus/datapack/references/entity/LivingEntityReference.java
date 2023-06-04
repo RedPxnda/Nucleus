@@ -11,14 +11,11 @@ import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReferenc
 import com.redpxnda.nucleus.datapack.references.storage.SlotAccessReference;
 import com.redpxnda.nucleus.datapack.references.storage.TargetingConditionsReference;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.core.Registry;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import org.luaj.vm2.LuaFunction;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,7 +121,7 @@ public class LivingEntityReference<E extends LivingEntity> extends EntityReferen
     // Generated from LivingEntity::getActiveEffectsMap
     public Map<ResourceLocationReference, MobEffectInstanceReference> getActiveEffectsMap() {
         return instance.getActiveEffectsMap().entrySet().stream().map(e -> Pair.of(
-                new ResourceLocationReference(Registry.MOB_EFFECT.getKey(e.getKey())),
+                new ResourceLocationReference(BuiltInRegistries.MOB_EFFECT.getKey(e.getKey())),
                 new MobEffectInstanceReference(e.getValue())
                 )).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
     }

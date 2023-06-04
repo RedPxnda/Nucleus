@@ -2,6 +2,8 @@ package com.redpxnda.nucleus.util;
 
 import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import org.luaj.vm2.LuaFunction;
@@ -20,6 +22,6 @@ public class MiscUtil {
     }
 
     public static MobEffect getMobEffect(ResourceLocationReference ref) {
-        return Registry.MOB_EFFECT.getOptional(ref.instance).orElse(MobEffects.LUCK);
+        return BuiltInRegistries.MOB_EFFECT.getOptional(ref.instance).orElse(MobEffects.LUCK);
     }
 }

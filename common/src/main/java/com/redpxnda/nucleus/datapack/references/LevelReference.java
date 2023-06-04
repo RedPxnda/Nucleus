@@ -159,16 +159,20 @@ public class LevelReference extends Reference<Level> {
         return instance.shouldTickBlocksAt(param0);
     }
 
-    public void explodeAndBreak(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
-        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Explosion.BlockInteraction.BREAK);
+    public void explodeByMob(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
+        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Level.ExplosionInteraction.MOB);
     }
 
-    public void explodeAndDestroy(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
-        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Explosion.BlockInteraction.DESTROY);
+    public void explodeByTnt(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
+        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Level.ExplosionInteraction.TNT);
     }
 
-    public void safeExplode(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
-        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Explosion.BlockInteraction.NONE);
+    public void explodeByBlock(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
+        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Level.ExplosionInteraction.BLOCK);
+    }
+
+    public void explodeByNone(EntityReference<?> param0, double param1, double param2, double param3, float param4, boolean makeFire) {
+        instance.explode(param0.instance, param1, param2, param3, param4, makeFire, Level.ExplosionInteraction.NONE);
     }
 
     // Generated from Level::getThunderLevel

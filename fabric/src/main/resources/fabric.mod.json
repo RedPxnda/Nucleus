@@ -15,6 +15,9 @@
   "entrypoints": {
     "main": [
       "com.redpxnda.nucleus.fabric.NucleusFabric"
+    ],
+    "client": [
+      "com.redpxnda.nucleus.fabric.NucleusClient"
     ]
   },
   "mixins": [

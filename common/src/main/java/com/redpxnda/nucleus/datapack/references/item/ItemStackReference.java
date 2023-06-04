@@ -12,7 +12,7 @@ import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReferenc
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
 import com.redpxnda.nucleus.datapack.references.tag.ListTagReference;
 import com.redpxnda.nucleus.datapack.references.tag.TagReference;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.decoration.ItemFrame;
@@ -207,11 +207,6 @@ public class ItemStackReference extends Reference<ItemStack> {
         instance.hurtEnemy(param0.instance, param1.instance);
     }
 
-    // Generated from ItemStack::sameItemStackIgnoreDurability
-    public boolean sameItemStackIgnoreDurability(ItemStackReference param0) {
-        return instance.sameItemStackIgnoreDurability(param0.instance);
-    }
-
     // Generated from ItemStack::getOrCreateTagElement
     public CompoundTagReference getOrCreateTagElement(String param0) {
         return new CompoundTagReference(instance.getOrCreateTagElement(param0));
@@ -283,7 +278,7 @@ public class ItemStackReference extends Reference<ItemStack> {
 //    }
 
     public void enchant(ResourceLocationReference enchantmentLoc, int param1) {
-        Enchantment enchantment = Registry.ENCHANTMENT.get(enchantmentLoc.instance);
+        Enchantment enchantment = BuiltInRegistries.ENCHANTMENT.get(enchantmentLoc.instance);
         if (enchantment != null)
             instance.enchant(enchantment, param1);
     }

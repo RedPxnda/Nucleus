@@ -1,7 +1,6 @@
 package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -14,6 +13,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import static com.redpxnda.nucleus.util.RenderUtil.*;
 
 public class DynamicParticle extends Particle {
-    protected final SpriteSet set;
+    public SpriteSet set;
     protected TextureAtlasSprite sprite;
     protected final Consumer<DynamicParticle> onTick;
     protected final BiConsumer<DynamicParticle, Vector3f[]> onRender;
@@ -32,14 +32,19 @@ public class DynamicParticle extends Particle {
     public float scale;
 
     protected DynamicParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, SpriteSet set, ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        this(onSetup, onTick, onRender, clientLevel, x, y, z, xSpeed, ySpeed, zSpeed);
+        this.set = set;
+        this.pickSprite();
+    }
+
+    protected DynamicParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender, ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
         super(clientLevel, x, y, z);
         this.onTick = onTick;
         this.xd = xSpeed;
         this.yd = ySpeed;
         this.zd = zSpeed;
         this.onRender = onRender;
-        this.set = set;
-        pickSprite();
+        this.set = null;
         this.red = 1;
         this.green = 1;
         this.blue = 1;
@@ -141,6 +146,12 @@ public class DynamicParticle extends Particle {
             this.onRender = onRender;
             this.onTick = onTick;
         }
+        public Provider(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, BiConsumer<DynamicParticle, Vector3f[]> onRender) {
+            this.set = null;
+            this.onSetup = onSetup;
+            this.onRender = onRender;
+            this.onTick = onTick;
+        }
         public Provider(SpriteSet set) {
             this.set = set;
         }
@@ -148,6 +159,8 @@ public class DynamicParticle extends Particle {
         @Nullable
         @Override
         public Particle createParticle(SimpleParticleType particleOptions, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
+            if (set == null)
+                return new DynamicParticle(onSetup, onTick, onRender, clientLevel, d, e, f, g, h, i);
             return new DynamicParticle(onSetup, onTick, onRender, set, clientLevel, d, e, f, g, h, i);
         }
     }

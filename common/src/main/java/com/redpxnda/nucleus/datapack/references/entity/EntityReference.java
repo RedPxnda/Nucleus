@@ -1,12 +1,15 @@
 package com.redpxnda.nucleus.datapack.references.entity;
 
+import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.datapack.references.*;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
 import com.redpxnda.nucleus.datapack.references.block.BlockStateReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.*;
+import com.redpxnda.nucleus.impl.EntityDataManager;
+import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.util.StatManager;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -29,11 +32,22 @@ public class EntityReference<E extends Entity> extends Reference<E> {
         return StatManager.entity.evaluate(instance);
     }
 
+    public <T extends EntityCapability> T getCapability(Class<T> cap) {
+        return EntityDataManager.getCapability(instance, cap);
+    }
+
+    public EntityCapability getCapability(String str) {
+        return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(new ResourceLocation(str)));
+    }
+    public EntityCapability getCapability(ResourceLocationReference ref) {
+        return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(ref.instance));
+    }
+
     public boolean is(String str) {
-        return instance.getType().equals(Registry.ENTITY_TYPE.get(new ResourceLocation(str)));
+        return instance.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(str)));
     }
     public boolean is(ResourceLocationReference ref) {
-        return instance.getType().equals(Registry.ENTITY_TYPE.get(ref.instance));
+        return instance.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(ref.instance));
     }
 
     // Generated from Entity::getName
@@ -68,7 +82,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getType
     public String getType() {
-        return Registry.ENTITY_TYPE.getKey(instance.getType()).toString();
+        return BuiltInRegistries.ENTITY_TYPE.getKey(instance.getType()).toString();
     }
 
     // Generated from Entity::getSlot

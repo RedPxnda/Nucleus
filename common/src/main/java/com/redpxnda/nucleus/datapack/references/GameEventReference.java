@@ -24,10 +24,10 @@ public class GameEventReference extends Reference<GameEvent> {
     }
 
     @SuppressWarnings("unused")
-    public static class Message extends Reference<GameEvent.Message> {
-        static { Reference.register(Message.class); }
+    public static class Info extends Reference<GameEvent.ListenerInfo> {
+        static { Reference.register(Info.class); }
 
-        public Message(GameEvent.Message instance) {
+        public Info(GameEvent.ListenerInfo instance) {
             super(instance);
         }
 

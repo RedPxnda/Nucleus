@@ -3,7 +3,7 @@ package com.redpxnda.nucleus.datapack.references.effect;
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffectInstance;
 
 @SuppressWarnings("unused")
@@ -50,7 +50,7 @@ public class MobEffectInstanceReference extends Reference<MobEffectInstance> {
     }
 
     public ResourceLocationReference getEffect() {
-        return new ResourceLocationReference(Registry.MOB_EFFECT.getKey(instance.getEffect()));
+        return new ResourceLocationReference(BuiltInRegistries.MOB_EFFECT.getKey(instance.getEffect()));
     }
 
     // Generated from MobEffectInstance::isVisible
@@ -71,15 +71,5 @@ public class MobEffectInstanceReference extends Reference<MobEffectInstance> {
     // Generated from MobEffectInstance::getDescriptionId
     public String getDescriptionId() {
         return instance.getDescriptionId();
-    }
-
-    // Generated from MobEffectInstance::setNoCounter
-    public void setNoCounter(boolean param0) {
-        instance.setNoCounter(param0);
-    }
-
-    // Generated from MobEffectInstance::isNoCounter
-    public boolean isNoCounter() {
-        return instance.isNoCounter();
     }
 }

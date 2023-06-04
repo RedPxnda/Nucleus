@@ -12,8 +12,6 @@ import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.ComponentReference;
 import com.redpxnda.nucleus.datapack.references.storage.DamageSourceReference;
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
