@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.impl.forge;
 import com.redpxnda.nucleus.capability.EntityCapability;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.capabilities.*;
@@ -18,9 +19,9 @@ import java.util.function.Supplier;
 
 public class EntityDataRegistryImpl {
     public static final Map<Class<? extends EntityCapability>, Holder<?>> CAPABILITIES = new HashMap<>();
-    public static final Map<ResourceLocation, Class<? extends EntityCapability>> REGISTERED = new HashMap<>();
+    public static final Map<ResourceLocation, Class<? extends EntityCapability<?>>> REGISTERED = new HashMap<>();
 
-    public static <T extends EntityCapability> void register(ResourceLocation id, Predicate<Entity> entity, Class<T> cap, Supplier<T> creator) {
+    public static <T extends EntityCapability<?>> void register(ResourceLocation id, Predicate<Entity> entity, Class<T> cap, Supplier<T> creator) {
         Function<Capability<T>, CapProvider> provider = capability -> new CapProvider() {
             @Override
             public void invalidate() {
@@ -28,12 +29,12 @@ public class EntityDataRegistryImpl {
             }
 
             @Override
-            public CompoundTag serializeNBT() {
+            public Tag serializeNBT() {
                 return instance().toNbt();
             }
 
             @Override
-            public void deserializeNBT(CompoundTag tag) {
+            public void deserializeNBT(Tag tag) {
                 instance().loadNbt(tag);
             }
 
@@ -55,7 +56,7 @@ public class EntityDataRegistryImpl {
         REGISTERED.put(id, cap);
     }
 
-    public static Class<? extends EntityCapability> getFromId(ResourceLocation id) {
+    public static Class<? extends EntityCapability<?>> getFromId(ResourceLocation id) {
         return REGISTERED.get(id);
     }
 
@@ -71,7 +72,7 @@ public class EntityDataRegistryImpl {
             this.predicate = predicate;
         }
     }
-    public interface CapProvider extends ICapabilityProvider, ICapabilitySerializable<CompoundTag> {
+    public interface CapProvider extends ICapabilityProvider, ICapabilitySerializable<Tag> {
         void invalidate();
     }
 }

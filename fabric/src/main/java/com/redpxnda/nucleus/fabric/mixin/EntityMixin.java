@@ -19,9 +19,9 @@ import java.util.Map;
 @Mixin(Entity.class)
 public class EntityMixin implements IEntityDataSaver {
     @Unique
-    private final Map<String, EntityCapability> nucleus$caps = new HashMap<>();
+    private final Map<String, EntityCapability<?>> nucleus$caps = new HashMap<>();
     @Override
-    public Map<String , EntityCapability> getCapabilities() {
+    public Map<String , EntityCapability<?>> getCapabilities() {
         return nucleus$caps;
     }
 
@@ -35,10 +35,10 @@ public class EntityMixin implements IEntityDataSaver {
         if ((Object) this instanceof Entity entity) {
             EntityDataRegistryImpl.CAPABILITIES.forEach((cap, holder) -> {
                 if (holder.predicate().test(entity)) {
-                    EntityCapability toLoad = holder.construct();
+                    EntityCapability<?> toLoad = holder.construct();
 
                     String id = holder.id().toString();
-                    if (tag.contains(id)) toLoad.loadNbt(tag.getCompound(id)); // load nbt if present
+                    if (tag.contains(id)) toLoad.loadNbt(tag.get(id)); // load nbt if present
 
                     nucleus$caps.put(id, toLoad);
                 }

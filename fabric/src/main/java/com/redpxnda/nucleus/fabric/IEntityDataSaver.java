@@ -6,5 +6,5 @@ import java.util.Collection;
 import java.util.Map;
 
 public interface IEntityDataSaver {
-    Map<String, EntityCapability> getCapabilities();
+    Map<String, EntityCapability<?>> getCapabilities();
 }

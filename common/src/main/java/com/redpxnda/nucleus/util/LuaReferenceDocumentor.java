@@ -68,7 +68,8 @@ public class LuaReferenceDocumentor {
                     Statics.Rarities.class,
                     Statics.UseAnims.class,
                     Statics.Poses.class,
-                    Statics.ChatFormattings.class
+                    Statics.ChatFormattings.class,
+                    CraftingContainerReference.class
             };
             for (Class<?> cls : classes) {
                 FileWriter writer = new FileWriter("z_lua_docs/" + cls.getSimpleName() + ".lua");
@@ -80,7 +81,73 @@ public class LuaReferenceDocumentor {
             exception.printStackTrace();
         }
     }*/
+    public static void main(String[] args) {
+        try {
+            Class<?> cls = Statics.class;
+            FileWriter writer = new FileWriter("z_lua_docs/" + cls.getSimpleName() + ".lua");
+            writer.write(generateStatic(cls));
+            writer.close();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
 
+    public static String generateStatic(Class<?> clazz) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("---@class ").append(clazz.getSimpleName()).append("\n").append(clazz.getSimpleName()).append(" = {}\n");
+        Method[] methods = clazz.getDeclaredMethods();
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            if (!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) continue;
+            builder.append("\n");
+
+            StringBuilder params = new StringBuilder();
+            for (Parameter param : method.getParameters()) {
+                String paramType;
+                Class<?> typeClass = param.getType();
+                if (typeClass.isArray()) typeClass = typeClass.getComponentType();
+                if (boolean.class.isAssignableFrom(typeClass))
+                    paramType = "boolean";
+                else if (typeClass.isPrimitive())
+                    paramType = "number";
+                else if (String.class.isAssignableFrom(typeClass))
+                    paramType = "string";
+                else if (LuaFunction.class.isAssignableFrom(typeClass))
+                    paramType = "function";
+                else
+                    paramType = typeClass.getSimpleName().replaceAll("Reference", "");
+
+                if (param.getType().isArray()) paramType+="[]";
+
+                builder.append("---@param ").append(param.getName()).append(" ").append(paramType).append("\n");
+                params.append(param.getName()).append(", ");
+            }
+            String paramsDecl = params.toString();
+            if (paramsDecl.endsWith(", ")) paramsDecl = paramsDecl.substring(0, paramsDecl.length()-2);
+
+            Class<?> retClass = method.getReturnType();
+            if (retClass.isArray()) retClass = retClass.getComponentType();
+            String returnType;
+            if (boolean.class.isAssignableFrom(retClass))
+                returnType = "boolean";
+            else if (void.class.isAssignableFrom(retClass))
+                returnType = "void";
+            else if (retClass.isPrimitive())
+                returnType = "number";
+            else if (String.class.isAssignableFrom(retClass))
+                returnType = "string";
+            else if (LuaFunction.class.isAssignableFrom(retClass))
+                returnType = "function";
+            else
+                returnType = retClass.getSimpleName().replaceAll("Reference", "");
+            if (method.getReturnType().isArray()) returnType+="[]";
+            builder.append("---@return ").append(returnType).append("\n");
+
+            builder.append("function ").append(clazz.getSimpleName()).append(":").append(method.getName()).append("(").append(paramsDecl).append(") return nil end\n");
+        }
+
+        return builder.toString();
+    }
     public static String generate(Class<?> clazz) {
         StringBuilder builder = new StringBuilder();
         String luaClassName = clazz.getSimpleName().replaceAll("Reference", "");

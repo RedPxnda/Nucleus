@@ -35,3 +35,7 @@
 ---@alias jUUID UUID
 --- The java UUID. Just an Identifier used for a bunch of things.
 ---@see UUID
+
+---@alias nStatics Statics
+--- Nucleus's general utility method holder. Usually available for most lua scripts.
+---@see Statics

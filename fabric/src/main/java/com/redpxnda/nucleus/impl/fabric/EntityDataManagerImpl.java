@@ -8,17 +8,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
 public class EntityDataManagerImpl {
-    public static <T extends EntityCapability> T getCapability(Entity entity, Class<T> cap) {
+    public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap) {
         String id = EntityDataRegistryImpl.CAPABILITIES.get(cap).id().toString();
         return (T) ((IEntityDataSaver) entity).getCapabilities().get(id);
     }
 
-    public static <T extends EntityCapability> T getCapability(Entity entity, Class<T> cap, Supplier<T> ifFailed) {
+    public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, Supplier<T> ifFailed) {
         String id = EntityDataRegistryImpl.CAPABILITIES.get(cap).id().toString();
         return (T) ((IEntityDataSaver) entity).getCapabilities().getOrDefault(id, ifFailed.get());
     }
 
-    public static <T extends EntityCapability> T getCapability(Entity entity, Class<T> cap, T ifFailed) {
+    public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, T ifFailed) {
         String id = EntityDataRegistryImpl.CAPABILITIES.get(cap).id().toString();
         return (T) ((IEntityDataSaver) entity).getCapabilities().getOrDefault(id, ifFailed);
     }

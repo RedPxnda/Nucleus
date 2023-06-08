@@ -10,6 +10,7 @@ import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.*;
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
 import com.redpxnda.nucleus.datapack.references.tag.ListTagReference;
+import dev.architectury.platform.Platform;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,6 +43,15 @@ import static com.redpxnda.nucleus.util.MiscUtil.getMobEffect;
 public class Statics {
     public static ItemStackReference EMPTY_ITEM = new ItemStackReference(ItemStack.EMPTY);
 
+    public static boolean isModLoaded(String modId) {
+        return Platform.isModLoaded(modId);
+    }
+    public static boolean isOnFabric() {
+        return Platform.isFabric();
+    }
+    public static boolean isOnForge() {
+        return Platform.isForge();
+    }
     public static BlockReference<?> blockOf(String block) {
         return new BlockReference<>(BuiltInRegistries.BLOCK.get(new ResourceLocation(block)));
     }

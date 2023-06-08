@@ -8,17 +8,17 @@ import java.util.function.Supplier;
 
 public class EntityDataManager {
     @ExpectPlatform
-    public static <T extends EntityCapability> T getCapability(Entity entity, Class<T> cap) {
+    public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static <T extends EntityCapability> T getCapability(Entity entity, Class<T> cap, T ifFailed) {
+    public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, T ifFailed) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static <T extends EntityCapability> T getCapability(Entity entity, Class<T> cap, Supplier<T> ifFailed) {
+    public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, Supplier<T> ifFailed) {
         throw new AssertionError();
     }
 }

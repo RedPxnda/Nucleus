@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.util;
 
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -250,8 +251,8 @@ public class ReferenceClassCreator {
         return replicatedClass.toString();
     }
 
-/*    public static void main(String[] args) {
-        String clazz = replicateClass(GameEvent.Context.class, true);
+    /*public static void main(String[] args) {
+        String clazz = replicateClass(CraftingContainer.class, true);
 
         System.out.println(clazz);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
