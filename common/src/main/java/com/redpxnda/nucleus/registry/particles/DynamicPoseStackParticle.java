@@ -62,7 +62,7 @@ public class DynamicPoseStackParticle extends DynamicParticle {
     }
 
     public static class Provider extends DynamicParticle.Provider {
-        private TextureAtlasSprite sprite;
+        protected TextureAtlasSprite sprite;
         protected final ResourceLocation location;
         protected final RenderType renderType;
         protected final TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> renderHandler;
