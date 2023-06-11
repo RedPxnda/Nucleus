@@ -54,6 +54,24 @@ public class DynamicParticle extends Particle {
         onSetup.accept(this);
     }
 
+    public double getX() {
+        return x;
+    }
+    public double getY() {
+        return y;
+    }
+    public double getZ() {
+        return z;
+    }
+    public double getXSpeed() {
+        return xd;
+    }
+    public double getYSpeed() {
+        return yd;
+    }
+    public double getZSpeed() {
+        return zd;
+    }
     public int getAge() {
         return age;
     }
