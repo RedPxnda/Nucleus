@@ -42,10 +42,12 @@ public class DynamicPoseStackParticle extends DynamicParticle {
         PoseStack poseStack = new PoseStack();
         poseStack.translate(x, y, z);
         poseStack.scale(1, -1, 1);
+        poseStack.pushPose();
         renderHandler.accept(this, poseStack, camera);
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         VertexConsumer vc = bufferSource.getBuffer(renderType);
         addDoubleQuad(poseStack, vc, red, green, blue, alpha, 0, 0, 0, 0, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV0(), LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
         bufferSource.endBatch();
     }
 
