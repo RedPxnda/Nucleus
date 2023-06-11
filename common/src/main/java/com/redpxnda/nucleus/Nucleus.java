@@ -1,18 +1,18 @@
 package com.redpxnda.nucleus;
 
 import com.ezylang.evalex.config.ExpressionConfiguration;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
+import com.redpxnda.nucleus.impl.ShaderRegistry;
 import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
-import com.redpxnda.nucleus.registry.particles.DynamicPoseStackParticle;
+import com.redpxnda.nucleus.util.RenderUtil;
 import dev.architectury.registry.ReloadListenerRegistry;
-import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -33,16 +33,9 @@ public class Nucleus {
     public static void init() {
         reloadListeners();
         NucleusRegistries.init();
-        /*EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-            ParticleProviderRegistry.register(NucleusRegistries.testParticle, new DynamicPoseStackParticle.Provider(loc("item/charge_indicator"),
-                    RenderType.translucent(),
-                    p -> {},
-                    p -> {},
-                    (particle, stack, cam) -> {
-                        stack.mulPose(cam.rotation());
-                    }
-            ));
-        });*/
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+            ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> RenderUtil.alphaAnimationShader = i);
+        });
     }
 
     public static class TestEntityCap implements EntityCapability<CompoundTag> {
