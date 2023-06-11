@@ -8,10 +8,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +29,11 @@ public class DynamicPoseStackParticle extends DynamicParticle {
     protected final RenderType renderType;
     protected final TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> renderHandler;
 
-    protected DynamicPoseStackParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> onRender, SpriteSet set, RenderType renderType, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {
-        super(onSetup, onTick, (a, b) -> {}, set, clientLevel, x, y, z, dx, dy, dz);
+    protected DynamicPoseStackParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> onRender, TextureAtlasSprite sprite, RenderType renderType, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {
+        super(onSetup, onTick, (a, b) -> {}, clientLevel, x, y, z, dx, dy, dz);
         this.renderHandler = onRender;
         this.renderType = renderType;
+        this.sprite = sprite;
         this.lifetime = 100;
         this.gravity = 0f;
     }
@@ -41,12 +46,11 @@ public class DynamicPoseStackParticle extends DynamicParticle {
         float z = (float)(zo - vec3.z());
         PoseStack poseStack = new PoseStack();
         poseStack.translate(x, y, z);
-        poseStack.scale(1, -1, 1);
         poseStack.pushPose();
         renderHandler.accept(this, poseStack, camera);
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         VertexConsumer vc = bufferSource.getBuffer(renderType);
-        addDoubleQuad(poseStack, vc, red, green, blue, alpha, 0, 0, 0, 0, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV0(), LightTexture.FULL_BRIGHT);
+        addDoubleQuad(poseStack, vc, red, green, blue, alpha, scale/2f, scale/2f, 0, 0, sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), LightTexture.FULL_BRIGHT);
         poseStack.popPose();
         bufferSource.endBatch();
     }
@@ -58,19 +62,27 @@ public class DynamicPoseStackParticle extends DynamicParticle {
     }
 
     public static class Provider extends DynamicParticle.Provider {
+        private TextureAtlasSprite sprite;
+        protected final ResourceLocation location;
         protected final RenderType renderType;
         protected final TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> renderHandler;
 
-        public Provider(SpriteSet set, RenderType renderType, Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> renderHandler) {
-            super(set, onSetup, onTick, (a, b) -> {});
+        public Provider(ResourceLocation spriteLocation, RenderType renderType, Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> renderHandler) {
+            super(onSetup, onTick, (a, b) -> {});
+            this.location = spriteLocation;
             this.renderType = renderType;
             this.renderHandler = renderHandler;
+        }
+
+        protected void setupSprite() {
+            this.sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(location);
         }
 
         @Nullable
         @Override
         public Particle createParticle(SimpleParticleType particleOptions, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-            return new DynamicPoseStackParticle(onSetup, onTick, renderHandler, set, renderType, clientLevel, d, e, f, g, h, i);
+            if (sprite == null) setupSprite();
+            return new DynamicPoseStackParticle(onSetup, onTick, renderHandler, sprite, renderType, clientLevel, d, e, f, g, h, i);
         }
     }
 }
