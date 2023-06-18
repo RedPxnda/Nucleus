@@ -17,6 +17,15 @@ public class ParticleShaper {
                 }, 360, inc
         );
     }
+    public static ParticleShaper expandingCircle(ParticleOptions options, double radius, double inc, double speed) {
+        return new ParticleShaper(
+                options,
+                (s, i) -> {
+                    double rads = i * Math.PI/180;
+                    s.spawn(Math.sin(rads)*radius, Math.cos(rads)*radius, Math.sin(rads)*speed, Math.cos(rads)*speed);
+                }, 360, inc
+        );
+    }
     public static ParticleShaper circle(ParticleOptions options, double radius) {
         return circle(options, radius, 1);
     }
@@ -28,8 +37,20 @@ public class ParticleShaper {
                 {0, r},
         };
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), 100, setup);
+            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, setup);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2);
+        }, max, inc);
+    }
+    public static ParticleShaper expandingSquare(ParticleOptions options, double r, int max, int inc, double speed) {
+        double[][] setup = new double[][]{
+                {0, 0},
+                {r, 0},
+                {r, r},
+                {0, r},
+        };
+        return new ParticleShaper(options, (s, i) -> {
+            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, setup);
+            s.spawn(doubles[0]-r/2, doubles[1]-r/2, doubles[0]/r * speed, doubles[1]/r * speed);
         }, max, inc);
     }
     public static ParticleShaper square(ParticleOptions options, double r) {
@@ -58,6 +79,9 @@ public class ParticleShaper {
 
     public void spawn(double x, double z) {
         particleSpawner.spawn(level, particle(), this.x+x, y, this.z+z, 0, 0, 0);
+    }
+    public void spawn(double x, double z, double xs, double zs) {
+        particleSpawner.spawn(level, particle(), this.x+x, y, this.z+z, xs, 0, zs);
     }
     public void spawn(double x, double y, double z) {
         particleSpawner.spawn(level, particle(), this.x+x, this.y+y, this.z+z, 0, 0, 0);
