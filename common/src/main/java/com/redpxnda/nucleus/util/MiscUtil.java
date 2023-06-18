@@ -10,6 +10,7 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
+import java.util.Arrays;
 import java.util.function.*;
 
 public class MiscUtil {
@@ -76,5 +77,18 @@ public class MiscUtil {
                 Mth.lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1]),
                 Mth.lerp(progress, items[index][2], items[tooLarge ? 0 : index+1][2])
         };
+    }
+
+    public static double[] bezier(double[][] points, double t) {
+        if (points.length == 1)
+            return points[0];
+        else {
+            double[] p1 = bezier(Arrays.copyOfRange(points, 0, points.length-1), t);
+            double[] p2 = bezier(Arrays.copyOfRange(points, 1, points.length), t);
+            return new double[]{
+                    (1-t)*p1[0] + t*p2[0],
+                    (1-t)*p1[1] + t*p2[1]
+            };
+        }
     }
 }

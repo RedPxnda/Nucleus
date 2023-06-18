@@ -44,14 +44,16 @@ public class Nucleus {
         packets();
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> RenderUtil::init);
-        PlayerEvent.DROP_ITEM.register((p, e) -> {
+        /*PlayerEvent.DROP_ITEM.register((p, e) -> {
             if (p.level.isClientSide) return EventResult.pass();
-            ParticleShaper.eqTriangle(ParticleTypes.FLAME, 2, 100, 1)
+            ParticleShaper.bezier(new double[][]{
+                            {-2, 0}, {3, 2}, {1, -2}, {-1, 1}
+                    }, ParticleTypes.FLAME, 0.01)
                     .fromServer()
                     //.transform(AxisD.YP.rotationDegrees(45))
                     .runAt(p.level, p.getX(), p.getY()+0.5, p.getZ());
             return EventResult.pass();
-        });
+        });*/
     }
 
     private static void packets() {

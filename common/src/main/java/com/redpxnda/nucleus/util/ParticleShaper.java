@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class ParticleShaper {
@@ -91,10 +92,28 @@ public class ParticleShaper {
             s.spawn(doubles[0]-r/2, doubles[1]-r/2);
         }, max, inc);
     }
+    public static ParticleShaper bezier(double[][] controls, ParticleOptions options, double inc) {
+        return new ParticleShaper(options, (s, i) -> {
+            double[] doubles = MiscUtil.bezier(controls, i);
+            s.spawn(doubles[0], doubles[1]);
+        }, 1, inc);
+    }
     public static ParticleShaper expandingPolygon(double[][] shape, ParticleOptions options, double r, int max, int inc, double speed) {
         return new ParticleShaper(options, (s, i) -> {
             double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2, (doubles[0]-r/2)/r * speed, (doubles[1]-r/2)/r * speed);
+        }, max, inc);
+    }
+    public static ParticleShaper polygon(double[][] shape, ParticleOptions options, int max, int inc) {
+        return new ParticleShaper(options, (s, i) -> {
+            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            s.spawn(doubles[0], doubles[1]);
+        }, max, inc);
+    }
+    public static ParticleShaper expandingPolygon(double[][] shape, ParticleOptions options, int max, int inc, double speed) {
+        return new ParticleShaper(options, (s, i) -> {
+            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            s.spawn(doubles[0], doubles[1], doubles[0] * speed, doubles[1] * speed);
         }, max, inc);
     }
     public static ParticleShaper expandingSquare(ParticleOptions options, double r, int max, int inc, double speed) {
@@ -109,6 +128,10 @@ public class ParticleShaper {
     public static ParticleShaper square(ParticleOptions options, double r) {
         return square(options, r, 100, 1);
     }
+    public static ParticleShaper create(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double inc) {
+        return new ParticleShaper(particle, func, max, inc);
+    }
+
     private final double max;
     private final double inc;
     private double x;
