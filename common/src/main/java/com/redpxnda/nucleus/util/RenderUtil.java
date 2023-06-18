@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.redpxnda.nucleus.impl.ShaderRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,9 +20,15 @@ import org.joml.Vector3f;
 
 import java.util.function.BiFunction;
 
+import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
+
 public class RenderUtil {
     public static ShaderInstance alphaAnimationShader;
     public static RenderType alphaAnimation = RenderType.create("translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
+
+    public static void init() {
+        ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
+    }
 
     public static float[] lerpColors(long gameTime, int duration, float[][] colors) {
         if (colors.length < 1) return new float[] { 1, 1, 1 };

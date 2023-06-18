@@ -1,25 +1,33 @@
 package com.redpxnda.nucleus;
 
 import com.ezylang.evalex.config.ExpressionConfiguration;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
-import com.redpxnda.nucleus.impl.ShaderRegistry;
+import com.redpxnda.nucleus.math.AxisD;
 import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
+import com.redpxnda.nucleus.network.SimplePacket;
+import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
+import com.redpxnda.nucleus.util.ParticleShaper;
 import com.redpxnda.nucleus.util.RenderUtil;
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.common.PlayerEvent;
+import dev.architectury.networking.NetworkChannel;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
 
@@ -29,13 +37,28 @@ public class Nucleus {
             Map.entry("SWITCH", new Switch())
     );
     public static final String MOD_ID = "nucleus";
+    public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
 
     public static void init() {
         reloadListeners();
+        packets();
         NucleusRegistries.init();
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-            ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> RenderUtil.alphaAnimationShader = i);
+        EnvExecutor.runInEnv(Env.CLIENT, () -> RenderUtil::init);
+        PlayerEvent.DROP_ITEM.register((p, e) -> {
+            if (p.level.isClientSide) return EventResult.pass();
+            ParticleShaper.eqTriangle(ParticleTypes.FLAME, 2, 100, 1)
+                    .fromServer()
+                    //.transform(AxisD.YP.rotationDegrees(45))
+                    .runAt(p.level, p.getX(), p.getY()+0.5, p.getZ());
+            return EventResult.pass();
         });
+    }
+
+    private static void packets() {
+        registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
+    }
+    public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<FriendlyByteBuf, T> decoder) {
+        CHANNEL.register(cls, T::toBuffer, decoder, T::wrappedHandle);
     }
 
     public static class TestEntityCap implements EntityCapability<CompoundTag> {

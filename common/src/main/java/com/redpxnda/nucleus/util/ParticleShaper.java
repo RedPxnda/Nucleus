@@ -1,13 +1,44 @@
 package com.redpxnda.nucleus.util;
 
+import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.math.AxisD;
+import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
 
 import java.util.function.BiConsumer;
 
 public class ParticleShaper {
+    public static ParticleShaper sphere(ParticleOptions options, double radius, double inc) {
+        return new ParticleShaper(
+                options,
+                (s, i) -> {
+                    double rads = i * Math.PI/180;
+                    for (int j = 0; j < 360; j+=inc) {
+                        Vector3d vec = new Vector3d(Math.sin(rads)*radius, 0, Math.cos(rads)*radius);
+                        vec = vec.rotate(AxisD.ZP.rotationDegrees(j));
+                        s.spawn(vec.x(), vec.y(), vec.z());
+                    }
+                }, 360, inc
+        );
+    }
+    public static ParticleShaper expandingSphere(ParticleOptions options, double radius, double inc, double speed) {
+        return new ParticleShaper(
+                options,
+                (s, i) -> {
+                    double rads = i * Math.PI/180;
+                    for (int j = 0; j < 360; j+=inc) {
+                        Vector3d vec = new Vector3d(Math.sin(rads)*radius, 0, Math.cos(rads)*radius);
+                        vec = vec.rotate(AxisD.ZP.rotationDegrees(j));
+                        s.spawn(vec.x(), vec.y(), vec.z(), vec.x()*speed, vec.y()*speed, vec.z()*speed);
+                    }
+                }, 360, inc
+        );
+    }
     public static ParticleShaper circle(ParticleOptions options, double radius, double inc) {
         return new ParticleShaper(
                 options,
@@ -36,9 +67,34 @@ public class ParticleShaper {
                 {r, r},
                 {0, r},
         };
+        return polygon(setup, options, r, max, inc);
+    }
+    public static ParticleShaper eqTriangle(ParticleOptions options, double r, int max, int inc) {
+        double[][] setup = new double[][]{
+                {0, 0},
+                {r/2, Math.tan(60 * Math.PI/180f)*r/2},
+                {r, 0}
+        };
+        return polygon(setup, options, r, max, inc);
+    }
+    public static ParticleShaper rightTriangle(ParticleOptions options, double r, int max, int inc) {
+        double[][] setup = new double[][]{
+                {0, 0},
+                {r, 0},
+                {r, r}
+        };
+        return polygon(setup, options, r, max, inc);
+    }
+    public static ParticleShaper polygon(double[][] shape, ParticleOptions options, double r, int max, int inc) {
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, setup);
+            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2);
+        }, max, inc);
+    }
+    public static ParticleShaper expandingPolygon(double[][] shape, ParticleOptions options, double r, int max, int inc, double speed) {
+        return new ParticleShaper(options, (s, i) -> {
+            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            s.spawn(doubles[0]-r/2, doubles[1]-r/2, (doubles[0]-r/2)/r * speed, (doubles[1]-r/2)/r * speed);
         }, max, inc);
     }
     public static ParticleShaper expandingSquare(ParticleOptions options, double r, int max, int inc, double speed) {
@@ -48,10 +104,7 @@ public class ParticleShaper {
                 {r, r},
                 {0, r},
         };
-        return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, setup);
-            s.spawn(doubles[0]-r/2, doubles[1]-r/2, doubles[0]/r * speed, doubles[1]/r * speed);
-        }, max, inc);
+        return expandingPolygon(setup, options, r, max, inc, speed);
     }
     public static ParticleShaper square(ParticleOptions options, double r) {
         return square(options, r, 100, 1);
@@ -61,6 +114,7 @@ public class ParticleShaper {
     private double x;
     private double y;
     private double z;
+    private Quaterniond transformation;
     private Level level;
     private ParticleSpawnMethod particleSpawner;
     private final BiConsumer<ParticleShaper, Double> func;
@@ -78,19 +132,48 @@ public class ParticleShaper {
     }
 
     public void spawn(double x, double z) {
-        particleSpawner.spawn(level, particle(), this.x+x, y, this.z+z, 0, 0, 0);
+        Vector3d vec = new Vector3d(x, 0, z);
+        if (transformation != null)
+            vec = vec.rotate(transformation);
+        particleSpawner.spawn(level, particle(), vec.x+this.x, vec.y+this.y, vec.z+this.z, 0, 0, 0);
     }
     public void spawn(double x, double z, double xs, double zs) {
-        particleSpawner.spawn(level, particle(), this.x+x, y, this.z+z, xs, 0, zs);
+        Vector3d vec = new Vector3d(x, 0, z);
+        Vector3d mot = new Vector3d(xs, 0, zs);
+        if (transformation != null) {
+            vec = vec.rotate(transformation);
+            mot = mot.rotate(transformation);
+        }
+        particleSpawner.spawn(level, particle(), vec.x+this.x, vec.y+this.y, vec.z+this.z, mot.x, mot.y, mot.z);
     }
     public void spawn(double x, double y, double z) {
-        particleSpawner.spawn(level, particle(), this.x+x, this.y+y, this.z+z, 0, 0, 0);
+        Vector3d vec = new Vector3d(x, y, z);
+        if (transformation != null)
+            vec = vec.rotate(transformation);
+        particleSpawner.spawn(level, particle(), vec.x+this.x, vec.y+this.y, vec.z+this.z, 0, 0, 0);
     }
     public void spawn(double x, double y, double z, double xs, double ys, double zs) {
-        particleSpawner.spawn(level, particle(), this.x+x, this.y+y, this.z+z, xs, ys, zs);
+        Vector3d vec = new Vector3d(x, y, z);
+        Vector3d mot = new Vector3d(xs, ys, zs);
+        if (transformation != null) {
+            vec = vec.rotate(transformation);
+            mot = mot.rotate(transformation);
+        }
+        particleSpawner.spawn(level, particle(), vec.x+this.x, vec.y+this.y, vec.z+this.z, mot.x, mot.y, mot.z);
     }
     public void spawn(ParticleOptions options, double x, double y, double z, double xs, double ys, double zs) {
-        particleSpawner.spawn(level, options, this.x+x, this.y+y, this.z+z, xs, ys, zs);
+        Vector3d vec = new Vector3d(x, y, z);
+        Vector3d mot = new Vector3d(xs, ys, zs);
+        if (transformation != null) {
+            vec = vec.rotate(transformation);
+            mot = mot.rotate(transformation);
+        }
+        particleSpawner.spawn(level, options, vec.x+this.x, vec.y+this.y, vec.z+this.z, mot.x, mot.y, mot.z);
+    }
+
+    public ParticleShaper transform(Quaterniond transformation) {
+        this.transformation = transformation;
+        return this;
     }
 
     public ParticleShaper fromClient() {
@@ -98,7 +181,7 @@ public class ParticleShaper {
         return this;
     }
     public ParticleShaper fromServer() {
-        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ((ServerLevel) l).sendParticles(op, x, y, z, 1, xs, ys, zs, 100);
+        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ParticleCreationPacket.send(((ServerLevel) l), op, x, y, z, xs, ys, zs);
         return this;
     }
     public ParticleShaper fromServer(int count, double maxSpeed) {
@@ -106,7 +189,7 @@ public class ParticleShaper {
         return this;
     }
     public ParticleShaper fromServer(ServerPlayer player) {
-        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ((ServerLevel) l).sendParticles(player, op, false, x, y, z, 1, xs, ys, zs, 100);
+        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> Nucleus.CHANNEL.sendToPlayer(player, new ParticleCreationPacket(op, x, y, z, xs, ys, zs));
         return this;
     }
     public ParticleShaper fromServer(ServerPlayer player, int count, int maxSpeed, boolean overrideLimiter) {
