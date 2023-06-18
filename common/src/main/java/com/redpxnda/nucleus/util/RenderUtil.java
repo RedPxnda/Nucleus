@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -21,6 +22,22 @@ import java.util.function.BiFunction;
 public class RenderUtil {
     public static ShaderInstance alphaAnimationShader;
     public static RenderType alphaAnimation = RenderType.create("translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
+
+    public static float[] lerpColors(long gameTime, int duration, float[][] colors) {
+        if (colors.length < 1) return new float[] { 1, 1, 1 };
+        int time = (int) (gameTime % duration*2);
+        if (time >= duration) time = time-duration;
+
+        int colorIndex = (int) Math.floor((time/(float)duration)*colors.length);
+        float progress = ((time/(float)duration)*colors.length)-colorIndex;
+
+        boolean tooLarge = colorIndex+1 >= colors.length;
+        return new float[] {
+                Mth.lerp(progress, colors[colorIndex][0], colors[tooLarge ? 0 : colorIndex+1][0])/255f,
+                Mth.lerp(progress, colors[colorIndex][1], colors[tooLarge ? 0 : colorIndex+1][1])/255f,
+                Mth.lerp(progress, colors[colorIndex][2], colors[tooLarge ? 0 : colorIndex+1][2])/255f
+        };
+    }
 
     public static void rotateVectors(Vector3f[] vectors, Quaternionf quaternion) {
         for (Vector3f vec : vectors) {

@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.util;
 
 import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import org.luaj.vm2.LuaFunction;
@@ -44,6 +45,36 @@ public class MiscUtil {
             public LuaValue call(LuaValue arg1, LuaValue arg2) {
                 return setup.apply(arg1, arg2);
             }
+        };
+    }
+
+    public static double[] arrayLerp2(int time, int maxTime, double[][] items) {
+        if (items.length < 1) return new double[] { 1, 1 };
+        int prog = (time % maxTime*2);
+        if (prog >= maxTime) prog = prog-maxTime;
+
+        int index = (int) Math.floor((prog/(float)maxTime)*items.length);
+        float progress = ((prog/(float)maxTime)*items.length)-index;
+
+        boolean tooLarge = index+1 >= items.length;
+        return new double[] {
+                Mth.lerp(progress, items[index][0], items[tooLarge ? 0 : index+1][0]),
+                Mth.lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1])
+        };
+    }
+    public static double[] arrayLerp3(int time, int maxTime, double[][] items) {
+        if (items.length < 1) return new double[] { 1, 1, 1 };
+        int prog = (time % maxTime*2);
+        if (prog >= maxTime) prog = prog-maxTime;
+
+        int index = (int) Math.floor((prog/(float)maxTime)*items.length);
+        float progress = ((prog/(float)maxTime)*items.length)-index;
+
+        boolean tooLarge = index+1 >= items.length;
+        return new double[] {
+                Mth.lerp(progress, items[index][0], items[tooLarge ? 0 : index+1][0]),
+                Mth.lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1]),
+                Mth.lerp(progress, items[index][2], items[tooLarge ? 0 : index+1][2])
         };
     }
 }

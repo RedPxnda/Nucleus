@@ -18,7 +18,7 @@ out vec4 fragColor;
 
 void main() {
     vec4 textureColor = texture(Sampler0, texCoord0);
-    if (textureColor.a > vertexColor.a) {
+    if (textureColor.a >= vertexColor.a) {
         discard;
     }
     vec4 color = textureColor * vertexColor * ColorModulator;
