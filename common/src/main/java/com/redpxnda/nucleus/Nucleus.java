@@ -2,6 +2,7 @@ package com.redpxnda.nucleus;
 
 import com.ezylang.evalex.config.ExpressionConfiguration;
 import com.redpxnda.nucleus.capability.EntityCapability;
+import com.redpxnda.nucleus.datapack.json.listeners.ParticleShaperListener;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.math.AxisD;
@@ -44,16 +45,13 @@ public class Nucleus {
         packets();
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> RenderUtil::init);
-        /*PlayerEvent.DROP_ITEM.register((p, e) -> {
+        PlayerEvent.DROP_ITEM.register((p, e) -> {
             if (p.level.isClientSide) return EventResult.pass();
-            ParticleShaper.bezier(new double[][]{
-                            {-2, 0}, {3, 2}, {1, -2}, {-1, 1}
-                    }, ParticleTypes.FLAME, 0.01)
-                    .fromServer()
-                    //.transform(AxisD.YP.rotationDegrees(45))
-                    .runAt(p.level, p.getX(), p.getY()+0.5, p.getZ());
+            ParticleShaperListener.shapers.forEach((rl, s) -> {
+                s.fromServer().runAt(p.level, p.getX(), p.getY(), p.getZ());
+            });
             return EventResult.pass();
-        });*/
+        });
     }
 
     private static void packets() {
@@ -88,5 +86,6 @@ public class Nucleus {
 
     private static void reloadListeners() {
         ReloadListenerRegistry.register(PackType.SERVER_DATA, new LuaSetupListener());
+        ReloadListenerRegistry.register(PackType.SERVER_DATA, new ParticleShaperListener());
     }
 }

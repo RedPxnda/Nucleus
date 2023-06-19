@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.util;
 
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.math.AxisD;
+import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
@@ -10,7 +11,6 @@ import net.minecraft.world.level.Level;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class ParticleShaper {
@@ -88,31 +88,31 @@ public class ParticleShaper {
     }
     public static ParticleShaper polygon(double[][] shape, ParticleOptions options, double r, int max, int inc) {
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            double[] doubles = MathUtil.arrayLerp2(i.intValue(), max, shape);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2);
         }, max, inc);
     }
     public static ParticleShaper bezier(double[][] controls, ParticleOptions options, double inc) {
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.bezier(controls, i);
+            double[] doubles = MathUtil.bezier(controls, i);
             s.spawn(doubles[0], doubles[1]);
         }, 1, inc);
     }
     public static ParticleShaper expandingPolygon(double[][] shape, ParticleOptions options, double r, int max, int inc, double speed) {
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            double[] doubles = MathUtil.arrayLerp2(i.intValue(), max, shape);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2, (doubles[0]-r/2)/r * speed, (doubles[1]-r/2)/r * speed);
         }, max, inc);
     }
     public static ParticleShaper polygon(double[][] shape, ParticleOptions options, int max, int inc) {
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            double[] doubles = MathUtil.arrayLerp2(i.intValue(), max, shape);
             s.spawn(doubles[0], doubles[1]);
         }, max, inc);
     }
     public static ParticleShaper expandingPolygon(double[][] shape, ParticleOptions options, int max, int inc, double speed) {
         return new ParticleShaper(options, (s, i) -> {
-            double[] doubles = MiscUtil.arrayLerp2(i.intValue(), max, shape);
+            double[] doubles = MathUtil.arrayLerp2(i.intValue(), max, shape);
             s.spawn(doubles[0], doubles[1], doubles[0] * speed, doubles[1] * speed);
         }, max, inc);
     }
@@ -128,11 +128,12 @@ public class ParticleShaper {
     public static ParticleShaper square(ParticleOptions options, double r) {
         return square(options, r, 100, 1);
     }
-    public static ParticleShaper create(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double inc) {
-        return new ParticleShaper(particle, func, max, inc);
+    public static ParticleShaper create(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
+        return new ParticleShaper(particle, func, max, min, inc);
     }
 
     private final double max;
+    private final double min;
     private final double inc;
     private double x;
     private double y;
@@ -143,11 +144,28 @@ public class ParticleShaper {
     private final BiConsumer<ParticleShaper, Double> func;
     private final ParticleOptions particle;
 
-    public ParticleShaper(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double inc) {
+    public ParticleShaper(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
         this.max = max;
+        this.min = min;
         this.inc = inc;
         this.func = func;
         this.particle = particle;
+    }
+    public ParticleShaper(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double inc) {
+        this(particle, func, max, 0, inc);
+    }
+    public ParticleShaper(ParticleShaper o) {
+        this(o.particle, o.func, o.max, o.min, o.inc);
+    }
+    public static ParticleShaper duplicate(ParticleShaper o) {
+        ParticleShaper s = new ParticleShaper(o);
+        s.x = o.x;
+        s.y = o.y;
+        s.z = o.z;
+        s.transformation = o.transformation;
+        s.level = o.level;
+        s.particleSpawner = o.particleSpawner;
+        return s;
     }
 
     public ParticleOptions particle() {
@@ -195,8 +213,14 @@ public class ParticleShaper {
     }
 
     public ParticleShaper transform(Quaterniond transformation) {
-        this.transformation = transformation;
+        if (this.transformation != null)
+            this.transformation.mul(transformation);
+        else
+            this.transformation = transformation;
         return this;
+    }
+    public Quaterniond getTransformation() {
+        return transformation;
     }
 
     public ParticleShaper fromClient() {
@@ -226,7 +250,7 @@ public class ParticleShaper {
         this.y = y;
         this.z = z;
 
-        for (double i = 0; i < max; i+=inc) {
+        for (double i = min; i < max; i+=inc) {
             func.accept(this, i);
         }
     }
@@ -237,7 +261,7 @@ public class ParticleShaper {
 
         for (double j = minY; j < maxY; j+=yInc) {
             y = j;
-            for (double i = 0; i < max; i+=inc) {
+            for (double i = min; i < max; i+=inc) {
                 func.accept(this, i);
             }
         }
@@ -248,7 +272,7 @@ public class ParticleShaper {
         this.y = startY;
         this.z = z;
 
-        for (double i = 0; i < max; i+=inc) {
+        for (double i = min; i < max; i+=inc) {
             if (i > 0) y+=yInc;
             func.accept(this, i);
         }

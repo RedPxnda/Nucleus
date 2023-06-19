@@ -84,9 +84,12 @@ public class Evaluable extends AbstractEvaluable {
 
     @Override
     public EvaluationValue evaluate(Map<String, Object> values) throws EvaluationException, ParseException {
-        System.out.println(values);
         values = BRR.redirect(values);
         return expression.withValues(values).evaluate();
+    }
+
+    public EvaluationValue evaluate(String key, Object value) throws EvaluationException, ParseException {
+        return expression.with(key, value).evaluate();
     }
 
     @Override
