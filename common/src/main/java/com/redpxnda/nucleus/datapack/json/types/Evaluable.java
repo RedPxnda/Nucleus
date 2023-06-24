@@ -8,6 +8,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import org.joml.Vector3d;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.redpxnda.nucleus.Nucleus.EXPRESSION_CONFIG;
+import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
 public class Evaluable extends AbstractEvaluable {
     public static class Codecs {
@@ -44,6 +46,12 @@ public class Evaluable extends AbstractEvaluable {
             }
         }, e -> Either.left(e.raw));
         public static final Codec<Evaluable> STRING_OR_VALUE = Codec.either(STRING_ONLY, VALUE_ONLY).xmap(either -> either.left().isPresent() ? either.left().get() : either.right().get(), Either::left);
+        public static final Codec<Evaluable> ROOTABLE = Codec.STRING.xmap(s -> {
+            if (!s.contains("=")) return new Evaluable(s);
+            String[] sections = s.split("=");
+            String newStr = "(" + sections[0] + ") - (" + sections[1] + ")";
+            return new Evaluable(newStr);
+        }, e -> e.raw);
         public static final Codec<Evaluable> CONDITIONAL_ONLY = Codec.either(BranchCondition.codec(STRING_OR_VALUE), ChainedCondition.codec(STRING_OR_VALUE)).flatComapMap(either -> {
             if (either.left().isPresent()) {
                 BranchCondition<Evaluable> c = either.left().get();
@@ -77,30 +85,56 @@ public class Evaluable extends AbstractEvaluable {
         this.expression = new Expression(str, EXPRESSION_CONFIG);
     }
 
-    @Override
-    public EvaluationValue evaluate() throws EvaluationException, ParseException {
-        return expression.evaluate();
+    public Evaluable with(String key, Object value) {
+        expression.with(key, value);
+        return this;
+    }
+    public Evaluable with(Vector3d vec) {
+        expression.with("x", vec.x).with("y", vec.y).with("z", vec.z);
+        return this;
     }
 
     @Override
-    public EvaluationValue evaluate(Map<String, Object> values) throws EvaluationException, ParseException {
-        values = BRR.redirect(values);
-        return expression.withValues(values).evaluate();
-    }
-
-    public EvaluationValue evaluate(String key, Object value) throws EvaluationException, ParseException {
-        return expression.with(key, value).evaluate();
+    public EvaluationValue evaluate() {
+        try {
+            return expression.evaluate();
+        } catch (EvaluationException | ParseException e) {
+            LOGGER.error("Failed to evaluate evaluable '{}'!", raw);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public EvaluationValue evaluate(Map<String, Object>... values) throws EvaluationException, ParseException {
+    public EvaluationValue evaluate(Map<String, Object> values) {
+        //values = BRR.redirect(values);
+        expression.withValues(values);
+        return evaluate();
+    }
+
+    public EvaluationValue evaluate(String key, Object value) {
+        expression.with(key, value);
+        return evaluate();
+    }
+
+    public double doubleValue() {
+        return evaluate().getNumberValue().doubleValue();
+    }
+    public double doubleValue(String key, Object value) {
+        expression.with(key, value);
+        return evaluate().getNumberValue().doubleValue();
+    }
+
+    @SafeVarargs
+    @Override
+    public final EvaluationValue evaluate(Map<String, Object>... values) {
         Map<String, Object> map = new HashMap<>(){{
             for (Map<String, Object> obj : values) {
                 putAll(obj);
             }
         }};
-        map = BRR.redirect(map);
-        return expression.withValues(map).evaluate();
+        //map = BRR.redirect(map);
+        expression.withValues(map);
+        return evaluate();
     }
 
     // BRR -> Basic Representable Registry

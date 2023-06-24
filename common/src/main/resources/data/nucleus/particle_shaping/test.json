@@ -1,15 +1,31 @@
 {
   "shaper": {
-    "type": "nucleus:bezier",
-    "particle": {
-      "type": "flame"
-    },
-    "points": [
-      [0, 0],
-      [10, 6],
-      [2, 4],
-      [1, -3]
+    "type": "nucleus:xy_relation",
+    "relations": [
+      "(SQRT(4 - x^2))/2"
     ],
-    "increment": 0.01
-  }
+    "min": -2,
+    "max": 2,
+    "increment": 0.25
+  },
+  "particles": [{
+    "type": "nucleus:emitter",
+    "lifetime": 100,
+    "emit": {
+      "type": "block",
+      "value": {
+        "Name": "minecraft:amethyst_block"
+      }
+    },
+    "frequency": 2,
+    "count": 3,
+    "speed": {
+      "type": "nucleus:random",
+      "min": -0.05,
+      "max": 0.05
+    }
+  }],
+  "motion": 0.1,
+  "syncToClient": true,
+  "cacheId": "nucleus:test"
 }

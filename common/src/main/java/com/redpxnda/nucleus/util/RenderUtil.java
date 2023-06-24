@@ -5,6 +5,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
+import com.redpxnda.nucleus.registry.NucleusRegistries;
+import com.redpxnda.nucleus.registry.particles.EmittingParticle;
+import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -28,6 +31,7 @@ public class RenderUtil {
 
     public static void init() {
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
+        ParticleProviderRegistry.register(NucleusRegistries.emittingParticle, new EmittingParticle.Provider());
     }
 
     public static float[] lerpColors(long gameTime, int duration, float[][] colors) {

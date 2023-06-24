@@ -15,9 +15,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class LuaResourceReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, LuaValue>> {
-    private static final Logger LOGGER = LogUtils.getLogger();
+import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
+public abstract class LuaResourceReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, LuaValue>> {
     protected final Globals globals;
     protected final String directory;
 
@@ -34,7 +34,7 @@ public abstract class LuaResourceReloadListener extends SimplePreparableReloadLi
             try (InputStream stream = entry.getValue().open()) {
                 files.put(entry.getKey(), globals.load(stream, "@" + entry.getKey().toString(), "bt", globals));
             } catch (IOException e) {
-                LOGGER.error("Nucleus failed to load lua resource at {}", entry.getKey());
+                LOGGER.error("Failed to load lua resource at {}", entry.getKey());
                 e.printStackTrace();
             }
         }

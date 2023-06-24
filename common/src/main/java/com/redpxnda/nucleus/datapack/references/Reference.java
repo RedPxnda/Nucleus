@@ -13,8 +13,9 @@ import java.sql.Ref;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.redpxnda.nucleus.Nucleus.LOGGER;
+
 public abstract class Reference<T> {
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<Class<?>, Map<String, ContextSettings<?, ?>>> CONTEXT_PROVIDERS = new HashMap<>();
     public static ContextSettings<?, ?> getContextSettings(Class<? extends Reference<?>> clazz, String str) {
         return CONTEXT_PROVIDERS.get(clazz).get(str);

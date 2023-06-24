@@ -20,13 +20,7 @@ public class ExampleListenerHandler implements ContextHoldingHandler {
     public static final ContextBasedListener<ExampleListenerHandler> LISTENER = new ContextBasedListener<>("test", CODEC);
 
     public static void callAll(Player player) {
-        LISTENER.deserialized.forEach(handler -> {
-            try {
-                handler.call(player);
-            } catch (EvaluationException | ParseException e) {
-                e.printStackTrace();
-            }
-        });
+        LISTENER.deserialized.forEach(handler -> handler.call(player));
     }
 
     private ContextHolder context;
@@ -40,7 +34,7 @@ public class ExampleListenerHandler implements ContextHoldingHandler {
         this.context = holder;
     }
 
-    public void call(Player player) throws EvaluationException, ParseException {
+    public void call(Player player) {
         System.out.println("Being called!");
         EvaluationValue val = evaluable.evaluate(context.resolve(new RootContext(new HashMap<>(){{
             put("player", new PlayerReference(player));

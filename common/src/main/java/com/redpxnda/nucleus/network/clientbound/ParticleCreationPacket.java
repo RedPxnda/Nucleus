@@ -13,15 +13,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 
 public class ParticleCreationPacket implements SimplePacket {
-    public static void send(ServerLevel level, ParticleOptions options, double x, double y, double z, double xs, double ys, double zs) {
-        ParticleCreationPacket packet = new ParticleCreationPacket(options, x, y, z, xs, ys, zs);
-        Nucleus.CHANNEL.sendToPlayers(level.getPlayers(serverPlayer -> {
-            if (serverPlayer.getLevel() != level) return false;
-            BlockPos blockPos = serverPlayer.blockPosition();
-            return blockPos.closerToCenterThan(new Vec3(x, y, z), 32.0);
-        }), packet);
-    }
-
     private final ParticleOptions options;
     private final double x;
     private final double y;
@@ -42,7 +33,7 @@ public class ParticleCreationPacket implements SimplePacket {
 
     public ParticleCreationPacket(FriendlyByteBuf buf) {
         ParticleType<?> particleType = buf.readById(BuiltInRegistries.PARTICLE_TYPE);
-        assert particleType != null : "Bro what particle are you sending over??? (ParticleType in ParticleCreationPacket non-existent.";
+        assert particleType != null : "Bro what particle are you sending over??? (ParticleType in ParticleCreationPacket non-existent.)";
 
         this.x = buf.readDouble();
         this.y = buf.readDouble();
@@ -53,10 +44,18 @@ public class ParticleCreationPacket implements SimplePacket {
         this.options = readParticle(buf, particleType);
     }
 
+    @Override
+    public void send(ServerLevel level) {
+        Nucleus.CHANNEL.sendToPlayers(level.getPlayers(serverPlayer -> {
+            if (serverPlayer.getLevel() != level) return false;
+            BlockPos blockPos = serverPlayer.blockPosition();
+            return blockPos.closerToCenterThan(new Vec3(x, y, z), 32.0);
+        }), this);
+    }
+
     private <T extends ParticleOptions> T readParticle(FriendlyByteBuf friendlyByteBuf, ParticleType<T> particleType) {
         return particleType.getDeserializer().fromNetwork(particleType, friendlyByteBuf);
     }
-
 
     @Override
     public void toBuffer(FriendlyByteBuf buf) {
