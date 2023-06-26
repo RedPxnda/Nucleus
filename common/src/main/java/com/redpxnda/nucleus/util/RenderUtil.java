@@ -1,20 +1,23 @@
 package com.redpxnda.nucleus.util;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.EmittingParticle;
+import com.redpxnda.nucleus.registry.particles.MimicParticle;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
@@ -28,10 +31,30 @@ import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
 public class RenderUtil {
     public static ShaderInstance alphaAnimationShader;
     public static RenderType alphaAnimation = RenderType.create("translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
+    public static final ParticleRenderType blockSheetTranslucent = new ParticleRenderType(){
+        @Override
+        public void begin(BufferBuilder bufferBuilder, TextureManager textureManager) {
+            RenderSystem.depthMask(true);
+            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+            RenderSystem.enableBlend();
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+        }
+
+        @Override
+        public void end(Tesselator tesselator) {
+            tesselator.end();
+        }
+
+        public String toString() {
+            return "BLOCK_SHEET_TRANSLUCENT";
+        }
+    };
 
     public static void init() {
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
         ParticleProviderRegistry.register(NucleusRegistries.emittingParticle, new EmittingParticle.Provider());
+        ParticleProviderRegistry.register(NucleusRegistries.mimicParticle, new MimicParticle.Provider());
     }
 
     public static float[] lerpColors(long gameTime, int duration, float[][] colors) {

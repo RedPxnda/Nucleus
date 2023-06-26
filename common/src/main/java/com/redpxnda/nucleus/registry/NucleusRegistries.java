@@ -2,7 +2,9 @@ package com.redpxnda.nucleus.registry;
 
 import com.google.common.base.Suppliers;
 import com.redpxnda.nucleus.datapack.recipe.LuaHandlerRecipe;
-import com.redpxnda.nucleus.registry.particles.EmittingParticleType;
+import com.redpxnda.nucleus.registry.particles.BasicParticleType;
+import com.redpxnda.nucleus.registry.particles.EmittingParticleOptions;
+import com.redpxnda.nucleus.registry.particles.MimicParticleOptions;
 import dev.architectury.registry.registries.Registrar;
 import dev.architectury.registry.registries.RegistrarManager;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -26,7 +28,8 @@ public class NucleusRegistries {
 
     public static RegistrySupplier<RecipeSerializer<?>> luaHandlingRecipe = RS.register(loc("lua_handling"), LuaHandlerRecipe.Serializer::new);
 
-    public static RegistrySupplier<EmittingParticleType> emittingParticle = particles.register(loc("emitter"), () -> new EmittingParticleType(false));
+    public static RegistrySupplier<BasicParticleType<EmittingParticleOptions>> emittingParticle = particles.register(loc("emitter"), () -> new BasicParticleType<>(false, EmittingParticleOptions.codec));
+    public static RegistrySupplier<BasicParticleType<MimicParticleOptions>> mimicParticle = particles.register(loc("mimic"), () -> new BasicParticleType<>(false, MimicParticleOptions.codec));
 
     public static void init() {
         var classLoading = NucleusRegistries.class;

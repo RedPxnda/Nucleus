@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntFunction;
@@ -12,6 +13,9 @@ import java.util.function.IntFunction;
 public class MiscCodecs {
     public static <T> Codec<T[]> array(Codec<T> codec, IntFunction<T[]> converter) {
         return codec.listOf().xmap(l -> l.toArray(converter), Arrays::asList);
+    }
+    public static <T> Codec<T[]> array(Codec<T> codec, Class<T> cls) {
+        return codec.listOf().xmap(l -> l.toArray(i -> (T[]) Array.newInstance(cls, i)), Arrays::asList);
     }
 
     public static final Codec<DoubleRange> DOUBLE_RANGE = Codec.either(

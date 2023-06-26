@@ -75,6 +75,9 @@ public class DynamicParticle extends Particle {
     public int getAge() {
         return age;
     }
+    public void setAge(int age) {
+        this.age = age;
+    }
     public float getFriction() {
         return friction;
     }

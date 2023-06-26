@@ -17,9 +17,10 @@ public class EmittingParticle extends Particle {
     private final Supplier<Double> count;
     private final Supplier<Double> speed;
     private long lastSpawn = -100;
+    private int startingTicks;
 
     public EmittingParticle(
-            int lifetime, ParticleOptions emit, Supplier<Double> frequency, Supplier<Double> count, Supplier<Double> speed,
+            int lifetime, ParticleOptions emit, Supplier<Double> frequency, Supplier<Double> count, Supplier<Double> speed, float grav, float fric, boolean physics, int startingTick,
             ClientLevel clientLevel, double d, double e, double f, double g, double h, double i
     ) {
         super(clientLevel, d, e, f);
@@ -29,15 +30,22 @@ public class EmittingParticle extends Particle {
         this.frequency = frequency;
         this.count = count;
         this.speed = speed;
+        this.gravity = grav;
+        this.friction = fric;
+        this.hasPhysics = physics;
+        this.startingTicks = startingTick;
     }
 
     @Override
     public void render(VertexConsumer vertexConsumer, Camera camera, float f) {
+        if (startingTicks > 0) {
+            startingTicks--;
+            return;
+        }
         if (level.getGameTime()-frequency.get() > lastSpawn) {
             for (int i = 0; i < count.get(); i++) {
                 level.addParticle(emit, x, y, z, speed.get(), speed.get(), speed.get());
             }
-
             lastSpawn = level.getGameTime();
         }
     }
@@ -47,11 +55,11 @@ public class EmittingParticle extends Particle {
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
-    public static class Provider implements ParticleProvider<EmittingParticleType.Options> {
+    public static class Provider implements ParticleProvider<EmittingParticleOptions> {
         @Nullable
         @Override
-        public Particle createParticle(EmittingParticleType.Options o, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-            return new EmittingParticle(o.lifetime(), o.emit(), o.freq(), o.count(), o.speed(), clientLevel, d, e, f, g, h, i);
+        public Particle createParticle(EmittingParticleOptions o, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
+            return new EmittingParticle(o.lifetime(), o.emit(), o.freq(), o.count(), o.speed(), o.gravity(), o.friction(), o.physics(), o.start(), clientLevel, d, e, f, g, h, i);
         }
     }
 }
