@@ -31,7 +31,7 @@ public class StatManager<E> {
         put("inLava", Entity::isInLava);
         put("inWater", Entity::isInWater);
         put("inWall", Entity::isInWall);
-        put("onGround", Entity::isOnGround);
+        put("onGround", Entity::onGround);
         put("onPortalCooldown", Entity::isOnPortalCooldown);
         put("underWater", Entity::isUnderWater);
         put("vehicle", Entity::isVehicle);

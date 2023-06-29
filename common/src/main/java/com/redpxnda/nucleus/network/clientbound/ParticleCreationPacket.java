@@ -47,7 +47,7 @@ public class ParticleCreationPacket implements SimplePacket {
     @Override
     public void send(ServerLevel level) {
         Nucleus.CHANNEL.sendToPlayers(level.getPlayers(serverPlayer -> {
-            if (serverPlayer.getLevel() != level) return false;
+            if (serverPlayer.level() != level) return false;
             BlockPos blockPos = serverPlayer.blockPosition();
             return blockPos.closerToCenterThan(new Vec3(x, y, z), 32.0);
         }), this);

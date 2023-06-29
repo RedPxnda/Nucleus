@@ -107,7 +107,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getLevel
     public LevelReference getLevel() {
-        return new LevelReference(instance.getLevel());
+        return new LevelReference(instance.level());
     }
 
     // Generated from Entity::setRemainingFireTicks
@@ -215,8 +215,8 @@ public class EntityReference<E extends Entity> extends Reference<E> {
     }
 
     // Generated from Entity::isOnGround
-    public boolean isOnGround() {
-        return instance.isOnGround();
+    public boolean onGround() {
+        return instance.onGround();
     }
 
     // Generated from Entity::resetFallDistance
@@ -496,8 +496,8 @@ public class EntityReference<E extends Entity> extends Reference<E> {
     }
 
     // Generated from Entity::animateHurt
-    public void animateHurt() {
-        instance.animateHurt();
+    public void animateHurt(float f) {
+        instance.animateHurt(f);
     }
 
     // Generated from Entity::getAllSlots

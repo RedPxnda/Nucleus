@@ -28,7 +28,7 @@ public class DoubleSupplier {
        if (sup instanceof Instance i)
            return DataResult.success(i);
        else
-           return DataResult.error("Failed to convert Supplier to DoubleSupplier Instance.");
+           return DataResult.error(() -> "Failed to convert Supplier to DoubleSupplier Instance.");
     });
     public static <T extends Instance> Type<T> register(ResourceLocation location, Type<T> type) {
         suppliers.put(location, type);

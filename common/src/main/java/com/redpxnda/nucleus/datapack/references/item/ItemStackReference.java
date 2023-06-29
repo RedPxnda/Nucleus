@@ -164,7 +164,7 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::sameItem
     public boolean sameItem(ItemStackReference param0) {
-        return instance.sameItem(param0.instance);
+        return ItemStack.isSameItem(this.instance, param0.instance);
     }
 
     // Generated from ItemStack::setPopTime

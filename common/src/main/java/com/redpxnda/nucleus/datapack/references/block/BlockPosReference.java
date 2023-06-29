@@ -18,11 +18,6 @@ public class BlockPosReference extends Reference<BlockPos> implements Position {
         return new BlockPosReference(instance.offset(param0, param1, param2));
     }
 
-    // Generated from BlockPos::offset
-    public BlockPosReference offset(double param0, double param1, double param2) {
-        return new BlockPosReference(instance.offset(param0, param1, param2));
-    }
-
     // Generated from BlockPos::multiply
     public BlockPosReference multiply(int param0) {
         return new BlockPosReference(instance.multiply(param0));

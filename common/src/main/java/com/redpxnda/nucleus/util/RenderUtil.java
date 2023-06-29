@@ -100,7 +100,7 @@ public class RenderUtil {
         Font font = context.getFont();
         float h = -font.width(component) / 2f;
         //font.drawInBatch(component, h, 0, 0x20FFFFFF, false, matrix4f, multiBufferSource, true, k, i);
-        font.drawInBatch(component, h, 0, -1, false, matrix4f, multiBufferSource, false, k, i);
+        font.drawInBatch(component, h, 0, -1, false, matrix4f, multiBufferSource, Font.DisplayMode.NORMAL, k, i);
         poseStack.popPose();
     }
 

@@ -67,10 +67,10 @@ public class Nucleus {
 
         // temp
         InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
-            if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level.isClientSide) return CompoundEventResult.pass();
+            if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level().isClientSide) return CompoundEventResult.pass();
             ParticleShaperListener.shapers.forEach((rl, s) -> {
                 Quaterniond q = new Quaterniond().rotationXYZ(0, -Math.toRadians(p.getYHeadRot() % 360), 0);
-                s.fromClient().transform(q).runAt(p.level, p.getX(), p.getY(), p.getZ());
+                s.fromClient().transform(q).runAt(p.level(), p.getX(), p.getY(), p.getZ());
             });
             return CompoundEventResult.pass();
         });

@@ -25,7 +25,7 @@ public class PolyMedialCodec<S, I, O> implements Codec<IntermediateCodec.Median<
             if (result.result().isPresent())
                 return result.map(r -> r);
         }
-        return DataResult.error("Failed to decode with any of PolyMedialCodec's IntermediateCodecs.");
+        return DataResult.error(() -> "Failed to decode with any of PolyMedialCodec's IntermediateCodecs.");
     }
 
     @Override
@@ -35,6 +35,6 @@ public class PolyMedialCodec<S, I, O> implements Codec<IntermediateCodec.Median<
             if (result.result().isPresent())
                 return result.map(r -> r);
         }
-        return DataResult.error("Failed to encode with any of PolyMedialCodec's IntermediateCodecs.");
+        return DataResult.error(() -> "Failed to encode with any of PolyMedialCodec's IntermediateCodecs.");
     }
 }

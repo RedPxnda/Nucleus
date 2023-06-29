@@ -36,7 +36,7 @@ public class IntermediateCodec<S, I, O> implements Codec<IntermediateCodec.Media
         DataResult<Pair<S, T>> s = start.decode(ops, input);
         if (s.result().isPresent())
             return DataResult.success(Pair.of(new Median<>(s.result().get().getFirst(), converter), input));
-        return DataResult.error("Failed to decode starting codec: " + (s.error().isPresent() ? s.error().get().message() : "<unavailable>"));
+        return DataResult.error(() -> "Failed to decode starting codec: " + (s.error().isPresent() ? s.error().get().message() : "<unavailable>"));
     }
 
     @Override

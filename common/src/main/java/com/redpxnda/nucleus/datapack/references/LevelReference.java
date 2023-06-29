@@ -304,11 +304,6 @@ public class LevelReference extends Reference<Level> {
         return instance.getFreeMapId();
     }
 
-    // Generated from Level::isHumidAt
-    public boolean isHumidAt(BlockPosReference param0) {
-        return instance.isHumidAt(param0.instance);
-    }
-
     // Generated from Level::isStateAtPosition
     public boolean isStateAtPosition(BlockPosReference param0, LuaFunction param1) {
         return instance.isStateAtPosition(param0.instance, MiscUtil.mapPredicate(MiscUtil.predicateFromFunc(BlockStateReference.class, param1), BlockStateReference::new));

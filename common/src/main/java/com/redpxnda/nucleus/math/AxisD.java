@@ -25,6 +25,7 @@ public interface AxisD {
         return this.rotation(f * (Math.PI / 180));
     }
 
+    //todo make better codec
     final class Codecs {
         public static final Codec<Quaterniond> direction = Codec.pair(
                 Codec.STRING.fieldOf("direction").codec(),
@@ -38,7 +39,7 @@ public interface AxisD {
                 case "zp" -> { return ZP.rotationDegrees(p.getSecond()); }
                 default   -> { return YP.rotationDegrees(p.getSecond()); }
             }
-        }, q -> DataResult.error("Cannot turn quaternion into direction and amount."));
+        }, q -> DataResult.error(() -> "Cannot turn quaternion into direction and amount."));
         public static final  Codec<Quaterniond> directions = direction.listOf().flatComapMap(l -> {
             Quaterniond quaternion = null;
             for (Quaterniond q : l) {
@@ -46,7 +47,7 @@ public interface AxisD {
                 else quaternion.mul(q);
             }
             return quaternion == null ? new Quaterniond() : quaternion;
-        }, q -> DataResult.error("Cannot turn Quaternion into list of quaternions."));
+        }, q -> DataResult.error(() -> "Cannot turn Quaternion into list of quaternions."));
         public static final Codec<Quaterniond> all = Codec.either(directions, direction).xmap(e -> e.left().isPresent() ? e.left().get() : e.right().get(), Either::right);
     }
 }

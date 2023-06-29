@@ -5,6 +5,7 @@ import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.datapack.references.item.CraftingContainerReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -24,7 +25,7 @@ public class LuaHandlerRecipe extends ShapedRecipe {
     private final @Nullable HandlingType type;
 
     public LuaHandlerRecipe(ShapedRecipe c, @Nullable ResourceLocation handler, @Nullable HandlingType type) {
-        super(c.getId(), c.getGroup(), c.category(), c.getWidth(), c.getHeight(), c.getIngredients(), c.getResultItem());
+        super(c.getId(), c.getGroup(), c.category(), c.getWidth(), c.getHeight(), c.getIngredients(), c.getResultItem(null));
         this.compose = c;
         this.handler = handler;
         this.type = type;
@@ -36,8 +37,8 @@ public class LuaHandlerRecipe extends ShapedRecipe {
     }*/
 
     @Override
-    public ItemStack assemble(CraftingContainer inv) {
-        ItemStack result = super.assemble(inv);
+    public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
+        ItemStack result = super.assemble(inv, registryAccess);
         if (handler == null || type == null) return result;
         LuaValue value = LuaSetupListener.getCraftingHandler(handler).call(coerce(new ItemStackReference(result)), coerce(new CraftingContainerReference(inv)));
         switch (type) {

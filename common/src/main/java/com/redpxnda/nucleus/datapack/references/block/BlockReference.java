@@ -4,6 +4,7 @@ import com.redpxnda.nucleus.datapack.references.storage.ComponentReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemReference;
 import com.redpxnda.nucleus.datapack.references.Reference;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 @SuppressWarnings("unused")
 public class BlockReference<B extends Block> extends Reference<B> {
@@ -29,8 +30,8 @@ public class BlockReference<B extends Block> extends Reference<B> {
     }
 
     // Generated from Block::isPossibleToRespawnInThis
-    public boolean isPossibleToRespawnInThis() {
-        return instance.isPossibleToRespawnInThis();
+    public boolean isPossibleToRespawnInThis(BlockState state) {
+        return instance.isPossibleToRespawnInThis(state);
     }
 
     // Generated from Block::isRandomlyTicking

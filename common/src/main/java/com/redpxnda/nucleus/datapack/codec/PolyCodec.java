@@ -39,7 +39,7 @@ public class PolyCodec<T> implements Codec<T> {
             if (result.result().isPresent())
                 return result.map(r -> r);
         }
-        return DataResult.error("Failed to decode with any of PolyCodec's codecs.");
+        return DataResult.error(() -> "Failed to decode with any of PolyCodec's codecs.");
     }
 
     @Override
@@ -49,6 +49,6 @@ public class PolyCodec<T> implements Codec<T> {
             if (result.result().isPresent())
                 return result.map(r -> r);
         }
-        return DataResult.error("Failed to encode with any of PolyCodec's codecs.");
+        return DataResult.error(() -> "Failed to encode with any of PolyCodec's codecs.");
     }
 }

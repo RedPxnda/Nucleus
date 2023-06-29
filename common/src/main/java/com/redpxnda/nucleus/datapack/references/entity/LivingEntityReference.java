@@ -311,8 +311,8 @@ public class LivingEntityReference<E extends LivingEntity> extends EntityReferen
     }
 
     // Generated from LivingEntity::rideableUnderWater
-    public boolean rideableUnderWater() {
-        return instance.rideableUnderWater();
+    public boolean dismountsUnderwater() {
+        return instance.dismountsUnderwater();
     }
 
     // Generated from LivingEntity::stopRiding
@@ -396,8 +396,8 @@ public class LivingEntityReference<E extends LivingEntity> extends EntityReferen
     }
 
     // Generated from LivingEntity::animateHurt
-    public void animateHurt() {
-        instance.animateHurt();
+    public void animateHurt(float f) {
+        instance.animateHurt(f);
     }
 
     // Generated from LivingEntity::getArmorValue

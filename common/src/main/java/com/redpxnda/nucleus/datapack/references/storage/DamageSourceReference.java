@@ -18,7 +18,8 @@ public class DamageSourceReference extends Reference<DamageSource> {
         return instance.toString();
     }
 
-    // Generated from DamageSource::isExplosion
+    // todo update to new mc system
+    /*// Generated from DamageSource::isExplosion
     public boolean isExplosion() {
         return instance.isExplosion();
     }
@@ -54,7 +55,7 @@ public class DamageSourceReference extends Reference<DamageSource> {
     public DamageSourceReference setMagic() {
         instance.setMagic();
         return this;
-    }
+    }*/
 
     // Generated from DamageSource::getDirectEntity
     public EntityReference<?> getDirectEntity() {
@@ -66,77 +67,9 @@ public class DamageSourceReference extends Reference<DamageSource> {
         return new EntityReference<>(instance.getEntity());
     }
 
-    // Generated from DamageSource::isBypassArmor
-    public boolean isBypassArmor() {
-        return instance.isBypassArmor();
-    }
-
-    // Generated from DamageSource::setNoAggro
-    public DamageSourceReference setNoAggro() {
-        instance.setNoAggro();
-        return this;
-    }
-
-    // Generated from DamageSource::setIsFall
-    public DamageSourceReference setIsFall() {
-        instance.setIsFall();
-        return this;
-    }
-
-    // Generated from DamageSource::isNoAggro
-    public boolean isNoAggro() {
-        return instance.isNoAggro();
-    }
-
-    // Generated from DamageSource::isFire
-    public boolean isFire() {
-        return instance.isFire();
-    }
-
-    // Generated from DamageSource::isBypassInvul
-    public boolean isBypassInvul() {
-        return instance.isBypassInvul();
-    }
-
-    // Generated from DamageSource::isCreativePlayer
-    public boolean isCreativePlayer() {
-        return instance.isCreativePlayer();
-    }
-
-    // Generated from DamageSource::getMsgId
-    public String getMsgId() {
-        return instance.getMsgId();
-    }
-
-    // Generated from DamageSource::getFoodExhaustion
-    public float getFoodExhaustion() {
-        return instance.getFoodExhaustion();
-    }
-
-    // Generated from DamageSource::isBypassMagic
-    public boolean isBypassMagic() {
-        return instance.isBypassMagic();
-    }
-
-    // Generated from DamageSource::isDamageHelmet
-    public boolean isDamageHelmet() {
-        return instance.isDamageHelmet();
-    }
-
     // Generated from DamageSource::getSourcePosition
     public Vec3Reference getSourcePosition() {
         return new Vec3Reference(instance.getSourcePosition());
-    }
-
-    // Generated from DamageSource::setScalesWithDifficulty
-    public DamageSourceReference setScalesWithDifficulty() {
-        instance.setScalesWithDifficulty();
-        return this;
-    }
-
-    // Generated from DamageSource::isBypassEnchantments
-    public boolean isBypassEnchantments() {
-        return instance.isBypassEnchantments();
     }
 
     // Generated from DamageSource::getLocalizedDeathMessage
