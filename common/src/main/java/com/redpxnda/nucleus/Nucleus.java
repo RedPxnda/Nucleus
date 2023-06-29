@@ -60,10 +60,10 @@ public class Nucleus {
         packets();
         events();
         SupporterUtil.init();
+        AutoCodec.init();
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> RenderUtil::init);
         ReloadSyncPackets.init();
-        AutoCodec.init();
 
         // temp
         InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {

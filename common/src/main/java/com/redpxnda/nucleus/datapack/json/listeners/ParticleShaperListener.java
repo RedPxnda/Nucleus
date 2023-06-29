@@ -5,6 +5,7 @@ import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.datapack.json.JsonParticleShaping;
 import com.redpxnda.nucleus.math.ParticleShaper;
+import com.redpxnda.nucleus.registry.NucleusRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -30,7 +31,7 @@ public class ParticleShaperListener extends SimpleJsonResourceReloadListener {
             ParticleShaper shaper =
                     JsonParticleShaping.completeCodec.parse(JsonOps.INSTANCE, json).getOrThrow(
                             false,
-                            s -> Nucleus.LOGGER.error("Failed to parse particle shaper {} -> {}", rl, s));
+                            s -> Nucleus.LOGGER.error("Failed to parse particle shaper '{}' -> {}", rl, s));
             if (shaper instanceof JsonParticleShaping.StoringParticleShaper sps && sps.syncToClient)
                 toSync.put(rl.toString(), json);
             shapers.put(rl, shaper);

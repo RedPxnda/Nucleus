@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class LuaSetupListener extends LuaResourceReloadListener {
     private static final Map<ResourceLocation, LuaFunction> CRAFTING_HANDLERS = new HashMap<>();
-    private static final Globals globals = ConstantsAccess.completeSetup(ConstantsAccess.readOnly, MiscUtil.intialize(JsePlatform.standardGlobals(), g -> {
+    private static final Globals globals = ConstantsAccess.completeSetup(ConstantsAccess.readOnly, MiscUtil.initialize(JsePlatform.standardGlobals(), g -> {
         g.set("setup", CoerceJavaToLua.coerce(LuaSetupListener.class));
     }));
 

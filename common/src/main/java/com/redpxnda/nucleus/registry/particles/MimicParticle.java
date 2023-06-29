@@ -20,9 +20,10 @@ public class MimicParticle extends DynamicPoseStackParticle {
             ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed
     ) {
         super(
-                s -> setup.assignTo((MimicParticle) s), t -> tick.assignTo((MimicParticle) t), (p, ps, c) -> ps.mulPose(c.rotation()),
+                s -> {}, t -> tick.assignTo((MimicParticle) t), (p, ps, c) -> ps.mulPose(c.rotation()),
                 null, RenderType.translucent(), clientLevel, x, y, z, xSpeed, ySpeed, zSpeed
         );
+        setup.assignTo(this);
         this.sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
     }
 

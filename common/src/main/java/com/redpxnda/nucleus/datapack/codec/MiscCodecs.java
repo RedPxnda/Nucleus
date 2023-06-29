@@ -3,11 +3,11 @@ package com.redpxnda.nucleus.datapack.codec;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 public class MiscCodecs {
@@ -31,6 +31,14 @@ public class MiscCodecs {
                     return new DoubleRange(pair.getFirst(), pair.getSecond());
                 }
             }, dr -> Either.right(Pair.of(dr.min, dr.max)));
+
+    public static <T extends Enum<T>> Codec<T> ofEnum(Class<T> cls) {
+        return Codec.STRING.xmap(s -> T.valueOf(cls, s), Enum::name);
+    }
+
+    public static <T extends Enum<T>> Codec<T> ofEnum(Class<T> cls, Function<String, T> convert) {
+        return Codec.STRING.xmap(convert, Enum::name);
+    }
 
     public record DoubleRange(double min, double max) {}
 }

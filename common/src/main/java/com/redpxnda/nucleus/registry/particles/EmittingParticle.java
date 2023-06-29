@@ -59,7 +59,7 @@ public class EmittingParticle extends Particle {
         @Nullable
         @Override
         public Particle createParticle(EmittingParticleOptions o, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-            return new EmittingParticle(o.lifetime(), o.emit(), o.freq(), o.count(), o.speed(), o.gravity(), o.friction(), o.physics(), o.start(), clientLevel, d, e, f, g, h, i);
+            return new EmittingParticle(o.lifetime, o.emit, o.frequency, o.count, o.speed, o.gravity, o.friction, o.physics, o.startAfter, clientLevel, d, e, f, g, h, i);
         }
     }
 }

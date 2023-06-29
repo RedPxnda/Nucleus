@@ -30,7 +30,7 @@ import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
 
 public class RenderUtil {
     public static ShaderInstance alphaAnimationShader;
-    public static RenderType alphaAnimation = RenderType.create("translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
+    public static RenderType alphaAnimation = RenderType.create("alpha_animation_translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
     public static final ParticleRenderType blockSheetTranslucent = new ParticleRenderType(){
         @Override
         public void begin(BufferBuilder bufferBuilder, TextureManager textureManager) {

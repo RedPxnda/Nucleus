@@ -9,14 +9,22 @@
     "increment": 0.25
   },
   "particles": [{
-    "type": "nucleus:mimic",
-    "setup": {
-      "red": 0.5,
-      "green": 0,
-      "blue": 0.75,
-      "texture": "item/stick"
+    "type": "nucleus:emitter",
+    "lifetime": 100,
+    "emit": {
+      "type": "nucleus:mimic",
+      "setup": {
+        "lifetime": 5,
+        "red": 0.5,
+        "green": 0,
+        "blue": 0.75,
+        "texture": "item/stick"
+      },
+      "tick": {}
     },
-    "tick": {}
+    "frequency": 5,
+    "count": 1,
+    "speed": 0
   }],
   "motion": 0.1,
   "syncToClient": true,
