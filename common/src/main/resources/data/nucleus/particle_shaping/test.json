@@ -9,7 +9,7 @@
     "increment": 0.25
   },
   "particles": [{
-    "type": "nucleus:emitter",
+    "type": "flame",
     "lifetime": 100,
     "emit": {
       "type": "nucleus:mimic",
