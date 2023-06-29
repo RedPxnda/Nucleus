@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
+//todo fix
 public record MimicParticleOptions(ValueAssigner<MimicParticle> setup,
                                    ValueAssigner<MimicParticle> tick) implements ParticleOptions {
     public static Codec<ValueAssigner<MimicParticle>> vaSetupCodec = new ValueAssigner.Builder<MimicParticle>()
@@ -39,7 +40,7 @@ public record MimicParticleOptions(ValueAssigner<MimicParticle> setup,
 
     @Override
     public ParticleType<?> getType() {
-        return NucleusRegistries.mimicParticle.get();
+        return null;//NucleusRegistries.mimicParticle.get();
     }
 
     @Override
@@ -50,5 +51,9 @@ public record MimicParticleOptions(ValueAssigner<MimicParticle> setup,
     @Override
     public String writeToString() {
         return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()).toString();
+    }
+
+    protected record onSetup(int lifetime, float friction, float red, float green, float blue, float alpha, float scale, boolean physics, ResourceLocation texture) {
+
     }
 }

@@ -54,7 +54,7 @@ public class RenderUtil {
     public static void init() {
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
         ParticleProviderRegistry.register(NucleusRegistries.emittingParticle, new EmittingParticle.Provider());
-        ParticleProviderRegistry.register(NucleusRegistries.mimicParticle, new MimicParticle.Provider());
+        //ParticleProviderRegistry.register(NucleusRegistries.mimicParticle, new MimicParticle.Provider());
     }
 
     public static float[] lerpColors(long gameTime, int duration, float[][] colors) {

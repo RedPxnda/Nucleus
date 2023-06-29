@@ -33,13 +33,6 @@ import net.minecraft.world.item.Items;
 import org.joml.Quaterniond;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Function;
 
