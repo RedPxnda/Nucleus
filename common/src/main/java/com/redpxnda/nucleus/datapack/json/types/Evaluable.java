@@ -69,7 +69,7 @@ public class Evaluable extends AbstractEvaluable {
                 }
                 return new Evaluable(str.toString());
             }
-        }, e -> DataResult.error("Evaluable cannot be turned into a Conditional."));
+        }, e -> DataResult.error(() -> "Evaluable cannot be turned into a Conditional."));
         public static final Codec<Evaluable> ALL = Codec.either(STRING_ONLY, Codec.either(VALUE_ONLY, CONDITIONAL_ONLY)).xmap(either -> {
                     return either.left().isPresent() ?
                             either.left().get() :
