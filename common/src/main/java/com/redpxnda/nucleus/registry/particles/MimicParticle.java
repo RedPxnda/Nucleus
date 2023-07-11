@@ -21,15 +21,17 @@ public class MimicParticle extends DynamicPoseStackParticle implements MimicPart
     ) {
         super(
                 s -> {}, t -> tick.assignTo((MimicParticle) t), (p, ps, c) -> ps.mulPose(c.rotation()),
-                null, RenderType.translucent(), clientLevel, x, y, z, xSpeed, ySpeed, zSpeed
+                null, RenderType.cutout(), clientLevel, x, y, z, xSpeed, ySpeed, zSpeed
         );
         setup.assignTo(this);
         this.sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
+//        this.renderType = RenderType.crumbling(texture.withPrefix("textures/").withSuffix(".png"));
+//        System.out.println("i exist but fail to render");
     }
 
     @Override
     public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+        return ParticleRenderType.CUSTOM;
     }
 
     @Override

@@ -20,6 +20,7 @@ import com.redpxnda.nucleus.util.SupporterUtil;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.networking.NetworkChannel;
+import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -59,14 +60,15 @@ public class Nucleus {
         ReloadSyncPackets.init();
 
         // temp
-//        InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
-//            if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level().isClientSide) return CompoundEventResult.pass();
-//            ParticleShaperListener.shapers.forEach((rl, s) -> {
-//                Quaterniond q = new Quaterniond().rotationXYZ(0, -Math.toRadians(p.getYHeadRot() % 360), 0);
-//                s.fromClient().transform(q).runAt(p.level(), p.getX(), p.getY(), p.getZ());
-//            });
-//            return CompoundEventResult.pass();
-//        });
+        if (Platform.isDevelopmentEnvironment())
+            InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
+                if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level().isClientSide) return CompoundEventResult.pass();
+                ParticleShaperListener.shapers.forEach((rl, s) -> {
+                    Quaterniond q = new Quaterniond().rotationXYZ(0, -Math.toRadians(p.getYHeadRot() % 360), 0);
+                    s.fromClient().transform(q).runAt(p.level(), p.getX(), p.getY(), p.getZ());
+                });
+                return CompoundEventResult.pass();
+            });
     }
 
     private static void packets() {

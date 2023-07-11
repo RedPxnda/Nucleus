@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import static com.redpxnda.nucleus.util.RenderUtil.*;
 
 public class DynamicPoseStackParticle extends DynamicParticle {
-    protected final RenderType renderType;
+    protected RenderType renderType;
     protected final TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> renderHandler;
 
     protected DynamicPoseStackParticle(Consumer<DynamicParticle> onSetup, Consumer<DynamicParticle> onTick, TriConsumer<DynamicPoseStackParticle, PoseStack, Camera> onRender, TextureAtlasSprite sprite, RenderType renderType, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {

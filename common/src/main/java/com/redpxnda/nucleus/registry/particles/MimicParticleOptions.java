@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.registry.particles;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.datapack.codec.ValueAssigner;
+import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ByteBufUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -38,7 +39,7 @@ public record MimicParticleOptions(ValueAssigner<Manager> setup,
 
     @Override
     public ParticleType<?> getType() {
-        return null;//NucleusRegistries.mimicParticle.get();
+        return NucleusRegistries.mimicParticle.get();
     }
 
     @Override
