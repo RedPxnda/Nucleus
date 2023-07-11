@@ -77,7 +77,7 @@ public class DynamicParticle extends Particle implements DynamicParticleManager 
         return age;
     }
     @Override
-    public int getLifetime() {
+    public int _getLifetime() {
         return lifetime;
     }
     @Override
@@ -85,7 +85,7 @@ public class DynamicParticle extends Particle implements DynamicParticleManager 
         this.age = age;
     }
     @Override
-    public void setLifetime(int lifetime) {
+    public void _setLifetime(int lifetime) {
         this.lifetime = lifetime;
     }
     @Override
@@ -129,6 +129,10 @@ public class DynamicParticle extends Particle implements DynamicParticleManager 
         blue = b;
     }
     @Override
+    public void _setAlpha(float a) {
+        alpha = a;
+    }
+    @Override
     public void setAlpha(float a) {
         alpha = a;
     }
@@ -139,6 +143,7 @@ public class DynamicParticle extends Particle implements DynamicParticleManager 
     public float getGravity() {
         return gravity;
     }
+    @Override
     public void setGravity(float grav) {
         this.gravity = grav;
     }
