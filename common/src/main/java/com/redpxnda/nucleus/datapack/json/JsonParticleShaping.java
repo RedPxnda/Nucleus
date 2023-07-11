@@ -25,12 +25,12 @@ import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
 
 public class JsonParticleShaping {
     private static final BiMap<ResourceLocation, ShaperType<?>> shaperRegistry = HashBiMap.create();
-    public static final Codec<Shaper> codec = ShaperType.CODEC.dispatch("type", Shaper::type, ShaperType::codec);
+    public static final Codec<Shaper> shaperCodec = ShaperType.CODEC.dispatch("type", Shaper::type, ShaperType::codec);
     public static final Codec<StoringParticleShaper> completeCodec = RecordCodecBuilder.create(inst -> inst.group(
             MiscCodecs.array(ParticleTypes.CODEC, ParticleOptions[]::new).fieldOf("particles").forGetter(ParticleShaper.Combo::getParticles),
-            codec.fieldOf("shaper").forGetter(i -> i.shaper),
+            shaperCodec.fieldOf("shaper").forGetter(i -> i.shaper),
             Codec.BOOL.optionalFieldOf("syncToClient", false).forGetter(i -> i.syncToClient),
-            AxisD.Codecs.all.optionalFieldOf("transformation", new Quaterniond()).forGetter(ParticleShaper::getTransformation),
+            AxisD.codec.optionalFieldOf("transformation", new Quaterniond()).forGetter(ParticleShaper::getTransformation),
             ResourceLocation.CODEC.optionalFieldOf("cacheId").forGetter(i -> i.cacheId),
             Codec.either(Codec.DOUBLE, MiscCodecs.array(Evaluable.Codecs.STRING_ONLY, Evaluable[]::new)).optionalFieldOf("motion", Either.left(0d)).forGetter(i -> i.motion)
     ).apply(inst, (p, s, c, t, ch, m) -> new StoringParticleShaper(p, s, t, c, ch, m)));
