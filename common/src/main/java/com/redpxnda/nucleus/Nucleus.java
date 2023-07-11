@@ -60,7 +60,7 @@ public class Nucleus {
         ReloadSyncPackets.init();
 
         // temp
-        if (Platform.isDevelopmentEnvironment())
+        /*if (Platform.isDevelopmentEnvironment())
             InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
                 if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level().isClientSide) return CompoundEventResult.pass();
                 ParticleShaperListener.shapers.forEach((rl, s) -> {
@@ -68,7 +68,7 @@ public class Nucleus {
                     s.fromClient().transform(q).runAt(p.level(), p.getX(), p.getY(), p.getZ());
                 });
                 return CompoundEventResult.pass();
-            });
+            });*/
     }
 
     private static void packets() {
