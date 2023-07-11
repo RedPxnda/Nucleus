@@ -12,11 +12,11 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
-public class MimicParticle extends DynamicPoseStackParticle {
+public class MimicParticle extends DynamicPoseStackParticle implements MimicParticleOptions.Manager {
     public ResourceLocation texture;
 
     public MimicParticle(
-            ValueAssigner<MimicParticle> setup, ValueAssigner<MimicParticle> tick,
+            ValueAssigner<MimicParticleOptions.Manager> setup, ValueAssigner<MimicParticleOptions.Manager> tick,
             ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed
     ) {
         super(
@@ -30,6 +30,16 @@ public class MimicParticle extends DynamicPoseStackParticle {
     @Override
     public ParticleRenderType getRenderType() {
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+    }
+
+    @Override
+    public ResourceLocation getTexture() {
+        return texture;
+    }
+
+    @Override
+    public void setTexture(ResourceLocation rl) {
+        texture = rl;
     }
 
     public static class Provider implements ParticleProvider<MimicParticleOptions> {

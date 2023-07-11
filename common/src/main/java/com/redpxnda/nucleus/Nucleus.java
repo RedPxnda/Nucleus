@@ -59,14 +59,14 @@ public class Nucleus {
         ReloadSyncPackets.init();
 
         // temp
-        InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
-            if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level().isClientSide) return CompoundEventResult.pass();
-            ParticleShaperListener.shapers.forEach((rl, s) -> {
-                Quaterniond q = new Quaterniond().rotationXYZ(0, -Math.toRadians(p.getYHeadRot() % 360), 0);
-                s.fromClient().transform(q).runAt(p.level(), p.getX(), p.getY(), p.getZ());
-            });
-            return CompoundEventResult.pass();
-        });
+//        InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
+//            if (!p.getMainHandItem().is(Items.NAME_TAG) || !p.level().isClientSide) return CompoundEventResult.pass();
+//            ParticleShaperListener.shapers.forEach((rl, s) -> {
+//                Quaterniond q = new Quaterniond().rotationXYZ(0, -Math.toRadians(p.getYHeadRot() % 360), 0);
+//                s.fromClient().transform(q).runAt(p.level(), p.getX(), p.getY(), p.getZ());
+//            });
+//            return CompoundEventResult.pass();
+//        });
     }
 
     private static void packets() {

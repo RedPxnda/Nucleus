@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 import static com.redpxnda.nucleus.util.RenderUtil.*;
 
-public class DynamicParticle extends Particle {
+public class DynamicParticle extends Particle implements DynamicParticleManager {
     public SpriteSet set;
     protected TextureAtlasSprite sprite;
     protected final Consumer<DynamicParticle> onTick;
@@ -72,17 +72,61 @@ public class DynamicParticle extends Particle {
     public double getZSpeed() {
         return zd;
     }
+    @Override
     public int getAge() {
         return age;
     }
+    @Override
     public void setAge(int age) {
         this.age = age;
     }
+    @Override
     public float getFriction() {
         return friction;
     }
+    @Override
+    public float getRed() {
+        return red;
+    }
+    @Override
+    public float getGreen() {
+        return green;
+    }
+    @Override
+    public float getBlue() {
+        return blue;
+    }
+    @Override
+    public float getAlpha() {
+        return alpha;
+    }
+    @Override
+    public float getScale() {
+        return scale;
+    }
+    @Override
     public void setFriction(float friction) {
         this.friction = friction;
+    }
+    @Override
+    public void setRed(float r) {
+        red = r;
+    }
+    @Override
+    public void setGreen(float g) {
+        green = g;
+    }
+    @Override
+    public void setBlue(float b) {
+        blue = b;
+    }
+    @Override
+    public void setAlpha(float a) {
+        alpha = a;
+    }
+    @Override
+    public void setScale(float s) {
+        scale = s;
     }
     public float getGravity() {
         return gravity;
@@ -90,10 +134,12 @@ public class DynamicParticle extends Particle {
     public void setGravity(float grav) {
         this.gravity = grav;
     }
+    @Override
     public boolean hasPhysics() {
         return hasPhysics;
     }
-    public void setPhysics(boolean bl) {
+    @Override
+    public void setPhysicsEnabled(boolean bl) {
         this.hasPhysics = bl;
     }
     public void setXSpeed(double speed) {
@@ -105,7 +151,6 @@ public class DynamicParticle extends Particle {
     public void setZSpeed(double speed) {
         this.zd = speed;
     }
-
     public void setSprite(TextureAtlasSprite textureAtlasSprite) {
         this.sprite = textureAtlasSprite;
     }
