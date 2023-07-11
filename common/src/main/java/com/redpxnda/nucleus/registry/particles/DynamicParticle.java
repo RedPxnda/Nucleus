@@ -77,8 +77,16 @@ public class DynamicParticle extends Particle implements DynamicParticleManager 
         return age;
     }
     @Override
+    public int getLifetime() {
+        return lifetime;
+    }
+    @Override
     public void setAge(int age) {
         this.age = age;
+    }
+    @Override
+    public void setLifetime(int lifetime) {
+        this.lifetime = lifetime;
     }
     @Override
     public float getFriction() {
