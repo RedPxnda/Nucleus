@@ -74,7 +74,8 @@ public class AutoCodec<C> extends MapCodec<C> {
     });
 
     public static <T> Codec<T> getOverride(Class<T> cls) {
-        return (Codec<T>) inheritOverrides.get(cls).get();
+        Supplier<Codec<?>> sup = inheritOverrides.get(cls);
+        return sup == null ? null : (Codec<T>) sup.get();
     }
     public static <T> void addInherit(Class<T> cls, Codec<T> codec) {
         inheritOverrides.put(cls, () -> codec);
