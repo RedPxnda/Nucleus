@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import org.apache.commons.lang3.tuple.MutableTriple;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,9 +31,9 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * @param <T> The type of object this ValueAssigner assigns to.
  */
 public class ValueAssigner<T> {
-    private final Map<String, Instructions<T, ?>> instructions;
+    private final Map<String, Instruction<T, ?>> instructions;
 
-    public ValueAssigner(Map<String, Instructions<T, ?>> instructions) {
+    public ValueAssigner(Map<String, Instruction<T, ?>> instructions) {
         this.instructions = instructions;
     }
 
@@ -55,41 +54,8 @@ public class ValueAssigner<T> {
         }
     }
 
-    public static class Template<A, T> extends MutableTriple<Codec<T>, BiConsumer<A, Object>, T> {
-        public Template(Codec<T> codec, BiConsumer<A, T> assigner, T defInput) {
-            this.left = codec;
-            this.middle = (BiConsumer<A, Object>) assigner;
-            this.right = defInput;
-        }
-
-        public Codec<T> codec() {
-            return left;
-        }
-        public BiConsumer<A, Object> assigner() {
-            return middle;
-        }
-        public T defaultInput() {
-            return right;
-        }
-    }
-
-    public static class Instructions<A, T> extends MutableTriple<Codec<T>, Consumer<A>, Object> {
-        public Instructions(Codec<T> codec, Consumer<A> assigner, Object input) {
-            this.left = codec;
-            this.middle = assigner;
-            this.right = input;
-        }
-
-        public Codec<T> codec() {
-            return left;
-        }
-        public Consumer<A> assigner() {
-            return middle;
-        }
-        public Object input() {
-            return right;
-        }
-    }
+    public record Template<T, A> (Codec<A> codec, BiConsumer<T, A> assigner, A defInput) {}
+    public record Instruction<T, A> (Codec<A> codec, Consumer<T> assigner, Object input) {}
 
     public static class VACodec<T> implements Codec<ValueAssigner<T>> {
         private final Map<String, Template<T, ?>> map;
@@ -100,14 +66,14 @@ public class ValueAssigner<T> {
 
         @Override
         public <A> DataResult<Pair<ValueAssigner<T>, A>> decode(DynamicOps<A> ops, A input) {
-            Map<String, Instructions<T, ?>> inst = new HashMap<>();
+            Map<String, Instruction<T, ?>> inst = new HashMap<>();
             map.forEach((key, t) -> {
                 Optional<A> val = ops.get(input, key).result();
                 if (val.isPresent()) {
                     Object obj = t.codec().parse(ops, val.get()).getOrThrow(false, s -> LOGGER.error("Failed to deserialize key '{}' during ValueAssigner creation! -> {}", key, s));
-                    inst.put(key, new Instructions<>(t.codec(), subject -> t.assigner().accept(subject, obj), obj));
+                    inst.put(key, new Instruction<>(t.codec(), subject -> ((BiConsumer<T, Object>) t.assigner()).accept(subject, obj), obj));
                 } else {
-                    inst.put(key, new Instructions<>(t.codec(), subject -> t.assigner().accept(subject, t.defaultInput()), t.defaultInput()));
+                    inst.put(key, new Instruction<>(t.codec(), subject -> ((BiConsumer<T, Object>) t.assigner()).accept(subject, t.defInput), t.defInput));
                 }
             });
             return DataResult.success(Pair.of(new ValueAssigner<>(inst), input));
