@@ -12,6 +12,7 @@ import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
+import com.redpxnda.nucleus.network.clientbound.PlaySoundPacket;
 import com.redpxnda.nucleus.network.clientbound.SyncParticleShapersPacket;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
@@ -74,6 +75,7 @@ public class Nucleus {
     private static void packets() {
         registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
         registerPacket(SyncParticleShapersPacket.class, SyncParticleShapersPacket::new);
+        registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
     }
     private static void events() {
     }
