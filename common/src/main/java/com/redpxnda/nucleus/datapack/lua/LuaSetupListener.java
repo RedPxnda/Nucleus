@@ -36,6 +36,8 @@ public class LuaSetupListener extends LuaResourceReloadListener {
 
     @Override
     protected void apply(Map<ResourceLocation, LuaValue> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-        object.forEach((rl, v) -> v.call());
+        object.forEach((rl, v) -> {
+            v.call();
+        });
     }
 }

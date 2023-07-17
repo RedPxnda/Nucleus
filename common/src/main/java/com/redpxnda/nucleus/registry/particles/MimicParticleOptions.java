@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.datapack.codec.ValueAssigner;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
+import com.redpxnda.nucleus.registry.particles.manager.DynamicParticleManager;
 import com.redpxnda.nucleus.util.ByteBufUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -11,33 +12,28 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
-public record MimicParticleOptions(ValueAssigner<Manager> setup,
-                                   ValueAssigner<Manager> tick) implements ParticleOptions {
-    public static Codec<ValueAssigner<Manager>> vaSetupCodec = new ValueAssigner.Builder<Manager>()
-            .add("lifetime", Codec.INT, Manager::_setLifetime, 100)
-            .add("friction", Codec.FLOAT, Manager::setFriction, 0.98f)
-            .add("gravity", Codec.FLOAT, Manager::setGravity, 0f)
-            .add("red", Codec.FLOAT, Manager::setRed, 1f)
-            .add("green", Codec.FLOAT, Manager::setGreen, 1f)
-            .add("blue", Codec.FLOAT, Manager::setBlue, 1f)
-            .add("alpha", Codec.FLOAT, Manager::_setAlpha, 1f)
-            .add("scale", Codec.FLOAT, Manager::setScale, 1f)
-            .add("physics", Codec.BOOL, Manager::setPhysicsEnabled, true)
-            .add("texture", ResourceLocation.CODEC, Manager::setTexture, new ResourceLocation("block/dirt"))
-            .codec();
-    public static Codec<ValueAssigner<Manager>> vaTickCodec = new ValueAssigner.Builder<Manager>()
-            .add("gravity", Codec.FLOAT, (p, f) -> p.setGravity(p.getGravity()+f), 0f)
-            .add("red", Codec.FLOAT, (p, f) -> p.setRed(p.getRed()+f), 0f)
-            .add("green", Codec.FLOAT, (p, f) -> p.setGreen(p.getGreen()+f), 0f)
-            .add("blue", Codec.FLOAT, (p, f) -> p.setBlue(p.getBlue()+f), 0f)
-            .add("alpha", Codec.FLOAT, (p, f) -> p._setAlpha(p.getAlpha()+f), 0f)
-            .add("scale", Codec.FLOAT, (p, f) -> p.setScale(p.getScale()+f), 0f)
-            //.add("texture", ResourceLocation.CODEC, (p, rl) -> p.texture = rl, new ResourceLocation("block/dirt"))
-            .codec();
+public class MimicParticleOptions implements ParticleOptions {
+    public ValueAssigner<Manager> setup, tick;
+
+    public static ValueAssigner.CodecBuilder<Manager> setupBuilder = DynamicParticleManager.setupBuilder.extend(Manager.class)
+            .add("texture", ResourceLocation.CODEC, Manager::setTexture, new ResourceLocation("item/stick"));
+    public static ValueAssigner.CodecBuilder<Manager> tickBuilder = DynamicParticleManager.tickBuilder.extend(Manager.class);
+    public static Codec<ValueAssigner<Manager>> vaSetupCodec = setupBuilder.build();
+    public static Codec<ValueAssigner<Manager>> vaTickCodec = tickBuilder.build();
     public static Codec<MimicParticleOptions> codec = RecordCodecBuilder.create(inst -> inst.group(
             vaSetupCodec.fieldOf("setup").forGetter(i -> i.setup),
             vaTickCodec.fieldOf("tick").forGetter(i -> i.tick)
     ).apply(inst, MimicParticleOptions::new));
+
+    public MimicParticleOptions(ValueAssigner<Manager> setup, ValueAssigner<Manager> tick) {
+        this.setup = setup;
+        this.tick = tick;
+    }
+
+    public MimicParticleOptions() {
+        this.setup = setupBuilder.toAssigner().build();
+        this.tick = tickBuilder.toAssigner().build();
+    }
 
     @Override
     public ParticleType<?> getType() {

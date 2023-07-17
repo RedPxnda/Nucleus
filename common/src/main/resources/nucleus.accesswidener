@@ -1,6 +1,11 @@
 accessWidener   v2  named
 accessible method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
+accessible method net/minecraft/client/renderer/LevelRenderer addParticleInternal (Lnet/minecraft/core/particles/ParticleOptions;ZZDDDDDD)Lnet/minecraft/client/particle/Particle;
+accessible method com/mojang/blaze3d/vertex/PoseStack$Pose <init> (Lorg/joml/Matrix4f;Lorg/joml/Matrix3f;)V
 accessible class net/minecraft/server/MinecraftServer$ReloadableResources
 accessible method net/minecraft/client/particle/BreakingItemParticle <init> (Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDDLnet/minecraft/world/item/ItemStack;)V
 accessible method net/minecraft/nbt/NbtIo readUnnamedTag (Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;
 accessible method net/minecraft/client/renderer/RenderType translucentState (Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState;
+
+accessible field net/minecraft/client/particle/Particle MAXIMUM_COLLISION_VELOCITY_SQUARED D
+accessible field net/minecraft/client/particle/Particle stoppedByCollision Z

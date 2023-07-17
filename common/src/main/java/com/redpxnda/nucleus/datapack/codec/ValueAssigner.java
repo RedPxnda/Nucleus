@@ -16,7 +16,7 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
 /**
  * {@link ValueAssigner}s are great tools to (de)serialize modifications to specific objects.
  * If I had an object that I want to allow a series of modifications for within JSON, {@link ValueAssigner}s
- * are how I would do that. Use the {@link ValueAssigner.Builder} to create a Codec for a {@link ValueAssigner}.
+ * are how I would do that. Use the {@link CodecBuilder} to create a Codec for a {@link ValueAssigner}.
  * <p>
  * Example value assigner (serialized):
  * {
@@ -36,21 +36,82 @@ public class ValueAssigner<T> {
     public ValueAssigner(Map<String, Instruction<T, ?>> instructions) {
         this.instructions = instructions;
     }
+    public ValueAssigner() {
+        this(new HashMap<>());
+    }
+
+    // do not encode when using this
+    public ValueAssigner<T> set(String key, Consumer<T> assigner) {
+        instructions.put(key, new Instruction<>(null, assigner, null));
+        return this;
+    }
+    public Instruction<T, ?> get(String str) {
+        return instructions.get(str);
+    }
 
     public void assignTo(T instance) {
         instructions.forEach((k, instruction) -> instruction.assigner().accept(instance));
     }
 
-    public static class Builder<T> {
-        private final Map<String, Template<T, ?>> templates = new HashMap<>();
+    public static class CodecBuilder<T> {
+        private final Map<String, Template<T, ?>> templates;
 
-        public <A> Builder<T> add(String key, Codec<A> codec, BiConsumer<T, A> assigner, A defInput) {
+        protected CodecBuilder(Map<String, Template<T, ?>> templates) {
+            this.templates = templates;
+        }
+        public CodecBuilder() {
+            this(new HashMap<>());
+        }
+
+
+        public <A> CodecBuilder<T> add(String key, Codec<A> codec, BiConsumer<T, A> assigner, A defInput) {
             templates.put(key, new Template<>(codec, assigner, defInput));
             return this;
         }
 
-        public Codec<ValueAssigner<T>> codec() {
+        public CodecBuilder<T> copy() {
+            return new CodecBuilder<>(templates);
+        }
+
+        public <A extends T> CodecBuilder<A> extend(Class<A> cls) {
+            return (CodecBuilder<A>) this.copy();
+        }
+
+        public Codec<ValueAssigner<T>> build() {
             return new VACodec<>(templates);
+        }
+
+        public Builder<T> toAssigner() {
+            return new Builder<>(this);
+        }
+    }
+    public static class Builder<T> {
+        private final CodecBuilder<T> codecBuilder;
+        private final Map<String, Instruction<T, ?>> instructions = new HashMap<>();
+
+        public Builder(CodecBuilder<T> codecBuilder) {
+            this.codecBuilder = codecBuilder;
+            codecBuilder.templates.forEach((key, t) -> {
+                instructions.put(key, new Instruction<>(
+                        t.codec,
+                        inst -> ((Template) t).assigner.accept(inst, t.defInput),
+                        t.defInput
+                ));
+            });
+        }
+
+        public <A> Builder<T> set(String key, A value) {
+            Template<T, A> template = (Template<T, A>) codecBuilder.templates.get(key);
+            instructions.put(key, new Instruction<>(
+                    template.codec,
+                    t -> template.assigner.accept(t, value),
+                    value
+            ));
+            return this;
+        }
+
+        public ValueAssigner<T> build() {
+            return new ValueAssigner<>(instructions);
         }
     }
 

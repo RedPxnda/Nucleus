@@ -3,9 +3,26 @@ package com.redpxnda.nucleus.math;
 import net.minecraft.util.Mth;
 
 import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
 public class MathUtil {
+    public static final Random random = new Random();
+
+    public static double random(double min, double max) {
+        if (min == max) return min;
+        return ThreadLocalRandom.current().nextDouble(min, max);
+    }
+    public static float random(float min, float max) {
+        if (min == max) return min;
+        return ThreadLocalRandom.current().nextFloat(min, max);
+    }
+    public static int random(int min, int max) {
+        if (min == max) return min;
+        return ThreadLocalRandom.current().nextInt(min, max);
+    }
+
     public static double[] arrayLerp2(int time, int maxTime, double[][] items) {
         if (items.length < 1) return new double[] { 1, 1 };
         int prog = (time % maxTime*2);

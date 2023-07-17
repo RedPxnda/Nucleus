@@ -21,7 +21,7 @@ import org.joml.Vector3d;
 
 import java.util.*;
 
-import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
+import static com.redpxnda.nucleus.Nucleus.loc;
 
 public class JsonParticleShaping {
     private static final BiMap<ResourceLocation, ShaperType<?>> shaperRegistry = HashBiMap.create();
@@ -230,6 +230,35 @@ public class JsonParticleShaping {
             }, xDomain.max(), xDomain.min(), inc);
         }
     }
+    /*public record LuaSurface(String func, MiscCodecs.DoubleRange xDomain, MiscCodecs.DoubleRange yDomain, MiscCodecs.DoubleRange range, double inc) implements Shaper {
+        private static final Codec<LuaSurface> codec = RecordCodecBuilder.create(inst -> inst.group(
+                Evaluable.Codecs.ROOTABLE.listOf().fieldOf("equations").forGetter(i -> i.func),
+                MiscCodecs.DOUBLE_RANGE.fieldOf("xDomain").forGetter(i -> i.xDomain),
+                MiscCodecs.DOUBLE_RANGE.fieldOf("yDomain").forGetter(i -> i.yDomain),
+                MiscCodecs.DOUBLE_RANGE.fieldOf("range").forGetter(i -> i.range),
+                Codec.DOUBLE.fieldOf("increment").forGetter(i -> i.inc)
+        ).apply(inst, LuaSurface::new));
+        private static final ShaperType<LuaSurface> type = () -> codec;
+
+        @Override
+        public ShaperType<LuaSurface> type() {
+            return type;
+        }
+
+        @Override
+        public ParticleShaper setup() {
+            return ParticleShaper.Combo.createCombo(null, (s, x) -> {
+                for (double y = yDomain.min(); y < yDomain.max(); y+=inc) {
+                    for (Evaluable eval : func) {
+                        eval.with("x", x).with("y", y);
+                        double res = MathUtil.solveBrent(z -> eval.with("z", z).evaluate().getNumberValue().doubleValue(), range.min(), range.max(), 1e-9, 100);
+                        if (!Double.isNaN(res))
+                            s.spawn(x, y, res);
+                    }
+                }
+            }, xDomain.max(), xDomain.min(), inc);
+        }
+    }*/
     public record XYRelation(List<Evaluable> evals, double max, double min, double inc) implements Shaper {
         private static final Codec<XYRelation> codec = RecordCodecBuilder.create(inst -> inst.group(
                 Evaluable.Codecs.STRING_ONLY.listOf().fieldOf("relations").forGetter(i -> i.evals),

@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.function.Supplier;
 
-import static com.redpxnda.nucleus.registry.NucleusRegistries.loc;
+import static com.redpxnda.nucleus.Nucleus.loc;
 
 public class DoubleSupplier {
     public static final BiMap<ResourceLocation, Type<?>> suppliers = HashBiMap.create();
@@ -56,7 +56,8 @@ public class DoubleSupplier {
         }
     }
     public record Basic(double val) implements Instance {
-        public static final Type<Basic> type = () -> Codec.DOUBLE.xmap(Basic::new, b -> b.val);
+        public static final Codec<Basic> codec = Codec.DOUBLE.xmap(Basic::new, b -> b.val);
+        public static final Type<Basic> type = () -> codec;
 
         @Override
         public Type<Basic> type() {

@@ -112,7 +112,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         this.cls = cls;
         this.errorMsg = errorMsg;
 
-        for (Field field : cls.getDeclaredFields()) {
+        for (Field field : cls.getFields()) {
             field.setAccessible(true);
             int modifiers = field.getModifiers();
             if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
@@ -349,7 +349,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                 value = toSet;
             }
             try {
-                Field f = instance.getClass().getDeclaredField(key);
+                Field f = instance.getClass().getField(key);
                 f.setAccessible(true);
                 if (value != null)
                     f.set(instance, value);
@@ -365,7 +365,7 @@ public class AutoCodec<C> extends MapCodec<C> {
     public <T> RecordBuilder<T> encode(C input, DynamicOps<T> ops, RecordBuilder<T> map) {
         fields.forEach((key, field) -> {
             try {
-                Field f = input.getClass().getDeclaredField(key);
+                Field f = input.getClass().getField(key);
                 f.setAccessible(true);
                 Object val = f.get(input);
 
