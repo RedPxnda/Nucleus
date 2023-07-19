@@ -8,6 +8,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -69,6 +70,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, Long.class, Codec.LONG);
         addInherit(map, long.class, Codec.LONG);
         addInherit(map, String.class, Codec.STRING);
+        addInherit(map, ResourceLocation.class, ResourceLocation.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
         addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
     });
@@ -95,7 +97,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             if (field.getGenericType() instanceof ParameterizedType pt && pt.getActualTypeArguments()[0] instanceof Class<?> cls) {
                 try {
                     Registry<?> reg = (Registry<?>) field.get(null);
-                    inheritOverrides.put(cls, reg::byNameCodec);
+                    inheritOverrides.putIfAbsent(cls, reg::byNameCodec);
                 } catch (IllegalAccessException e) {
                     LOGGER.error("Failed to add '{}' from BuiltInRegistries as an inherit override.", field.getName());
                     throw new RuntimeException(e);
