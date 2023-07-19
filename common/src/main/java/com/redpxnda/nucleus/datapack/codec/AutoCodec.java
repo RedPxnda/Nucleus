@@ -119,13 +119,20 @@ public class AutoCodec<C> extends MapCodec<C> {
             Codec<?> codec;
             Type fieldType = field.getGenericType();
             FieldCallback callback = new FieldCallback(field);
-            if (field.isAnnotationPresent(Override.class))
+            if (field.isAnnotationPresent(Override.class)) {
+                System.out.println("nuc: getting field override from constructor");
                 codec = getFieldOverride(cls, field);
-            else
+                System.out.println("nuc: got field override from constructor");
+            } else {
+                System.out.println("nuc: gettiing codec from constructor");
                 codec = getCodec(callback, fieldType, true);
+                System.out.println("nuc: got codec from constructor");
+            }
 
             fields.put(field.getName(), new AutoCodecField(codec, fieldType, field.getType(), callback.makePrimitive, callback.collectionLevel, callback.mapLevel, callback.makeDefaulted));
         }
+
+        System.out.println("nuc: done constructing- " + inheritOverrides);
     }
     public static <T> AutoCodec<T> of(Class<T> cls) {
         return new AutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".");
@@ -144,6 +151,8 @@ public class AutoCodec<C> extends MapCodec<C> {
             throw new IllegalArgumentException();
         }
 
+        System.out.println("nuc: not wildcard or type");
+
         Class<?> cls = null;
         Type[] params = null;
 
@@ -153,10 +162,14 @@ public class AutoCodec<C> extends MapCodec<C> {
             params = pt.getActualTypeArguments();
         }
 
+        System.out.println("nuc: codec class: " + cls);
+        System.out.println("nuc: codec class params: " + Arrays.toString(params));
+
         assert cls != null : "Class type for Nucleus AutoCodec found null.";
         boolean paramsSet = params != null;
 
         Settings settings = getSettings(this.cls);
+        System.out.println("nuc: settings: " + settings);
 
         // arrays
         if (cls.isArray()) {
@@ -198,8 +211,10 @@ public class AutoCodec<C> extends MapCodec<C> {
         if (
                 callback.field.isAnnotationPresent(Optional.class) ||
                 (settings != null && settings.optionalByDefault() && !callback.field.isAnnotationPresent(Mandatory.class))
-        )
+        ) {
             callback.makeDefaulted = true;
+            System.out.println("nuc: making defaulted");
+        }
 
         // hardcoding Enums because yes
         if (cls.isEnum())
@@ -207,11 +222,14 @@ public class AutoCodec<C> extends MapCodec<C> {
 
         // global override
         Codec<?> c = getOverride(cls);
+        System.out.println("nuc: gotten override for " + cls + ": " + c);
         if (c != null) return c;
 
         // class override
         if (cls.isAnnotationPresent(Override.class)) {
+            System.out.println("nuc: override annotation is present!");
             Override override = cls.getAnnotation(Override.class);
+            System.out.println("nuc: override: " + override);
             try {
                 Field field = cls.getField(override.value());
                 field.setAccessible(true);
@@ -227,6 +245,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         // class searching to find suitable codec (unsafe)
         if (allowFieldSearching)
             for (Field field : cls.getDeclaredFields()) {
+                System.out.println("nuc: searching in field! " + field);
                 int mods = field.getModifiers();
                 field.setAccessible(true);
                 if (
@@ -247,9 +266,12 @@ public class AutoCodec<C> extends MapCodec<C> {
         return new AutoCodec<>(cls, errorMsg).codec();
     }
     private static Codec<?> getFieldOverride(Class<?> cls, Field field) {
+        System.out.println("nuc: field override method called");
         Override override = field.getAnnotation(Override.class);
+        System.out.println("nuc: override annotation: " + override);
         try {
             Field codecField = cls.getField(override.value());
+            System.out.println("nuc: field: " + codecField);
             return (Codec<?>) codecField.get(null);
         } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
             LOGGER.error("Field mentioned in AutoCodec.Override annotation for field '{}' in class '{}' is either non-existent, inaccessible, or not a valid Codec! -> {}", field.getName(), cls.getSimpleName(), e);
