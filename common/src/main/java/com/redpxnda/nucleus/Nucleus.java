@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.datapack.codec.AutoCodec;
-import com.redpxnda.nucleus.datapack.json.listeners.ParticleShaperListener;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.math.evalex.ListContains;
@@ -13,7 +12,6 @@ import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
 import com.redpxnda.nucleus.network.clientbound.PlaySoundPacket;
-import com.redpxnda.nucleus.network.clientbound.SyncParticleShapersPacket;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.RenderUtil;
@@ -56,7 +54,6 @@ public class Nucleus {
 
     private static void packets() {
         registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
-        registerPacket(SyncParticleShapersPacket.class, SyncParticleShapersPacket::new);
         registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
     }
     private static void events() {
@@ -94,6 +91,5 @@ public class Nucleus {
 
     private static void reloadListeners() {
         ReloadListenerRegistry.register(PackType.SERVER_DATA, new LuaSetupListener());
-        ReloadListenerRegistry.register(PackType.SERVER_DATA, new ParticleShaperListener());
     }
 }

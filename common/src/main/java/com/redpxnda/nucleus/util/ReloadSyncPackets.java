@@ -2,7 +2,6 @@ package com.redpxnda.nucleus.util;
 
 import com.redpxnda.nucleus.event.ServerEvents;
 import com.redpxnda.nucleus.network.SimplePacket;
-import com.redpxnda.nucleus.network.clientbound.SyncParticleShapersPacket;
 import dev.architectury.event.events.common.PlayerEvent;
 
 import java.util.ArrayList;
@@ -17,6 +16,6 @@ public class ReloadSyncPackets extends ArrayList<Supplier<SimplePacket>> {
         })));
         PlayerEvent.PLAYER_JOIN.register(sp -> instance.forEach(sup -> sup.get().send(sp)));
 
-        instance.add(SyncParticleShapersPacket::new);
+        //instance.add(SyncParticleShapersPacket::new);
     }
 }
