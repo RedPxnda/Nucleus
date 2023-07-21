@@ -29,12 +29,15 @@ configurations {
 
 repositories {
     maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.theillusivec4.top/' }
 }
 
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
+
+    modCompileOnlyApi "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${rootProject.minecraft_version}:api"
 
     forgeRuntimeLibrary(include('com.github.ezylang:EvalEx:3.0.4'))
     forgeRuntimeLibrary(include('com.github.farmboy0.luaj:luaj-core:v3.0.4-farmboy0'))
