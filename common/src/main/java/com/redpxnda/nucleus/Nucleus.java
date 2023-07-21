@@ -12,10 +12,12 @@ import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
 import com.redpxnda.nucleus.network.clientbound.PlaySoundPacket;
+import com.redpxnda.nucleus.network.clientbound.SyncLuaFilePacket;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.RenderUtil;
 import com.redpxnda.nucleus.util.SupporterUtil;
+import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.networking.NetworkChannel;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
@@ -24,6 +26,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
@@ -40,6 +43,7 @@ public class Nucleus {
     public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();
     public static final Logger LOGGER = LogUtils.getLogger();
+    public static MinecraftServer SERVER;
 
     public static void init() {
         reloadListeners();
@@ -50,9 +54,12 @@ public class Nucleus {
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> RenderUtil::init);
         ReloadSyncPackets.init();
+
+        LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
     }
 
     private static void packets() {
+        registerPacket(SyncLuaFilePacket.class, SyncLuaFilePacket::new);
         registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
         registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
     }

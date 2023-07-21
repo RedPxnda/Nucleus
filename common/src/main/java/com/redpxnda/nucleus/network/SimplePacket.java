@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.network;
 import com.redpxnda.nucleus.Nucleus;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -25,5 +26,8 @@ public interface SimplePacket {
     }
     default void send(ServerLevel level) {
         this.send(level.players());
+    }
+    default void send(MinecraftServer server) {
+        this.send(server.getPlayerList().getPlayers());
     }
 }
