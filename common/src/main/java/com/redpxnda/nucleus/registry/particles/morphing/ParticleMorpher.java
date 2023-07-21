@@ -8,6 +8,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ParticleMorpher extends ParticleShape {
     private final ClientLevel level;
@@ -46,7 +47,7 @@ public class ParticleMorpher extends ParticleShape {
         cp.spawnDelay = delay;
         cp.updateLifetime();
 
-        cp.children = controllers.stream().map(p -> (DynamicPoseStackParticle) p).toList();
+        cp.children.addAll(controllers.stream().map(p -> (DynamicPoseStackParticle) p).toList());
         cp.updateChildren();
     }
 }

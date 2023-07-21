@@ -4,10 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.redpxnda.nucleus.registry.particles.manager.PoseStackParticleManager;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
+import com.redpxnda.nucleus.util.LimitedArrayList;
+import com.redpxnda.nucleus.util.RenderUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
@@ -16,8 +19,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
-import java.util.List;
+import java.util.*;
 
 public abstract class DynamicPoseStackParticle extends DynamicParticle implements PoseStackParticleManager {
     protected RenderType renderType;
@@ -29,10 +33,13 @@ public abstract class DynamicPoseStackParticle extends DynamicParticle implement
     public double py;
     public double pz;
     public double px;
-    public ParticleShape.AnimationFunction animationFunction = (s, a) -> {};
+    public ParticleShape.AnimationFunction animationFunction = (s, m, a) -> {};
     public ParticleShape.TickerFunction tickerFunction = p -> {};
-    private final Matrix4f newMatrix = new Matrix4f();
-    private final Matrix4f oldMatrix = new Matrix4f();
+    protected final Matrix4f newMatrix = new Matrix4f();
+    protected final Matrix4f oldMatrix = new Matrix4f();
+    public List<Vector3f> pastPositions = null;
+    public Vector3f oldestPosition = new Vector3f();
+    public Trail trail = null;
 
     protected DynamicPoseStackParticle(PoseStack poseStack, RenderType renderType, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {
         super(clientLevel, x, y, z, dx, dy, dz);
@@ -45,14 +52,44 @@ public abstract class DynamicPoseStackParticle extends DynamicParticle implement
         if (poseStack == null) {
             poseStack = new PoseStack();
         }
+
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         vc = bufferSource.getBuffer(renderType);
+
         renderBeforePush(vc, poseStack, x, y, z, camera, pt);
         poseStack.pushPose();
         render(vc, poseStack, x, y, z, camera, pt);
         poseStack.popPose();
         renderAfterPop(vc, poseStack, x, y, z, camera, pt);
-        bufferSource.endBatch(renderType);
+        bufferSource.endBatch();
+    }
+
+    public void renderTrail(PoseStack stack, float pt) {
+        if (trail == null || pastPositions == null || pastPositions.isEmpty()) return;
+        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        VertexConsumer vc = bufferSource.getBuffer(RenderUtil.transparentTriangleStrip);
+        int length = pastPositions.size();
+        float width = trail.width/length;
+        for (int i = 0; i < length; i++) {
+            Vector3f past = i == 0 ? oldestPosition : pastPositions.get(i-1);
+            Vector3f current = pastPositions.get(i);
+            Vector3f next = i == length-1 ? new Vector3f((float) x, (float) y, (float) z) : pastPositions.get(i+1);
+
+            next = new Vector3f(current).lerp(next, pt);
+            current = new Vector3f(past).lerp(current, pt);
+
+            float offset = width*(i);
+            float nextOffset = width*(i+1);
+
+            int light = trail.emissive ? LightTexture.FULL_BRIGHT : LightTexture.FULL_SKY;
+
+            vc.vertex(stack.last().pose(), current.x, current.y+offset, current.z).color(trail.red, trail.green, trail.blue, 0f).uv2(light).endVertex();
+            vc.vertex(stack.last().pose(), current.x, current.y-offset, current.z).color(trail.red, trail.green, trail.blue, 0f).uv2(light).endVertex();
+            vc.vertex(stack.last().pose(), next.x, next.y-nextOffset, next.z).color(trail.red, trail.green, trail.blue, 0f).uv2(light).endVertex();
+            vc.vertex(stack.last().pose(), current.x, current.y+offset, current.z).color(trail.red, trail.green, trail.blue, trail.alpha).uv2(light).endVertex();
+            vc.vertex(stack.last().pose(), next.x, next.y-nextOffset, next.z).color(trail.red, trail.green, trail.blue, trail.alpha).uv2(light).endVertex();
+            vc.vertex(stack.last().pose(), next.x, next.y+nextOffset, next.z).color(trail.red, trail.green, trail.blue, trail.alpha).uv2(light).endVertex();
+        }
     }
 
     public void render(VertexConsumer vc, PoseStack stack, float x, float y, float z, Camera camera, float partialTick) {
@@ -70,8 +107,13 @@ public abstract class DynamicPoseStackParticle extends DynamicParticle implement
 
     @Override
     public void tick() {
+        if (pastPositions == null) pastPositions = new LimitedArrayList<>(trail == null ? 5 : trail.maxLength);
+        if (trail == null || level.getGameTime() % trail.saveInterval == 0) {
+            if (pastPositions.size() >= 1) oldestPosition.set(pastPositions.get(0));
+            pastPositions.add(new Vector3f((float) x, (float) y, (float) z));
+        }
         oldMatrix.set(newMatrix);
-        animationFunction.animate(newMatrix, getAge() / (float) _getLifetime());
+        animationFunction.animate(newMatrix, this, getAge() / (float) _getLifetime());
         tickerFunction.animate(this);
         super.tick();
     }
@@ -117,7 +159,7 @@ public abstract class DynamicPoseStackParticle extends DynamicParticle implement
         return ParticleRenderType.CUSTOM;
     }
 
-    @Override
+    //@Override
     public PoseStack getPoseStack() {
         return poseStack;
     }
@@ -143,5 +185,21 @@ public abstract class DynamicPoseStackParticle extends DynamicParticle implement
         discX = Double.NaN;
         discY = Double.NaN;
         discZ = Double.NaN;
+    }
+
+    @Override
+    public Trail getTrail() {
+        return trail;
+    }
+
+    @Override
+    public void setTrail(Trail trail) {
+        this.trail = trail;
+    }
+
+    @Override
+    public void clearSavedPositions() {
+        pastPositions.clear();
+        oldestPosition = new Vector3f();
     }
 }

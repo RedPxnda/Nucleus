@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
+import com.redpxnda.nucleus.util.LinkedArrayList;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -25,8 +26,11 @@ import java.util.function.Consumer;
 public class ControllerParticle extends DynamicPoseStackParticle {
     public int spawnDelay = 0;
     public int loops = 0;
-    public List<DynamicPoseStackParticle> children = new ArrayList<>();
-    public Consumer<ControllerParticle> loopFunction = p -> {};
+    public List<DynamicPoseStackParticle> children = new LinkedArrayList<>(this, (p, c) -> c.poseStack = p.poseStack);
+    public List<ControllerParticle> queueToAdd = new ArrayList<>();
+    public ParticleShape.LoopFunction loopFunction = c -> null;
+    public int loopTime = -1;
+    public ParticleShape shape;
 
     protected ControllerParticle(PoseStack poseStack, RenderType renderType, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {
         super(poseStack, renderType, clientLevel, x, y, z, dx, dy, dz);
@@ -46,7 +50,7 @@ public class ControllerParticle extends DynamicPoseStackParticle {
                 c.updateLifetime();
             }
             if (c instanceof ControllerParticle cp)
-                cp.updateChildren();
+                cp.updateChildren(initial);
         });
     }
 
@@ -64,9 +68,9 @@ public class ControllerParticle extends DynamicPoseStackParticle {
     public void render(VertexConsumer vertexConsumer, PoseStack poseStack, float x, float y, float z, Camera camera, float pt) {
         if (spawnDelay > 0) return;
         poseStack.translate(x, y, z);
+        poseStack.mulPoseMatrix(oldMatrix.lerp(newMatrix, pt));
         children.forEach(c -> {
             if (c.isAlive()) {
-                this.x = this.x;
                 float cx = (float) (Mth.lerp(pt, c.getXO(), c.getX()));
                 float cy = (float) (Mth.lerp(pt, c.getYO(), c.getY()));
                 float cz = (float) (Mth.lerp(pt, c.getZO(), c.getZ()));
@@ -75,6 +79,7 @@ public class ControllerParticle extends DynamicPoseStackParticle {
                     poseStack.translate(-x, -y, -z);
                     poseStack.translate(c.discX, c.discY, c.discZ);
                 }
+                c.renderTrail(poseStack, pt);
                 c.render(vertexConsumer, cx, cy, cz, camera, pt);
                 poseStack.popPose();
             }
@@ -87,13 +92,28 @@ public class ControllerParticle extends DynamicPoseStackParticle {
             spawnDelay--;
             return;
         }
-        if (age >= lifetime && loops > 0) {
-            age = 0;
-            loops--;
-            loopFunction.accept(this);
-        }
         children.forEach(child -> {
             if (child.isAlive()) {
+                if (child instanceof ControllerParticle cp) {
+                    if (cp.spawnDelay <= 0 && cp.loops > 0) {
+                        if (cp.loopTime > 0)
+                            cp.loopTime--;
+                        else if (cp.loopTime == 0) {
+                            cp.loopTime = cp.shape.loopInterval;
+                            cp.loops--;
+                            ControllerParticle toAdd = cp.loopFunction.loop(cp);
+                            if (toAdd != null) {
+                                toAdd.px = cp.px;
+                                toAdd.py = cp.py;
+                                toAdd.pz = cp.pz;
+                                toAdd.poseStack = poseStack;
+                                toAdd.updateChildren();
+                                queueToAdd.add(toAdd);
+                            }
+                        }
+                    }
+                }
+
                 if (!child.disconnected || Double.isNaN(child.discX) || Double.isNaN(child.discY) || Double.isNaN(child.discZ)) {
                     child.px = px + x;
                     child.py = py + y;
@@ -107,6 +127,9 @@ public class ControllerParticle extends DynamicPoseStackParticle {
                 child.tick();
             }
         });
+        children.addAll(queueToAdd);
+        queueToAdd.clear();
+        children.removeIf(p -> !p.isAlive());
         super.tick();
     }
 

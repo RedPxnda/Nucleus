@@ -28,7 +28,7 @@ public class NucleusRegistries {
     public static RegistrySupplier<BasicParticleType<MimicParticleOptions>> mimicParticle = particles.register(loc("mimic"), () -> new BasicParticleType<>(false, MimicParticleOptions.codec));
     public static RegistrySupplier<SimpleParticleType> controllerParticle = particles.register(loc("controller"), () -> new SimpleParticleType(false));
     public static RegistrySupplier<BasicParticleType<CubeParticleOptions>> cubeParticle = particles.register(loc("cube"), () -> new BasicParticleType<>(false, CubeParticleOptions.codec));
-    public static RegistrySupplier<BasicParticleType<BlockChunkParticleOptions>> blockChunkParticle = particles.register(loc("block_chunk"), () -> new BasicParticleType<>(false, BlockChunkParticleOptions.codec));
+    public static RegistrySupplier<BasicParticleType<ChunkParticleOptions>> blockChunkParticle = particles.register(loc("block_chunk"), () -> new BasicParticleType<>(false, ChunkParticleOptions.codec));
 
     public static void init() {
         var classLoading = NucleusRegistries.class;

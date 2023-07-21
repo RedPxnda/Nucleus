@@ -4,17 +4,21 @@ import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.datapack.codec.AutoCodec;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
-@AutoCodec.Settings(optionalByDefault = true)
-public class BlockChunkParticleOptions extends DynamicParticleOptions {
-    public Block block = Blocks.STONE;
+import static com.redpxnda.nucleus.Nucleus.loc;
 
-    public static final Codec<BlockChunkParticleOptions> codec = AutoCodec.of(BlockChunkParticleOptions.class).codec();
+@AutoCodec.Settings(optionalByDefault = true)
+public class ChunkParticleOptions extends DynamicParticleOptions {
+    public Block block = null;
+    public ResourceLocation texture = loc("item/blank");
+
+    public static final Codec<ChunkParticleOptions> codec = AutoCodec.of(ChunkParticleOptions.class).codec();
 
     @Override
-    public Codec<BlockChunkParticleOptions> codec() {
+    public Codec<ChunkParticleOptions> codec() {
         return codec;
     }
 

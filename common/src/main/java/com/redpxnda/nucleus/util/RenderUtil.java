@@ -3,11 +3,18 @@ package com.redpxnda.nucleus.util;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Axis;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
+import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.mixin.ClientLevelAccessor;
 import com.redpxnda.nucleus.mixin.ParticleEngineAccessor;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.*;
+import com.redpxnda.nucleus.registry.particles.morphing.ParticleMorpher;
+import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
+import dev.architectury.event.CompoundEventResult;
+import dev.architectury.event.events.common.InteractionEvent;
+import dev.architectury.platform.Platform;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -29,31 +36,29 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.OptionalDouble;
 import java.util.function.BiFunction;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
+import static net.minecraft.client.renderer.RenderStateShard.*;
 
 public class RenderUtil {
     public static final Vector3f[][] CUBE = {
             // TOP
             { new Vector3f(1, 1, -1), new Vector3f(1, 1, 1), new Vector3f(-1, 1, 1), new Vector3f(-1, 1, -1) },
-
             // BOTTOM
             { new Vector3f(-1, -1, -1), new Vector3f(-1, -1, 1), new Vector3f(1, -1, 1), new Vector3f(1, -1, -1) },
-
             // FRONT
             { new Vector3f(-1, -1, 1), new Vector3f(-1, 1, 1), new Vector3f(1, 1, 1), new Vector3f(1, -1, 1) },
-
             // BACK
             { new Vector3f(1, -1, -1), new Vector3f(1, 1, -1), new Vector3f(-1, 1, -1), new Vector3f(-1, -1, -1) },
-
             // LEFT
             { new Vector3f(-1, -1, -1), new Vector3f(-1, 1, -1), new Vector3f(-1, 1, 1), new Vector3f(-1, -1, 1) },
-
             // RIGHT
             { new Vector3f(1, -1, 1), new Vector3f(1, 1, 1), new Vector3f(1, 1, -1), new Vector3f(1, -1, -1) }};
     public static final Vector3f[] QUAD = {
@@ -61,7 +66,25 @@ public class RenderUtil {
     };
 
     public static ShaderInstance alphaAnimationShader;
-    public static RenderType alphaAnimation = RenderType.create("alpha_animation_translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
+    public static ShaderInstance trailShader;
+
+    public static RenderType transparentTriangleStrip = RenderType.create(
+            "nucleus_triangle_strip", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP,
+            256, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_LEASH_SHADER).setTextureState(NO_TEXTURE)
+            .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).setLightmapState(LIGHTMAP)
+            .createCompositeState(false));
+
+    public static RenderType alphaAnimation = RenderType.create(
+            "nucleus_alpha_animation_translucent", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS,
+            0x200000, true, true, RenderType.translucentState(new RenderStateShard.ShaderStateShard(() -> alphaAnimationShader)));
+
+    public static final RenderType.CompositeRenderType trail = RenderType.create(
+            "nucleus_trail", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES,
+            256, RenderType.CompositeState.builder().setShaderState(new RenderStateShard.ShaderStateShard(() -> trailShader))
+            .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(4))).setLayeringState(VIEW_OFFSET_Z_LAYERING)
+            .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setOutputState(ITEM_ENTITY_TARGET).setWriteMaskState(COLOR_DEPTH_WRITE)
+            .setCullState(NO_CULL).createCompositeState(false));
+
     public static final ParticleRenderType blockSheetTranslucent = new ParticleRenderType(){
         @Override
         public void begin(BufferBuilder bufferBuilder, TextureManager textureManager) {
@@ -83,12 +106,122 @@ public class RenderUtil {
     };
 
     public static void init() {
+        particleShaping();
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
+        ShaderRegistry.register(loc("rendertype_trail"), DefaultVertexFormat.POSITION_COLOR_NORMAL, i -> trailShader = i);
         ParticleProviderRegistry.register(NucleusRegistries.emittingParticle, new EmitterParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.mimicParticle, new MimicParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.controllerParticle, new ControllerParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.cubeParticle, new CubeParticle.Provider());
-        ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new BlockChunkParticle.Provider());
+        ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
+    }
+
+    public static void particleShaping() {
+        if (Platform.isDevelopmentEnvironment()) {
+            InteractionEvent.RIGHT_CLICK_ITEM.register((p, e) -> {
+                if (!p.getMainHandItem().is(Items.NAME_TAG) || !(p.level() instanceof ClientLevel level) || !(p.isCreative()))
+                    return CompoundEventResult.pass();
+
+                ParticleMorpher morpher = new ParticleMorpher(level, p.getX(), p.getY(), p.getZ());
+                ParticleShape outerCube = new ParticleShape();
+
+                outerCube.setParticle(MiscUtil.initialize(new CubeParticleOptions(), op -> {
+                    op.invert = true;
+                }));
+                outerCube.setColor(0.58f, 0f, 1f, 1f);
+                outerCube.setScale(1.5f);
+                outerCube.setSpawnFunction(ParticleShape.SpawnFunction.SINGLE);
+                outerCube.setOuterMotionFunction((pos, motion, age) -> {
+                    if (age < 37/400f) {
+                        age*=4;
+                        motion.set(0.3, 0, (Math.sin(age * Math.PI * 12) / 3));
+                    } else motion.set(0, 0, 0);
+                });
+                outerCube.setAnimationFunction((matrix, manager, age) -> {
+                    matrix.rotate(new Quaternionf().rotationXYZ(
+                            0,
+                            0.1f,
+                            0
+                    ));
+                });
+                outerCube.setFriction(0.97f);
+                outerCube.setLifetime(400);
+                outerCube.setOuterTickerFunction(manager -> {
+                    Trail trail = manager.getTrail();
+                    if (trail.width > 0) trail.width-=0.004f;
+                });
+                outerCube.setTickerFunction(manager -> {
+                    manager.setScale(Math.max(manager.getScale() - 0.04f, 0));
+                });
+                outerCube.setOuterTrail(new Trail()
+                        .setColor(0.58f, 0f, 1f, 0.6f)
+                        .setMaxLength(20));
+
+                ParticleShape innerCube = new ParticleShape(outerCube);
+                innerCube.setParticle(MiscUtil.initialize(new CubeParticleOptions(), op -> {
+                    op.invert = false;
+                }));
+                innerCube.setColor(0f, 0f, 0f, 1f);
+                innerCube.setScale(1.25f);
+                innerCube.setLifetime(100);
+
+
+                ParticleShape explosion = new ParticleShape();
+                explosion.setParticle(MiscUtil.initialize(new CubeParticleOptions(), o -> {
+                    o.xSize = 0.1f;
+                    o.ySize = 0.1f;
+                    o.zSize = 0.1f;
+                }));
+                explosion.setSpawnFunction(ParticleShape.SpawnFunction.SINGLE);
+                explosion.setFriction(1f);
+                explosion.setLifetime(80);
+                explosion.setDelay(38);
+                explosion.setGravity(0f);
+                explosion.setPhysicsEnabled(true);
+                explosion.setColor(0.5f, 0.5f, 0.5f, 1f);
+                explosion.setMotionFunction((pos, motion, t) -> {
+                    if (t < 60/80f) {
+                        double pt = t * Math.PI * 30;
+                        pos.x = t * 3 * Math.cos(pt);
+                        pos.y = 7 * (t);
+                        pos.z = t * 3 * Math.sin(pt);
+                    } else if (t == 60/80f)
+                        pos.set(0, pos.y, 0);
+                });
+                Trail greyTrail = new Trail().setWidth(0.1f).setMaxLength(3).setEmissive(false).setColor(0.5f, 0.5f, 0.5f, 1f);
+                explosion.setTickerFunction(manager -> {
+                    if (manager.getAge() == 60) {
+                        manager.setGravity(1f);
+                        manager.clearSavedPositions();
+                        manager.setTrail(greyTrail);
+                        manager.setXSpeed(MathUtil.random(-0.5, 0.5));
+                        manager.setYSpeed(MathUtil.random(-0.25, 0.25));
+                        manager.setZSpeed(MathUtil.random(-0.5, 0.5));
+                    }
+                });
+                explosion.setOuterTickerFunction(manager -> {
+                    if (manager.getAge() == 0) {
+                        manager.disconnect();
+                    }
+                });
+                explosion.setOuterAnimationFunction((matrix, manager, age) -> {
+                    matrix.rotate(Axis.YP.rotationDegrees(10));
+                });
+                explosion.setTrail(new Trail().setWidth(0.1f).setMaxLength(3).setEmissive(true));
+                explosion.setLoopFunction(ParticleShape.LoopFunction.DUPE_CHILDREN);
+                explosion.setLoops(100);
+                explosion.setLoopInterval(0);
+
+                outerCube.addChild(explosion);
+                outerCube.addChild(innerCube);
+
+                morpher.setLifetime(400);
+                morpher.add(outerCube);
+                morpher.spawn();
+
+                return CompoundEventResult.pass();
+            });
+        }
     }
 
     public static <T extends ParticleOptions> Particle createParticle(ClientLevel level, T options, double x, double y, double z, double xs, double ys, double zs) {

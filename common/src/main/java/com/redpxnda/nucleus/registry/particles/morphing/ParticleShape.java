@@ -1,22 +1,23 @@
 package com.redpxnda.nucleus.registry.particles.morphing;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.ControllerParticle;
 import com.redpxnda.nucleus.registry.particles.DynamicPoseStackParticle;
+import com.redpxnda.nucleus.registry.particles.Trail;
 import com.redpxnda.nucleus.registry.particles.manager.PoseStackParticleManager;
 import com.redpxnda.nucleus.util.RenderUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public class ParticleShape {
     private final Set<String> setValues = new HashSet<>();
@@ -32,15 +33,22 @@ public class ParticleShape {
     public RandomFloat alpha = new RandomFloat(1);
     public RandomFloat scale = new RandomFloat(1);
     public boolean physics = false;
+    public Trail trail = null;
+    public Trail outerTrail = null;
     public int loops = 0;
+    public int loopInterval = -1;
     public int delay = 0;
-    public MotionFunction motionFunction = (a, b, c) -> b;
-    public MotionFunction outerMotionFunction = (a, b, c) -> b;
+    public MotionFunction motionFunction = (a, b, c) -> {};
+    public MotionFunction outerMotionFunction = (a, b, c) -> {};
     public SpawnFunction spawnFunction = SpawnFunction.SINGLE;
     public TickerFunction tickerFunction = m -> {};
     public TickerFunction outerTickerFunction = m -> {};
-    public AnimationFunction animationFunction = (ps, a) -> {};
+    public AnimationFunction outerAnimationFunction = (ps, m, a) -> {};
+    public AnimationFunction animationFunction = (ps, m, a) -> {};
+    public LoopFunction loopFunction = c -> null;
     public ParticleOptions particle;
+
+    public Function<ControllerParticle, Spawner> spawner;
 
     public ParticleShape() {
     }
@@ -59,11 +67,13 @@ public class ParticleShape {
         this.scale = other.scale.copy();
         this.physics = other.physics;
         this.loops = other.loops;
+        this.loopInterval = other.loopInterval;
         this.delay = other.delay;
         this.motionFunction = other.motionFunction;
         this.spawnFunction = other.spawnFunction;
         this.tickerFunction = other.tickerFunction;
         this.animationFunction = other.animationFunction;
+        this.loopFunction = other.loopFunction;
         this.particle = other.particle;
     }
 
@@ -165,13 +175,31 @@ public class ParticleShape {
     public void setAnimationFunction(AnimationFunction function) {
         animationFunction = function;
     }
+    public void setOuterAnimationFunction(AnimationFunction function) {
+        outerAnimationFunction = function;
+    }
 
     public void setLoops(int loops) {
         this.loops = loops;
     }
 
+    public void setLoopInterval(int interval) {
+        loopInterval = interval;
+    }
+
     public void setDelay(int delay) {
         this.delay = delay;
+    }
+
+    public void setTrail(Trail trail) {
+        this.trail = trail;
+    }
+    public void setOuterTrail(Trail trail) {
+        this.outerTrail = trail;
+    }
+
+    public void setLoopFunction(LoopFunction function) {
+        loopFunction = function;
     }
 
     protected ControllerParticle create(ClientLevel level) {
@@ -185,7 +213,6 @@ public class ParticleShape {
         }
 
         applyTo(controller);
-        controller.loopFunction = this::applyTo;
 
         return controller;
     }
@@ -199,7 +226,7 @@ public class ParticleShape {
         ClientLevel level = controller.getLevel();
         controller.children.clear();
         controller.setPos(x, y, z);
-        Spawner spawner = (px, py, pz) -> {
+        spawner = cp -> (px, py, pz) -> {
             DynamicPoseStackParticle particle = (DynamicPoseStackParticle) RenderUtil.createParticle(
                     level, this.particle,
                     px, py, pz, 0, 0, 0
@@ -219,19 +246,28 @@ public class ParticleShape {
             }
             if (VIS("scale")) particle.setScale(scale.get());
             if (VIS("physics")) particle.setPhysicsEnabled(physics);
+            particle.trail = trail;
             particle.motionFunction = motionFunction;
             particle.animationFunction = animationFunction;
             particle.tickerFunction = tickerFunction;
 
-            controller.children.add(particle);
+            particle.updateLifetime();
+
+            cp.children.add(particle);
         };
-        spawnFunction.call(spawner);
+        spawnFunction.call(spawner.apply(controller));
 
         controller.expectedLifetime = expectedLifetime+additionalLifetime.max;
-        controller.loops = loops;
+        controller.loops = loops == 0 ? 0 : loops-1;
         controller.spawnDelay = delay;
+        controller.trail = outerTrail;
+        controller.animationFunction = outerAnimationFunction;
         controller.tickerFunction = outerTickerFunction;
         controller.motionFunction = outerMotionFunction;
+        controller.loopFunction = loopFunction;
+        controller.loopTime = loopInterval;
+
+        controller.shape = this;
 
         children.forEach(child -> controller.children.add(child.create(level)));
 
@@ -289,14 +325,14 @@ public class ParticleShape {
         }
         public float get() {
             if (min == max) return min;
-            return (float) MathUtil.random(min, max);
+            return MathUtil.random(min, max);
         }
     }
     public interface MotionFunction {
-        Vec3 move(Vec3 pos, Vec3 motion, Double age);
+        void move(Vector3d pos, Vector3d motion, Double age);
     }
     public interface AnimationFunction {
-        void animate(Matrix4f matrix, float age);
+        void animate(Matrix4f matrix, PoseStackParticleManager manager, float age);
     }
     public interface SpawnFunction {
         SpawnFunction SINGLE = spawner -> spawner.spawn(0, 0, 0);
@@ -315,5 +351,37 @@ public class ParticleShape {
     }
     public interface TickerFunction {
         void animate(PoseStackParticleManager manager);
+    }
+    public interface LoopFunction {
+        LoopFunction DUPE_CHILDREN = p -> {
+            p.setAge(0);
+            p.shape.spawnFunction.call(p.shape.spawner.apply(p));
+            return null;
+        };
+        LoopFunction CLONE = p -> {
+            ControllerParticle newChild = p.shape.create(p.getLevel());
+            newChild.spawnDelay = 0;
+            newChild.loops = 0;
+            newChild.loopTime = -1;
+            return newChild;
+        };
+        LoopFunction DISC_CLONE = p -> {
+            ControllerParticle newChild = CLONE.loop(p);
+            newChild.disconnected = p.disconnected;
+            newChild.discX = p.discX;
+            newChild.discY = p.discY;
+            newChild.discZ = p.discZ;
+            return newChild;
+        };
+        LoopFunction RESET = p -> {
+            p.remove();
+            return CLONE.loop(p);
+        };
+        LoopFunction DISC_RESET = p -> {
+            p.remove();
+            return DISC_CLONE.loop(p);
+        };
+
+        ControllerParticle loop(ControllerParticle original);
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 
 public abstract class DynamicParticle extends Particle implements DynamicParticleManager {
     public int expectedLifetime;
@@ -20,7 +21,7 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     public float alpha;
     public float scale;
     public float oldScale;
-    public ParticleShape.MotionFunction motionFunction = (a, b, c) -> b;
+    public ParticleShape.MotionFunction motionFunction = (a, b, c) -> {};
 
     protected DynamicParticle(ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
         super(clientLevel, x, y, z);
@@ -195,10 +196,13 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     @Override
     public void tick() {
         oldScale = scale;
-        Vec3 motion = motionFunction.move(new Vec3(x, y, z), new Vec3(getXSpeed(), getYSpeed(), getZSpeed()), this.age/((double) this.expectedLifetime));
+        Vector3d pos = new Vector3d(x, y, z);
+        Vector3d motion = new Vector3d(xd, yd, zd);
+        motionFunction.move(pos, motion, this.age/((double) this.expectedLifetime));
         this.setXSpeed(motion.x);
         this.setYSpeed(motion.y);
         this.setZSpeed(motion.z);
+        this.setPos(pos.x, pos.y, pos.z);
         super.tick();
     }
 }
