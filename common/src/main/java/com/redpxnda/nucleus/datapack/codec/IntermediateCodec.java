@@ -46,8 +46,8 @@ public class IntermediateCodec<S, I, O> implements Codec<IntermediateCodec.Media
 
 
     public static class Median<S, I, O> {
-        private final S start;
-        private final BiFunction<S, I, O> converter;
+        protected final S start;
+        protected final BiFunction<S, I, O> converter;
 
         public Median(S start, BiFunction<S, I, O> converter) {
             this.start = start;
