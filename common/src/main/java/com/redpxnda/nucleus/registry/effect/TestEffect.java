@@ -21,7 +21,7 @@ public class TestEffect extends RenderingMobEffect {
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void render(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
+    public void renderPre(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
         matrixStack.pushPose();
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(new ResourceLocation("nucleus", "item/blank"));
         matrixStack.translate(0, 1, 0);
@@ -32,5 +32,10 @@ public class TestEffect extends RenderingMobEffect {
                 packedLight
                 );
         matrixStack.popPose();
+    }
+
+    @Environment(EnvType.CLIENT)
+    @Override
+    public void renderPost(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
     }
 }

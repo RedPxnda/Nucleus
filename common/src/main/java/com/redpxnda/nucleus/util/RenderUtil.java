@@ -121,9 +121,15 @@ public class RenderUtil {
         RenderEvents.LIVING_PRE.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
                 if (effect instanceof RenderingMobEffect rendering)
-                    rendering.render(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
+                    rendering.renderPre(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
             });
             return EventResult.pass();
+        });
+        RenderEvents.LIVING_POST.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+            entity.getActiveEffectsMap().forEach((effect, instance) -> {
+                if (effect instanceof RenderingMobEffect rendering)
+                    rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
+            });
         });
     }
 

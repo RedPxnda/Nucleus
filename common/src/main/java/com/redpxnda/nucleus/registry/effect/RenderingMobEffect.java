@@ -15,5 +15,8 @@ public abstract class RenderingMobEffect extends MobEffect {
     }
 
     @Environment(EnvType.CLIENT)
-    public abstract void render(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight);
+    public void renderPre(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {}
+
+    @Environment(EnvType.CLIENT)
+    public abstract void renderPost(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight);
 }
