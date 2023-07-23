@@ -4,15 +4,18 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.mixin.ClientLevelAccessor;
 import com.redpxnda.nucleus.mixin.ParticleEngineAccessor;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
+import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import com.redpxnda.nucleus.registry.particles.*;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleMorpher;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
 import dev.architectury.event.CompoundEventResult;
+import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
@@ -114,6 +117,14 @@ public class RenderUtil {
         ParticleProviderRegistry.register(NucleusRegistries.controllerParticle, new ControllerParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.cubeParticle, new CubeParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
+
+        RenderEvents.LIVING_PRE.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+            entity.getActiveEffectsMap().forEach((effect, instance) -> {
+                if (effect instanceof RenderingMobEffect rendering)
+                    rendering.render(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
+            });
+            return EventResult.pass();
+        });
     }
 
     public static void particleShaping() {

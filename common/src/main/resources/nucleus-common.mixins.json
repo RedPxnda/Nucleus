@@ -6,6 +6,7 @@
   "client": [
     "ClientLevelAccessor",
     "LevelRendererAccessor",
+    "LivingEntityRendererMixin",
     "ParticleEngineAccessor",
     "ParticleEngineMixin",
     "PoseStackAccessor"
