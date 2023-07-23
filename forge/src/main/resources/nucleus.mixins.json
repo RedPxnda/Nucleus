@@ -3,6 +3,7 @@
   "package": "com.redpxnda.nucleus.forge.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
+  "plugin": "com.redpxnda.nucleus.mixin.plugin.MixinPlugin",
   "client": [
   ],
   "mixins": [

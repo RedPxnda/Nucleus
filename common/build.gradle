@@ -21,6 +21,9 @@ dependencies {
     implementation('com.github.farmboy0.luaj:luaj-core:v3.0.4-farmboy0')
     implementation('com.github.farmboy0.luaj:luaj-jse:v3.0.4-farmboy0')
     implementation('com.github.farmboy0.luaj:luaj-jme:v3.0.4-farmboy0')
+
+    annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
+    implementation(include(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}"))
 }
 
 publishing {

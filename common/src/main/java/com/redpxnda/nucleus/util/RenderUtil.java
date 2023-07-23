@@ -151,16 +151,18 @@ public class RenderUtil {
 
         // event testing
         /*MiscEvents.CAN_CLIENT_SPRINT.register(player -> {
-            if (player.hasEffect(NucleusRegistries.testEffect.get())) return EventResult.interruptFalse();
+            //if (player.hasEffect(NucleusRegistries.testEffect.get())) return EventResult.interruptFalse();
             return EventResult.pass();
         });
-        MiscEvents.LIVING_JUMP.register(player -> {
-            if (player.hasEffect(NucleusRegistries.testEffect.get())) return EventResult.interruptFalse();
-            return EventResult.pass();
-        });
-        MiscEvents.MODIFY_CAMERA_SENSITIVITY.register((mc, orig) -> {
-            if (mc.player != null && mc.player.hasEffect(NucleusRegistries.testEffect.get())) return CompoundEventResult.interruptFalse(orig*0.5);
+        MiscEvents.LIVING_JUMP_POWER.register(player -> {
+            //if (player.hasEffect(NucleusRegistries.testEffect.get())) return CompoundEventResult.interruptFalse(0.5f);
             return CompoundEventResult.pass();
+        });
+        MiscEvents.MODIFY_CAMERA_MOTION.register((mc, motion) -> {
+            if (mc.player != null && mc.player.hasEffect(NucleusRegistries.testEffect.get())) {
+                if (motion.x != 0 || motion.y != 0) motion.normalize();
+                motion.add(MathUtil.random(-10d, 10), 0);
+            }
         });*/
     }
 
