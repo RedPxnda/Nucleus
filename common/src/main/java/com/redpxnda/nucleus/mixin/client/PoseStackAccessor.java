@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.mixin;
+package com.redpxnda.nucleus.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.spongepowered.asm.mixin.Mixin;

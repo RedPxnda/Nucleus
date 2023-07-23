@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.mixin;
+package com.redpxnda.nucleus.mixin.client;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.particle.ParticleEngine;

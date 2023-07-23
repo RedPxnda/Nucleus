@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.mixin;
+package com.redpxnda.nucleus.mixin.client;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.LevelRenderer;

@@ -4,11 +4,12 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
 import com.redpxnda.nucleus.math.MathUtil;
-import com.redpxnda.nucleus.mixin.ClientLevelAccessor;
-import com.redpxnda.nucleus.mixin.ParticleEngineAccessor;
+import com.redpxnda.nucleus.mixin.client.ClientLevelAccessor;
+import com.redpxnda.nucleus.mixin.client.ParticleEngineAccessor;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import com.redpxnda.nucleus.registry.particles.*;
@@ -39,11 +40,14 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.function.BiFunction;
 
@@ -119,10 +123,13 @@ public class RenderUtil {
         ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
 
         RenderEvents.LIVING_PRE.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
-            entity.getActiveEffectsMap().forEach((effect, instance) -> {
-                if (effect instanceof RenderingMobEffect rendering)
-                    rendering.renderPre(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
-            });
+            for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
+                if (entry.getKey() instanceof RenderingMobEffect rendering) {
+                    boolean result = rendering.renderPre(entry.getValue(), entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
+                    if (result)
+                        return EventResult.interruptFalse();
+                }
+            }
             return EventResult.pass();
         });
         RenderEvents.LIVING_POST.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
@@ -131,6 +138,30 @@ public class RenderUtil {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
             });
         });
+        RenderEvents.HUD_RENDER_PRE.register((minecraft, graphics, partialTick) -> {
+            for (Map.Entry<MobEffect, MobEffectInstance> entry : minecraft.player.getActiveEffectsMap().entrySet()) {
+                if (entry.getKey() instanceof RenderingMobEffect rendering) {
+                    boolean result = rendering.renderHud(entry.getValue(), minecraft, graphics, partialTick);
+                    if (result)
+                        return EventResult.interruptFalse();
+                }
+            }
+            return EventResult.pass();
+        });
+
+        // event testing
+        /*MiscEvents.CAN_CLIENT_SPRINT.register(player -> {
+            if (player.hasEffect(NucleusRegistries.testEffect.get())) return EventResult.interruptFalse();
+            return EventResult.pass();
+        });
+        MiscEvents.LIVING_JUMP.register(player -> {
+            if (player.hasEffect(NucleusRegistries.testEffect.get())) return EventResult.interruptFalse();
+            return EventResult.pass();
+        });
+        MiscEvents.MODIFY_CAMERA_SENSITIVITY.register((mc, orig) -> {
+            if (mc.player != null && mc.player.hasEffect(NucleusRegistries.testEffect.get())) return CompoundEventResult.interruptFalse(orig*0.5);
+            return CompoundEventResult.pass();
+        });*/
     }
 
     public static void particleShaping() {

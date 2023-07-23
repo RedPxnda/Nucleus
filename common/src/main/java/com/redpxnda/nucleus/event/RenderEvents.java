@@ -4,15 +4,21 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.architectury.event.Event;
 import dev.architectury.event.EventFactory;
 import dev.architectury.event.EventResult;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
+@Environment(EnvType.CLIENT)
 public interface RenderEvents {
-    Event<PreRender<LivingEntity>> LIVING_PRE = EventFactory.createEventResult();
-    Event<PostRender<LivingEntity>> LIVING_POST = EventFactory.createLoop();
+    Event<EntityRenderPre<LivingEntity>> LIVING_PRE = EventFactory.createEventResult();
+    Event<EntityRenderPost<LivingEntity>> LIVING_POST = EventFactory.createLoop();
+    Event<HudRenderPre> HUD_RENDER_PRE = EventFactory.createEventResult();
 
-    interface PreRender<T extends Entity> {
+    interface EntityRenderPre<T extends Entity> {
         /**
          * Fires before an entity is rendered.
          *
@@ -23,10 +29,17 @@ public interface RenderEvents {
          */
         EventResult render(T entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight);
     }
-    interface PostRender<T extends Entity> {
+    interface EntityRenderPost<T extends Entity> {
         /**
          * Fires after an entity is rendered.
          */
         void render(T entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight);
+    }
+    interface HudRenderPre {
+        /**
+         * Fires before the player's hud is rendered
+         * @return whether the hud should continue rendering
+         */
+        EventResult render(Minecraft minecraft, GuiGraphics graphics, float partialTick);
     }
 }
