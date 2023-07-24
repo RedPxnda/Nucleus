@@ -31,4 +31,14 @@ public class LivingEntityRendererMixin {
     private void nucleus$livingRenderPostEvent(LivingEntity livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
         RenderEvents.LIVING_POST.invoker().render(livingEntity, f, g, poseStack, multiBufferSource, i);
     }
+
+    @Inject(
+            method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER),
+            cancellable = true)
+    private void nucleus$livingRenderPushEvent(LivingEntity livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
+        EventResult result = RenderEvents.LIVING_PUSHED.invoker().render(livingEntity, f, g, poseStack, multiBufferSource, i);
+        if (result.interruptsFurtherEvaluation())
+            ci.cancel();
+    }
 }

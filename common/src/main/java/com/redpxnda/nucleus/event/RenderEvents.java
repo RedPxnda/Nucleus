@@ -15,6 +15,10 @@ import net.minecraft.world.entity.LivingEntity;
 @Environment(EnvType.CLIENT)
 public interface RenderEvents {
     Event<EntityRenderPre<LivingEntity>> LIVING_PRE = EventFactory.createEventResult();
+    /**
+     * LIVING_PUSHED fires after the matrix stack is pushed, allowing modifications to the current matrix.
+     */
+    Event<EntityRenderPre<LivingEntity>> LIVING_PUSHED = EventFactory.createEventResult();
     Event<EntityRenderPost<LivingEntity>> LIVING_POST = EventFactory.createLoop();
     Event<HudRenderPre> HUD_RENDER_PRE = EventFactory.createEventResult();
 

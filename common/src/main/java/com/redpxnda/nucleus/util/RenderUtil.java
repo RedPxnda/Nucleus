@@ -123,8 +123,10 @@ public class RenderUtil {
 
         RenderEvents.LIVING_PRE.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
-                if (entry.getKey() instanceof RenderingMobEffect rendering) {
-                    boolean result = rendering.renderPre(entry.getValue(), entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
+                MobEffectInstance instance = entry.getValue();
+                MobEffect effect = entry.getKey();
+                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
+                    boolean result = rendering.renderPre(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
                     if (result)
                         return EventResult.interruptFalse();
                 }
@@ -133,8 +135,9 @@ public class RenderUtil {
         });
         RenderEvents.LIVING_POST.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
-                if (effect instanceof RenderingMobEffect rendering)
+                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
+                }
             });
         });
         RenderEvents.HUD_RENDER_PRE.register((minecraft, graphics, partialTick) -> {
