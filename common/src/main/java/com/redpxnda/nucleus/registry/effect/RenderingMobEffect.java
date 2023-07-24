@@ -49,6 +49,9 @@ public abstract class RenderingMobEffect extends MobEffect {
         }
     }
 
+    /**
+     * Make sure to enable ticking for your effect in order for updates to work
+     */
     @Override
     public void applyEffectTick(LivingEntity entity, int i) {
         super.applyEffectTick(entity, i);
@@ -57,7 +60,7 @@ public abstract class RenderingMobEffect extends MobEffect {
             MobEffectInstance instance = entity.getEffect(this);
             if (instance == null) return;
 
-            level.getPlayers(player -> player.position().distanceTo(entity.position()) > maxTickUpdateDistance()).forEach(player -> {
+            level.getPlayers(player -> player.position().distanceTo(entity.position()) < maxTickUpdateDistance()).forEach(player -> {
                 player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance));
             });
         }
@@ -76,7 +79,7 @@ public abstract class RenderingMobEffect extends MobEffect {
      * Never sends updates on tick if set to -1.
      */
     public int tickUpdateInterval() {
-        return -1;
+        return 1;
     }
 
     @Override
