@@ -4,12 +4,11 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
-import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.RenderEvents;
+import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.mixin.client.ClientLevelAccessor;
-import com.redpxnda.nucleus.mixin.client.ParticleEngineAccessor;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import com.redpxnda.nucleus.registry.particles.*;
@@ -275,8 +274,7 @@ public class RenderUtil {
     }
 
     public static <T extends ParticleOptions> Particle createParticle(ClientLevel level, T options, double x, double y, double z, double xs, double ys, double zs) {
-        ParticleProvider<T> provider = (ParticleProvider<T>) ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
-                .get(BuiltInRegistries.PARTICLE_TYPE.getId(options.getType()));
+        ParticleProvider<T> provider = (ParticleProvider<T>) MiscAbstraction.getProviderFromType(options.getType());
         if (provider == null) return null;
         return provider.createParticle(options, level, x, y, z, xs, ys, zs);
     }

@@ -12,7 +12,6 @@
     "client.LivingEntityRendererMixin",
     "client.LocalPlayerMixin",
     "client.MouseHandlerMixin",
-    "client.ParticleEngineAccessor",
     "client.ParticleEngineMixin",
     "client.PoseStackAccessor"
   ],
