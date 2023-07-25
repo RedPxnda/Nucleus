@@ -125,7 +125,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             Type fieldType = field.getGenericType();
             FieldCallback callback = new FieldCallback(field);
             if (field.isAnnotationPresent(Override.class))
-                codec = getFieldOverride(cls, field);
+                codec = getFieldOverride(field);
             else
                 codec = getCodec(callback, fieldType, true);
 
@@ -251,13 +251,13 @@ public class AutoCodec<C> extends MapCodec<C> {
         // autocodec inception
         return new AutoCodec<>(cls, errorMsg).codec();
     }
-    private static Codec<?> getFieldOverride(Class<?> cls, Field field) {
+    private static Codec<?> getFieldOverride(Field field) {
         Override override = field.getAnnotation(Override.class);
         try {
-            Field codecField = cls.getField(override.value());
+            Field codecField = field.getDeclaringClass().getField(override.value());
             return (Codec<?>) codecField.get(null);
         } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-            LOGGER.error("Field mentioned in AutoCodec.Override annotation for field '{}' in class '{}' is either non-existent, inaccessible, or not a valid Codec! -> {}", field.getName(), cls.getSimpleName(), e);
+            LOGGER.error("Field mentioned in AutoCodec.Override annotation for field '{}' in class '{}' is either non-existent, inaccessible, or not a valid Codec! -> {}", field.getName(), field.getDeclaringClass().getSimpleName(), e);
             throw new RuntimeException(e);
         }
     }
