@@ -8,7 +8,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -73,6 +75,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, ResourceLocation.class, ResourceLocation.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
         addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
+        addInherit(map, Component.class, ExtraCodecs.COMPONENT);
     });
 
     public static <T> Codec<T> getOverride(Class<T> cls) {
