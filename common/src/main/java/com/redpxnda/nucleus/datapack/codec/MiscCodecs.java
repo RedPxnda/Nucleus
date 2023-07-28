@@ -7,6 +7,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,6 +65,40 @@ public class MiscCodecs {
         }, holder -> holder.element == null ? new JsonPrimitive(holder.name) : holder.element);
     }
     public record ConsumerHolder<T extends Consumer<JsonElement>>(T consumer, @Nullable JsonElement element, String name) {}
+
+    public static <A, T extends Function<JsonElement, A>> Codec<FunctionHolder<A, T>> functionMapCodec(String typeKey, Map<String, T> map) {
+        return ExtraCodecs.JSON.comapFlatMap(json -> {
+            if (json instanceof JsonPrimitive prim) {
+                String name = prim.getAsString();
+                return DataResult.success(new FunctionHolder<>(map.get(name), null, name));
+            } else if (json instanceof JsonObject object) {
+                if (!object.has(typeKey))
+                    return DataResult.error(() -> "No member '" + typeKey + "' found in '" + object + "'!");
+                String name = object.get(typeKey).getAsString();
+                return DataResult.success(new FunctionHolder<>(map.get(name), object, name));
+            } else
+                return DataResult.error(() -> "Not an object nor string '" + json + "'!");
+        }, holder -> holder.element == null ? new JsonPrimitive(holder.name) : holder.element);
+    }
+    public record FunctionHolder<A, T extends Function<JsonElement, A>>(T func, JsonElement element, String name) implements Function<JsonElement, A> {
+        @Override
+        public A apply(JsonElement element) {
+            return func.apply(element);
+        }
+        public A apply() {
+            return func.apply(element);
+        }
+    }
+    public static <A, T extends Function<JsonElement, A>, O> A dispatchFunctionMap(DynamicOps<O> ops, O element, String typeKey, Map<String, T> map, Consumer<String> errorMessage) {
+        FunctionHolder<A, T> functionHolder = functionMapCodec(typeKey, map).parse(ops, element)
+                .getOrThrow(false, errorMessage);
+        return functionHolder.apply();
+    }
+    public static <A, T extends Function<JsonElement, A>> A dispatchFunctionMap(JsonElement element, String typeKey, Map<String, T> map, Consumer<String> errorMessage) {
+        FunctionHolder<A, T> functionHolder = functionMapCodec(typeKey, map).parse(JsonOps.INSTANCE, element)
+                .getOrThrow(false, errorMessage);
+        return functionHolder.apply();
+    }
 
     public record DoubleRange(double min, double max) {}
 }
