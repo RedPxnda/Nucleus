@@ -30,6 +30,13 @@ public class MiscCodecs {
         return codec.listOf().xmap(l -> l.toArray(i -> (T[]) Array.newInstance(cls, i)), Arrays::asList);
     }
 
+    public static <T> T quickParse(JsonElement element, Codec<T> codec, Consumer<String> ifFailed) {
+        return codec.parse(JsonOps.INSTANCE, element).getOrThrow(false, ifFailed);
+    }
+    public static <T, O> T quickParse(DynamicOps<O> ops, O element, Codec<T> codec, Consumer<String> ifFailed) {
+        return codec.parse(ops, element).getOrThrow(false, ifFailed);
+    }
+
     public static final Codec<DoubleRange> DOUBLE_RANGE = Codec.either(
             Codec.DOUBLE.listOf(),
             Codec.pair(Codec.DOUBLE.fieldOf("min").codec(), Codec.DOUBLE.fieldOf("max").codec())
