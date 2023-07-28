@@ -21,6 +21,8 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 
 public class MiscCodecs {
+    public static final ColorCodec COLOR = ColorCodec.INSTANCE;
+
     public static <T> Codec<T[]> array(Codec<T> codec, IntFunction<T[]> converter) {
         return codec.listOf().xmap(l -> l.toArray(converter), Arrays::asList);
     }
