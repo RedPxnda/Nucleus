@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.util;
 
 import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 
 public class Color {
     public int r;
@@ -35,6 +36,8 @@ public class Color {
             b = Integer.valueOf(hex.substring(4, 6), 16);
             if (hex.length() > 6)
                 a  = Integer.valueOf(hex.substring(6, 8), 16);
+            else
+                a = 255;
         }
     }
     public Color(String hex) {
@@ -72,5 +75,28 @@ public class Color {
         rgb = (rgb << 8) + g;
         rgb = (rgb << 8) + b;
         return rgb;
+    }
+
+    public void lerp(float delta, Color other) {
+        r = Mth.lerpInt(delta, r, other.r);
+        g = Mth.lerpInt(delta, g, other.g);
+        b = Mth.lerpInt(delta, b, other.b);
+        a = Mth.lerpInt(delta, a, other.a);
+    }
+    public void lerp(float delta, Color other, Color dest) {
+        dest.r = Mth.lerpInt(delta, r, other.r);
+        dest.g = Mth.lerpInt(delta, g, other.g);
+        dest.b = Mth.lerpInt(delta, b, other.b);
+        dest.a = Mth.lerpInt(delta, a, other.a);
+    }
+
+    @Override
+    public String toString() {
+        return "Color{" +
+                "r=" + r +
+                ", g=" + g +
+                ", b=" + b +
+                ", a=" + a +
+                '}';
     }
 }
