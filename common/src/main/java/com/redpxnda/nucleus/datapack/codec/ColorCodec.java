@@ -7,10 +7,6 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapLike;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.util.Color;
-import net.minecraft.util.FastColor;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public class ColorCodec implements Codec<Color> {
     public static final ColorCodec INSTANCE = new ColorCodec();
