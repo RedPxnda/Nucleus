@@ -23,25 +23,20 @@ public class Color {
         a = FastColor.ARGB32.alpha(argb);
     }
 
-    public Color(String hex, boolean alphaBefore) {
-        if (hex.startsWith("#")) hex = hex.substring(1);
-        if (alphaBefore) {
-            a = Integer.valueOf(hex.substring(0, 2), 16);
-            r = Integer.valueOf(hex.substring(2, 4), 16);
-            g = Integer.valueOf(hex.substring(4, 6), 16);
-            b = Integer.valueOf(hex.substring(6, 8), 16);
-        } else {
-            r = Integer.valueOf(hex.substring(0, 2), 16);
-            g = Integer.valueOf(hex.substring(2, 4), 16);
-            b = Integer.valueOf(hex.substring(4, 6), 16);
-            if (hex.length() > 6)
-                a  = Integer.valueOf(hex.substring(6, 8), 16);
-            else
-                a = 255;
-        }
-    }
     public Color(String hex) {
-        this(hex, false);
+        if (hex.startsWith("#")) hex = hex.substring(1);
+        validateHexString(hex);
+        int hexInt = Integer.parseInt(hex, 16);
+
+        r = (hexInt >> 16) & 0xFF;
+        g = (hexInt >> 8) & 0xFF;
+        b = hexInt & 0xFF;
+        a = 255;
+    }
+
+    public static void validateHexString(String hex) {
+        if (!hex.replaceFirst("^[0-9A-Fa-f]{6}$", "").isEmpty())
+            throw new RuntimeException("Invalid rgb hex! Don't know how to use '" + hex + "'! Only use 0-9, a-f(case insensitive), and make sure there are exactly 6 characters. Eg: '9Ad6F0'");
     }
 
     public float redAsFloat() {
