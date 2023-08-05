@@ -17,10 +17,10 @@ import org.joml.Vector4i;
 public class Color extends Vector4i {
 
     public Color(float r, float g, float b, float a) {
-        this.x = (int)(r / 255);
-        this.y = (int)(g / 255);
-        this.z = (int)(b / 255);
-        this.w = (int)(a / 255);
+        this.x = (int)(r * 255);
+        this.y = (int)(g * 255);
+        this.z = (int)(b * 255);
+        this.w = (int)(a * 255);
     }
 
     public Color(int r, int g, int b, int a) {
