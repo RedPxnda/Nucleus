@@ -55,19 +55,25 @@ public class Color extends Vector4i {
     public Color(String hex) {
         if (hex.startsWith("#")) hex = hex.substring(1);
         validateHexString(hex);
+
+        String alpha = "FF";
+        if (hex.length() == 8) {
+            alpha = hex.substring(6, 8);
+            hex = hex.substring(0, 6);
+        }
         int hexInt = Integer.parseInt(hex, 16);
 
         x = (hexInt >> 16) & 0xFF;
         y = (hexInt >> 8) & 0xFF;
         z = hexInt & 0xFF;
-        w = 255;
+        w = Integer.parseInt(alpha, 16);
     }
 
     public Color() {}
 
     public static void validateHexString(String hex) {
-        if (!hex.replaceFirst("^[0-9A-Fa-f]{6}$", "").isEmpty())
-            throw new RuntimeException("Invalid rgb hex! Don't know how to use '" + hex + "'! Only use 0-9, a-f(case insensitive), and make sure there are exactly 6 characters. Eg: '9Ad6F0'");
+        if (!hex.replaceFirst("^[0-9A-Fa-f]{6}$", "").isEmpty() && !hex.replaceFirst("^[0-9A-Fa-f]{8}$", "").isEmpty())
+            throw new RuntimeException("Invalid rgb hex! Don't know how to use '" + hex + "'! Only use 0-9, a-f(case insensitive), and make sure there are exactly 6 or 8 characters.(8 if you use alpha, extra 2 at end)  Eg: '9Ad6F0'");
     }
 
     public int red() {
