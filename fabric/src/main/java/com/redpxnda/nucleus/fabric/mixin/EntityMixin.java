@@ -1,11 +1,10 @@
 package com.redpxnda.nucleus.fabric.mixin;
 
 import com.redpxnda.nucleus.capability.EntityCapability;
-import com.redpxnda.nucleus.fabric.IEntityDataSaver;
+import com.redpxnda.nucleus.fabric.EntityDataSaver;
 import com.redpxnda.nucleus.impl.fabric.EntityDataRegistryImpl;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,11 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(Entity.class)
-public class EntityMixin implements IEntityDataSaver {
+public class EntityMixin implements EntityDataSaver {
     @Unique
     private final Map<String, EntityCapability<?>> nucleus$caps = new HashMap<>();
     @Override
-    public Map<String , EntityCapability<?>> getCapabilities() {
+    public Map<String, EntityCapability<?>> getCapabilities() {
         return nucleus$caps;
     }
 
@@ -35,7 +34,7 @@ public class EntityMixin implements IEntityDataSaver {
         if ((Object) this instanceof Entity entity) {
             EntityDataRegistryImpl.CAPABILITIES.forEach((cap, holder) -> {
                 if (holder.predicate().test(entity)) {
-                    EntityCapability<?> toLoad = holder.construct();
+                    EntityCapability toLoad = holder.construct();
 
                     String id = holder.id().toString();
                     if (tag.contains(id)) toLoad.loadNbt(tag.get(id)); // load nbt if present

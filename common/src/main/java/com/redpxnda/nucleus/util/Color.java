@@ -1,5 +1,7 @@
 package com.redpxnda.nucleus.util;
 
+import com.mojang.serialization.Codec;
+import com.redpxnda.nucleus.datapack.codec.ColorCodec;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.joml.Vector4f;
@@ -15,6 +17,13 @@ import org.joml.Vector4i;
  * Why use xyzw? Cuz I'm lazy and extending Vector4i makes it easy
  */
 public class Color extends Vector4i {
+    public static final Codec<Color> CODEC = ColorCodec.INSTANCE;
+    public static final Color WHITE = new Color(255, 255, 255, 255);
+    public static final Color BLACK = new Color(0, 0, 0, 255);
+    public static final Color GRAY = new Color(123, 123, 123, 255);
+    public static final Color RED = new Color(255, 0, 0, 255);
+    public static final Color GREEN = new Color(0, 255, 0, 255);
+    public static final Color BLUE = new Color(0, 0, 255, 255);
 
     public Color(float r, float g, float b, float a) {
         this.x = (int)(r * 255);

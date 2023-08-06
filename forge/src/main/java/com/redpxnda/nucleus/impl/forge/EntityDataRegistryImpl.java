@@ -2,11 +2,12 @@ package com.redpxnda.nucleus.impl.forge;
 
 import com.redpxnda.nucleus.capability.EntityCapability;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.common.capabilities.*;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +36,7 @@ public class EntityDataRegistryImpl {
 
             @Override
             public void deserializeNBT(Tag tag) {
-                instance().loadNbt(tag);
+                ((EntityCapability) instance()).loadNbt(tag);
             }
 
             private T instance = null;

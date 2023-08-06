@@ -3,6 +3,7 @@ package com.redpxnda.nucleus;
 import com.ezylang.evalex.config.ExpressionConfiguration;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
+import com.redpxnda.nucleus.capability.DoublesCapability;
 import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.datapack.codec.AutoCodec;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
@@ -23,7 +24,6 @@ import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -49,6 +49,7 @@ public class Nucleus {
         reloadListeners();
         packets();
         events();
+        capabilities();
         SupporterUtil.init();
         AutoCodec.init();
         NucleusRegistries.init();
@@ -64,6 +65,9 @@ public class Nucleus {
         registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
     }
     private static void events() {
+    }
+    private static void capabilities() {
+        EntityDataRegistry.register(loc("simple_doubles"), e -> true, DoublesCapability.class, DoublesCapability::new);
     }
     public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<FriendlyByteBuf, T> decoder) {
         CHANNEL.register(cls, T::toBuffer, decoder, T::wrappedHandle);
@@ -91,8 +95,8 @@ public class Nucleus {
         }
 
         @Override
-        public void loadNbt(Tag tag) {
-            value = ((CompoundTag) tag).getInt("Int");
+        public void loadNbt(CompoundTag tag) {
+            value = tag.getInt("Int");
         }
     }
 

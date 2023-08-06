@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unchecked")
 public class EntityDataManagerImpl {
     public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap) {
-        return (T) entity.getCapability(EntityDataRegistryImpl.CAPABILITIES.get(cap).capability).resolve().get();
+        return (T) entity.getCapability(EntityDataRegistryImpl.CAPABILITIES.get(cap).capability).resolve().orElse(null);
     }
 
     public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, Supplier<T> ifFailed) {

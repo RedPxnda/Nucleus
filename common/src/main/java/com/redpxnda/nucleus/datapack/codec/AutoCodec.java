@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.datapack.codec;
 import com.google.gson.Gson;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
@@ -76,6 +77,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
         addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
         addInherit(map, Component.class, ExtraCodecs.COMPONENT);
+        addInherit(map, Color.class, Color.CODEC);
     });
 
     public static <T> Codec<T> getOverride(Class<T> cls) {

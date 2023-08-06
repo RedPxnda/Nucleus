@@ -32,14 +32,14 @@ public class EntityReference<E extends Entity> extends Reference<E> {
         return StatManager.entity.evaluate(instance);
     }
 
-    public <T extends EntityCapability> T getCapability(Class<T> cap) {
+    public <T extends EntityCapability<?>> T getCapability(Class<T> cap) {
         return EntityDataManager.getCapability(instance, cap);
     }
 
-    public EntityCapability getCapability(String str) {
+    public EntityCapability<?> getCapability(String str) {
         return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(new ResourceLocation(str)));
     }
-    public EntityCapability getCapability(ResourceLocationReference ref) {
+    public EntityCapability<?> getCapability(ResourceLocationReference ref) {
         return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(ref.instance));
     }
 
