@@ -121,7 +121,7 @@ public class RenderUtil {
         ParticleProviderRegistry.register(NucleusRegistries.cubeParticle, new CubeParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
 
-        RenderEvents.LIVING_PRE.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+        RenderEvents.LIVING_PRE.register((model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
                 MobEffectInstance instance = entry.getValue();
                 MobEffect effect = entry.getKey();
@@ -133,7 +133,7 @@ public class RenderUtil {
             }
             return EventResult.pass();
         });
-        RenderEvents.LIVING_POST.register((entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+        RenderEvents.LIVING_POST.register((model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
                 if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
