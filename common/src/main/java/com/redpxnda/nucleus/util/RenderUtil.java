@@ -16,6 +16,7 @@ import com.redpxnda.nucleus.registry.particles.morphing.ParticleMorpher;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
+import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
@@ -149,6 +150,10 @@ public class RenderUtil {
                 }
             }
             return EventResult.pass();
+        });
+
+        ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {
+
         });
 
         // event testing

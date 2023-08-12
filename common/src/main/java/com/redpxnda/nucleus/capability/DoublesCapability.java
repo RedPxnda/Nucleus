@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.capability;
 
 import com.redpxnda.nucleus.datapack.json.listeners.CapabilityRegistryListener;
 import com.redpxnda.nucleus.impl.EntityDataManager;
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +14,8 @@ public class DoublesCapability implements EntityCapability<CompoundTag> {
     public static final Map<String, Double> defaultValues = new HashMap<>();
     public static final Map<String, CapabilityRegistryListener.RenderingMode> renderers = new HashMap<>();
 
-    public final Map<String, Double> doubles = new HashMap<>();
+    private final Map<String, Double> doubles = new HashMap<>();
+    private final Map<String, Long> modifications = new HashMap<>();
 
     public static DoublesCapability getAllFor(Entity entity) {
         return EntityDataManager.getCapability(entity, DoublesCapability.class);
@@ -44,10 +46,21 @@ public class DoublesCapability implements EntityCapability<CompoundTag> {
         if (value == null) {
             value = ifFailed;
             doubles.put(loc, value);
+            update(loc);
         }
         return value;
     }
     public void set(String loc, double value) {
         doubles.put(loc, value);
+        update(loc);
+    }
+    public void update(String loc) {
+        modifications.put(loc, Util.getMillis());
+    }
+    public @Nullable Long getModificationTime(String loc) {
+        return modifications.get(loc);
+    }
+    public long getModificationTime(String loc, long ifFailed) {
+        return modifications.getOrDefault(loc, ifFailed);
     }
 }

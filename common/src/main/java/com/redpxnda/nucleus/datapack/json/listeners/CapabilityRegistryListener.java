@@ -10,6 +10,7 @@ import com.redpxnda.nucleus.datapack.codec.InterfaceDispatcher;
 import com.redpxnda.nucleus.util.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -23,7 +24,12 @@ import java.util.Map;
 
 public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener {
     public static final Map<String, RenderingModeCreator> renderingModes = new HashMap<>();
+    public static final Map<String, RenderingPredicateCreator> renderingPredicates = new HashMap<>();
     public static final InterfaceDispatcher<RenderingModeCreator> renderingModeDispatcher = InterfaceDispatcher.of(renderingModes, "mode");
+    public static final InterfaceDispatcher<RenderingPredicateCreator> renderingPredicateDispatcher = InterfaceDispatcher.of(renderingPredicates, "type");
+
+    public static final RenderingPredicate ALWAYS_PREDICATE = (v, t) -> true;
+    public static final RenderingPredicate NEVER_PREDICATE = (v, t) -> false;
 
     public CapabilityRegistryListener() {
         super(Nucleus.GSON, "capabilities");
@@ -52,6 +58,11 @@ public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener
                     DoublesCapability.defaultValues.put(name, primitive.getAsDouble());
                 if (element.get("rendering") instanceof JsonObject obj) {
                     RenderingMode mode = renderingModeDispatcher.dispatcher().createFrom(obj);
+
+                    JsonElement show = obj.get("show");
+                    if (show != null)
+                        mode.predicate = renderingPredicateDispatcher.dispatcher().createFrom(show);
+
                     DoublesCapability.renderers.put(name, mode);
                 }
             });
@@ -63,14 +74,46 @@ public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener
 
         renderingModes.put("progress_bar", element -> BarRenderingMode.codec.parse(JsonOps.INSTANCE, element)
                 .getOrThrow(false, s -> Nucleus.LOGGER.error("Failed to parse progress_bar rendering mode for a simple capability! -> " + s)));
+
+        renderingPredicates.put("always", element -> ALWAYS_PREDICATE);
+        renderingPredicates.put("never", element -> ALWAYS_PREDICATE);
+        renderingPredicates.put("after_modified", element -> {
+            if (element instanceof JsonObject obj)
+                return new RecentModificationRP(obj.getAsJsonPrimitive("seconds").getAsFloat());
+            else return new RecentModificationRP(5f);
+        });
     }
 
     public interface RenderingModeCreator {
         RenderingMode createFrom(JsonElement element);
     }
 
+    public interface RenderingPredicateCreator {
+        RenderingPredicate createFrom(JsonElement element);
+    }
+    public interface RenderingPredicate {
+        /**
+         * @param val value of the double capability in question
+         * @param time time of last modification of the double capability
+         * @return whether the double capability can render or not
+         */
+        boolean canRender(double val, long time);
+    }
+    public static class RecentModificationRP implements RenderingPredicate {
+        public final float seconds;
+
+        public RecentModificationRP(float seconds) {
+            this.seconds = seconds;
+        }
+
+        @Override
+        public boolean canRender(double val, long time) {
+            return (Util.getMillis()-time)/1000d > seconds;
+        }
+    }
+
     public static abstract class RenderingMode {
-        //public @AutoCodec.Ignored
+        public @AutoCodec.Ignored RenderingPredicate predicate = ALWAYS_PREDICATE;
 
         @Environment(EnvType.CLIENT)
         public abstract void render(double capValue, GuiGraphics graphics, int x, int y);
