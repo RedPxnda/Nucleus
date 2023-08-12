@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.mixin.client;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.redpxnda.nucleus.event.MiscEvents;
+import com.redpxnda.nucleus.event.ClientEvents;
 import dev.architectury.event.EventResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -24,7 +24,7 @@ public class MouseHandlerMixin {
             cancellable = true
     )
     private void nucleus$playerMoveCameraEvent(CallbackInfo ci) {
-        EventResult result = MiscEvents.CAN_MOVE_CAMERA.invoker().call(minecraft);
+        EventResult result = ClientEvents.CAN_MOVE_CAMERA.invoker().call(minecraft);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
     }
@@ -34,8 +34,8 @@ public class MouseHandlerMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V")
     )
     private void nucleus$modifyCameraMotionEvent(LocalPlayer instance, double xMotion, double yMotion, Operation<Void> original) {
-        MiscEvents.CameraMotion motion = new MiscEvents.CameraMotion(xMotion, yMotion);
-        MiscEvents.MODIFY_CAMERA_MOTION.invoker().move(minecraft, motion);
+        ClientEvents.CameraMotion motion = new ClientEvents.CameraMotion(xMotion, yMotion);
+        ClientEvents.MODIFY_CAMERA_MOTION.invoker().move(minecraft, motion);
         original.call(instance, motion.getXMotion(), motion.getYMotion());
     }
 }
