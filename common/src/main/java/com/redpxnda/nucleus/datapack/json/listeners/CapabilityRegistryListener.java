@@ -1,17 +1,13 @@
 package com.redpxnda.nucleus.datapack.json.listeners;
 
-import com.google.gson.*;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.capability.DoublesCapability;
-import com.redpxnda.nucleus.datapack.codec.AutoCodec;
-import com.redpxnda.nucleus.datapack.codec.InterfaceDispatcher;
-import com.redpxnda.nucleus.util.Color;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.Util;
-import net.minecraft.client.gui.GuiGraphics;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -21,15 +17,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener {
-    public static final Map<String, RenderingModeCreator> renderingModes = new HashMap<>();
-    public static final Map<String, RenderingPredicateCreator> renderingPredicates = new HashMap<>();
-    public static final InterfaceDispatcher<RenderingModeCreator> renderingModeDispatcher = InterfaceDispatcher.of(renderingModes, "mode");
-    public static final InterfaceDispatcher<RenderingPredicateCreator> renderingPredicateDispatcher = InterfaceDispatcher.of(renderingPredicates, "type");
-
-    public static final RenderingPredicate ALWAYS_PREDICATE = (v, t) -> true;
-    public static final RenderingPredicate NEVER_PREDICATE = (v, t) -> false;
+    public static Map<String, JsonElement> data = new HashMap<>();
 
     public CapabilityRegistryListener() {
         super(Nucleus.GSON, "capabilities");
@@ -37,9 +28,15 @@ public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+        Map<String, JsonElement> map = object.entrySet().stream().map(entry -> Map.entry(entry.getKey().toString(), entry.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        fireWith(map);
+        data = map;
+    }
+    public static void fireWith(Map<String, JsonElement> files) {
         DoublesCapability.defaultValues.clear();
-        DoublesCapability.renderers.clear();
-        object.forEach((path, value) -> {
+        boolean isClient = Platform.getEnvironment() == Env.CLIENT;
+        if (isClient) ClientCapabilityListener.renderers.clear();
+        files.forEach((path, value) -> {
             List<JsonObject> elements = new ArrayList<>();
             if (value instanceof JsonArray array)
                 elements.addAll(array.asList().stream().filter(e -> e instanceof JsonObject).map(JsonElement::getAsJsonObject).toList());
@@ -56,99 +53,9 @@ public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener
 
                 if (element.get("defaultValue") instanceof JsonPrimitive primitive)
                     DoublesCapability.defaultValues.put(name, primitive.getAsDouble());
-                if (element.get("rendering") instanceof JsonObject obj) {
-                    RenderingMode mode = renderingModeDispatcher.dispatcher().createFrom(obj);
-
-                    JsonElement show = obj.get("show");
-                    if (show != null)
-                        mode.predicate = renderingPredicateDispatcher.dispatcher().createFrom(show);
-
-                    DoublesCapability.renderers.put(name, mode);
-                }
+                if (element.get("rendering") instanceof JsonObject obj && isClient)
+                    ClientCapabilityListener.parseRenderingObject(obj, name);
             });
         });
-    }
-
-    static {
-        var classLoading = BarRenderingMode.class;
-
-        renderingModes.put("progress_bar", element -> BarRenderingMode.codec.parse(JsonOps.INSTANCE, element)
-                .getOrThrow(false, s -> Nucleus.LOGGER.error("Failed to parse progress_bar rendering mode for a simple capability! -> " + s)));
-
-        renderingPredicates.put("always", element -> ALWAYS_PREDICATE);
-        renderingPredicates.put("never", element -> ALWAYS_PREDICATE);
-        renderingPredicates.put("after_modified", element -> {
-            if (element instanceof JsonObject obj)
-                return new RecentModificationRP(obj.getAsJsonPrimitive("seconds").getAsFloat());
-            else return new RecentModificationRP(5f);
-        });
-    }
-
-    public interface RenderingModeCreator {
-        RenderingMode createFrom(JsonElement element);
-    }
-
-    public interface RenderingPredicateCreator {
-        RenderingPredicate createFrom(JsonElement element);
-    }
-    public interface RenderingPredicate {
-        /**
-         * @param val value of the double capability in question
-         * @param time time of last modification of the double capability
-         * @return whether the double capability can render or not
-         */
-        boolean canRender(double val, long time);
-    }
-    public static class RecentModificationRP implements RenderingPredicate {
-        public final float seconds;
-
-        public RecentModificationRP(float seconds) {
-            this.seconds = seconds;
-        }
-
-        @Override
-        public boolean canRender(double val, long time) {
-            return (Util.getMillis()-time)/1000d > seconds;
-        }
-    }
-
-    public static abstract class RenderingMode {
-        public @AutoCodec.Ignored RenderingPredicate predicate = ALWAYS_PREDICATE;
-
-        @Environment(EnvType.CLIENT)
-        public abstract void render(double capValue, GuiGraphics graphics, int x, int y);
-
-        public abstract int getWidth();
-        public abstract int getHeight();
-    }
-
-    @AutoCodec.Settings(optionalByDefault = true)
-    public static class BarRenderingMode extends RenderingMode {
-        public static final Codec<BarRenderingMode> codec = AutoCodec.of(BarRenderingMode.class).codec();
-
-        public int width = 10;
-        public int height = 2;
-        public @AutoCodec.Mandatory double maxValue;
-        public Color filledColor = Color.WHITE;
-        public Color emptyColor = Color.GRAY;
-
-        @Environment(EnvType.CLIENT)
-        @Override
-        public void render(double capValue, GuiGraphics graphics, int x, int y) {
-            double fillPercent = capValue/maxValue;
-            int filledX = (int) Math.round(x + fillPercent*width);
-            graphics.fill(x, y, filledX, y+height, filledColor.argb());
-            graphics.fill(filledX+1, y, x + width, y+height, emptyColor.argb());
-        }
-
-        @Override
-        public int getWidth() {
-            return width;
-        }
-
-        @Override
-        public int getHeight() {
-            return height;
-        }
     }
 }

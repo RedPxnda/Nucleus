@@ -9,8 +9,6 @@ import net.minecraft.world.level.Level;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 

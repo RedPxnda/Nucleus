@@ -21,4 +21,8 @@ public class EntityDataManagerImpl {
         Optional<?> optional = entity.getCapability(EntityDataRegistryImpl.CAPABILITIES.get(cap).capability).resolve();
         return optional.map(o -> (T) o).orElse(ifFailed);
     }
+
+    public static <T extends EntityCapability<?>> T getOrCreateCapability(Entity entity, Class<T> cap) {
+        return getCapability(entity, cap);
+    }
 }

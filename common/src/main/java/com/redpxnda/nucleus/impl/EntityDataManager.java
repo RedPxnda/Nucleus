@@ -13,6 +13,11 @@ public class EntityDataManager {
     }
 
     @ExpectPlatform
+    public static <T extends EntityCapability<?>> T getOrCreateCapability(Entity entity, Class<T> cap) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, T ifFailed) {
         throw new AssertionError();
     }

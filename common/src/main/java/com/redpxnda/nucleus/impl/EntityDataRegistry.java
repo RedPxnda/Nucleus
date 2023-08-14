@@ -18,4 +18,18 @@ public class EntityDataRegistry {
     public static Class<? extends EntityCapability<?>> getFromId(ResourceLocation id) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static ResourceLocation getIdFrom(Class<? extends EntityCapability<?>> cap) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static <T extends EntityCapability<?>> void addCreationListener(Class<T> cap, CreationListener<T> listener) {
+        throw new AssertionError();
+    }
+
+    public interface CreationListener<T extends EntityCapability<?>> {
+        void onCreate(Entity entity, T cap);
+    }
 }

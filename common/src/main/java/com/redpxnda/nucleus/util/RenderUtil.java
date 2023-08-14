@@ -4,6 +4,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import com.redpxnda.nucleus.capability.DoublesCapability;
+import com.redpxnda.nucleus.datapack.json.listeners.ClientCapabilityListener;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
@@ -23,6 +25,7 @@ import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -42,6 +45,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -113,7 +117,9 @@ public class RenderUtil {
     };
 
     public static void init() {
-        particleShaping();
+        //particleShaping();
+        Class<?> classLoading = ClientCapabilityListener.class;
+
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
         ShaderRegistry.register(loc("rendertype_trail"), DefaultVertexFormat.POSITION_COLOR_NORMAL, i -> trailShader = i);
         ParticleProviderRegistry.register(NucleusRegistries.emittingParticle, new EmitterParticle.Provider());
@@ -153,7 +159,36 @@ public class RenderUtil {
         });
 
         ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                Player player = mc.player;
+                DoublesCapability cap = DoublesCapability.getAllFor(player);
+                if (cap == null) return;
 
+                int width = graphics.guiWidth()/2;
+                int height = graphics.guiHeight()/2 + 15;
+                int yOffset = 0;
+
+                RenderSystem.enableBlend();
+                for (Map.Entry<String, Double> entry : cap.doubles.entrySet()) {
+                    String key = entry.getKey();
+                    double value = entry.getValue();
+                    long lastMod = cap.getModificationTime(key, -1000);
+
+                    ClientCapabilityListener.RenderingMode mode = ClientCapabilityListener.renderers.get(key);
+                    if (mode != null && mode.predicate.canRender(value, lastMod)) {
+                        long currentTime = Util.getMillis();
+                        float dif = (currentTime - lastMod) / 1000f;
+                        float lerpDelta = Mth.clamp(dif/mode.interpolateTime, 0f, 1f);
+                        value = mode.interpolate.interpolate(lerpDelta, cap.prevValues.getOrDefault(key, value), value);
+
+                        float alpha = mode.predicate instanceof ClientCapabilityListener.AlphaProvider p ? p.getAlpha(lastMod) : 1;
+                        mode.render(value, graphics, width, height + yOffset, alpha);
+                        yOffset+=mode.getHeight()+mode.margin;
+                    }
+                }
+                RenderSystem.disableBlend();
+            }
         });
 
         // event testing

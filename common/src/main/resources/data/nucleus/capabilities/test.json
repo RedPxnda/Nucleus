@@ -1,0 +1,10 @@
+{
+  "name": "nucleus:test",
+  "defaultValue": 0,
+  "rendering": {
+    "mode": "progress_bar",
+    "interpolate": "lerp",
+    "maxValue": 10,
+    "show": "after_modified"
+  }
+}

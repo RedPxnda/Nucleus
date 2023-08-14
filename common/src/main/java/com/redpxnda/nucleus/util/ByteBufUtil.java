@@ -7,6 +7,8 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
@@ -39,5 +41,22 @@ public class ByteBufUtil {
             LOGGER.error("Failed to read Nbt from byte buffer!");
             throw new RuntimeException(e);
         }
+    }
+
+    public static Map<String, Long> readLongMap(Supplier<Map<String, Long>> creator, FriendlyByteBuf buf) {
+        Map<String, Long> map = creator.get();
+        int size = buf.readInt();
+        for (int i = 0; i < size; i++) {
+            map.put(buf.readUtf(), buf.readLong());
+        }
+        return map;
+    }
+    public static void writeLongMap(Map<String, Long> map, FriendlyByteBuf buf) {
+        buf.writeInt(map.size());
+        map.forEach((key, value) -> {
+            assert value != null : "No null values allowed for long map FriendlyByteBuf writing.";
+            buf.writeUtf(key);
+            buf.writeLong(value);
+        });
     }
 }

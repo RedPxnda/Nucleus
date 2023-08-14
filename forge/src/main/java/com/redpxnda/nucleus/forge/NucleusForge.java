@@ -1,16 +1,18 @@
 package com.redpxnda.nucleus.forge;
 
+import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.impl.EntityDataManager;
+import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.impl.forge.EntityDataRegistryImpl;
 import com.redpxnda.nucleus.impl.forge.ShaderRegistryImpl;
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.common.EntityEvent;
 import dev.architectury.platform.forge.EventBuses;
-import com.redpxnda.nucleus.Nucleus;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,6 +29,17 @@ public class NucleusForge {
         // Submit our event bus to let architectury register our content on the right time
         EventBuses.registerModEventBus(MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
         Nucleus.init();
+        EntityEvent.ADD.register((entity, world) -> {
+            if (!world.isClientSide)
+                EntityDataRegistryImpl.CAPABILITIES.forEach((cls, holder) -> {
+                    if (holder.predicate.test(entity)) {
+                        EntityDataRegistryImpl.LISTENERS.get(cls).forEach(listener -> {
+                            ((EntityDataRegistry.CreationListener) listener).onCreate(entity, EntityDataManager.getCapability(entity, cls));
+                        });
+                    }
+                });
+            return EventResult.pass();
+        });
     }
 
     @Mod.EventBusSubscriber(modid = MOD_ID)

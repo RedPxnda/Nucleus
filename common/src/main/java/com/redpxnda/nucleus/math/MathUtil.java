@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
-public class MathUtil {
+public class MathUtil extends Mth {
     public static final Random random = new Random();
 
     public static double random(double min, double max) {
@@ -33,9 +33,16 @@ public class MathUtil {
 
         boolean tooLarge = index+1 >= items.length;
         return new double[] {
-                Mth.lerp(progress, items[index][0], items[tooLarge ? 0 : index+1][0]),
-                Mth.lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1])
+                lerp(progress, items[index][0], items[tooLarge ? 0 : index+1][0]),
+                lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1])
         };
+    }
+
+    public static float flip(float val) {
+        return 1 - val;
+    }
+    public static float pow(float base, float exponent) {
+        return (float) Math.pow(base, exponent);
     }
 
     public static double[] arrayLerp3(int time, int maxTime, double[][] items) {
@@ -48,9 +55,9 @@ public class MathUtil {
 
         boolean tooLarge = index+1 >= items.length;
         return new double[] {
-                Mth.lerp(progress, items[index][0], items[tooLarge ? 0 : index+1][0]),
-                Mth.lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1]),
-                Mth.lerp(progress, items[index][2], items[tooLarge ? 0 : index+1][2])
+                lerp(progress, items[index][0], items[tooLarge ? 0 : index+1][0]),
+                lerp(progress, items[index][1], items[tooLarge ? 0 : index+1][1]),
+                lerp(progress, items[index][2], items[tooLarge ? 0 : index+1][2])
         };
     }
 

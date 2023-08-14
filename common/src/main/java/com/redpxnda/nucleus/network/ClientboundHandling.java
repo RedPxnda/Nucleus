@@ -1,11 +1,25 @@
 package com.redpxnda.nucleus.network;
 
-import com.redpxnda.nucleus.network.clientbound.PlaySoundPacket;
+import com.redpxnda.nucleus.capability.DoublesCapability;
+import com.redpxnda.nucleus.capability.EntityCapability;
+import com.redpxnda.nucleus.datapack.json.listeners.ClientCapabilityListener;
+import com.redpxnda.nucleus.impl.EntityDataManager;
+import com.redpxnda.nucleus.impl.EntityDataRegistry;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientboundHandling {
     public static void createClientParticle(ParticleOptions options, double x, double y, double z, double xs, double ys, double zs) {
@@ -27,5 +41,42 @@ public class ClientboundHandling {
                 volume, pitch,
                 false
         );
+    }
+
+    public static <T extends Tag> @Nullable EntityCapability<T> getEntityCap(int entityId, ResourceLocation capId) {
+        Minecraft mc = Minecraft.getInstance();
+        Level level = mc.level;
+        if (level == null) return null;
+
+        Entity entity = level.getEntity(entityId);
+        if (entity == null) return null;
+
+        return (EntityCapability<T>) EntityDataManager.getOrCreateCapability(entity, EntityDataRegistry.getFromId(capId));
+    }
+    public static <T extends Tag> @Nullable EntityCapability<T> getAndSetClientEntityCap(int entityId, ResourceLocation capId, T data) {
+        EntityCapability<T> cap = getEntityCap(entityId, capId);
+        if (cap != null)
+            cap.loadNbt(data);
+        return cap;
+    }
+
+    public static void handleClientDoublesCapabilityAdjustment(DoublesCapability cap, CompoundTag capData, Map<String, Long> modification) {
+        Map<String, Double> prevValues = new HashMap<>();
+        cap.doubles.forEach((key, val) -> {
+            ClientCapabilityListener.RenderingMode mode = ClientCapabilityListener.renderers.get(key);
+            if (mode != null && mode.adjustInterpolateTarget) {
+                long currentTime = Util.getMillis();
+                long lastMod = cap.getModificationTime(key, -1000);
+                float dif = (currentTime - lastMod) / 1000f;
+                float lerpDelta = Mth.clamp(dif/mode.interpolateTime, 0f, 1f);
+                val = mode.interpolate.interpolate(lerpDelta, cap.prevValues.getOrDefault(key, val), val);
+            }
+
+            prevValues.put(key, val);
+        });
+        cap.prevValues = prevValues;
+
+        cap.loadNbt(capData);
+        cap.modifications = modification;
     }
 }

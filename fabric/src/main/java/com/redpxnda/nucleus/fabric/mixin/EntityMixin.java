@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.fabric.mixin;
 
 import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.fabric.EntityDataSaver;
+import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.impl.fabric.EntityDataRegistryImpl;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -38,6 +39,10 @@ public class EntityMixin implements EntityDataSaver {
 
                     String id = holder.id().toString();
                     if (tag.contains(id)) toLoad.loadNbt(tag.get(id)); // load nbt if present
+
+                    EntityDataRegistryImpl.LISTENERS.get(cap).forEach(listener -> {
+                        ((EntityDataRegistry.CreationListener) listener).onCreate(entity, toLoad);
+                    });
 
                     nucleus$caps.put(id, toLoad);
                 }

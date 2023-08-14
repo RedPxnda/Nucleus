@@ -22,4 +22,13 @@ public class EntityDataManagerImpl {
         String id = EntityDataRegistryImpl.CAPABILITIES.get(cap).id().toString();
         return (T) ((EntityDataSaver) entity).getCapabilities().getOrDefault(id, ifFailed);
     }
+
+    public static <T extends EntityCapability<?>> T getOrCreateCapability(Entity entity, Class<T> cap) {
+        T inst = getCapability(entity, cap);
+        if (inst == null) {
+            inst = (T) EntityDataRegistryImpl.CAPABILITIES.get(cap).construct();
+            ((EntityDataSaver) entity).getCapabilities().put(EntityDataRegistryImpl.getIdFrom(cap).toString(), inst);
+        }
+        return inst;
+    }
 }
