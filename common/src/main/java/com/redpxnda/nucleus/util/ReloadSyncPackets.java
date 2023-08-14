@@ -1,6 +1,6 @@
 package com.redpxnda.nucleus.util;
 
-import com.redpxnda.nucleus.datapack.json.listeners.CapabilityRegistryListener;
+import com.redpxnda.nucleus.capability.doubles.CapabilityRegistryListener;
 import com.redpxnda.nucleus.event.ServerEvents;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.SyncCapabilitiesJsonPacket;

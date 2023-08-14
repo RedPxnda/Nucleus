@@ -4,8 +4,9 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
-import com.redpxnda.nucleus.capability.DoublesCapability;
-import com.redpxnda.nucleus.datapack.json.listeners.ClientCapabilityListener;
+import com.redpxnda.nucleus.capability.doubles.ClientCapabilityListener;
+import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
+import com.redpxnda.nucleus.capability.doubles.RenderingMode;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
@@ -175,14 +176,14 @@ public class RenderUtil {
                     double value = entry.getValue();
                     long lastMod = cap.getModificationTime(key, -1000);
 
-                    ClientCapabilityListener.RenderingMode mode = ClientCapabilityListener.renderers.get(key);
+                    RenderingMode mode = ClientCapabilityListener.renderers.get(key);
                     if (mode != null && mode.predicate.canRender(value, lastMod)) {
                         long currentTime = Util.getMillis();
                         float dif = (currentTime - lastMod) / 1000f;
                         float lerpDelta = Mth.clamp(dif/mode.interpolateTime, 0f, 1f);
                         value = mode.interpolate.interpolate(lerpDelta, cap.prevValues.getOrDefault(key, value), value);
 
-                        float alpha = mode.predicate instanceof ClientCapabilityListener.AlphaProvider p ? p.getAlpha(lastMod) : 1;
+                        float alpha = mode.predicate.getAlpha(lastMod);
                         mode.render(value, graphics, width, height + yOffset, alpha);
                         yOffset+=mode.getHeight()+mode.margin;
                     }

@@ -7,6 +7,8 @@ import net.minecraft.util.Mth;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
 
+import java.util.function.Function;
+
 /**
  * Simple color class.
  * x = red
@@ -84,6 +86,26 @@ public class Color extends Vector4i {
         if (!hex.replaceFirst("^[0-9A-Fa-f]{6}$", "").isEmpty() && !hex.replaceFirst("^[0-9A-Fa-f]{8}$", "").isEmpty())
             throw new RuntimeException("Invalid rgb hex! Don't know how to use '" + hex + "'! Only use 0-9, a-f(case insensitive), and make sure there are exactly 6 or 8 characters.(8 if you use alpha, extra 2 at end)  Eg: '9Ad6F0'");
     }
+
+    public void map(Function<Integer, Integer> mapFunc) {
+        x = mapFunc.apply(x);
+        y = mapFunc.apply(y);
+        z = mapFunc.apply(z);
+        w = mapFunc.apply(w);
+    }
+    public void mapR(Function<Integer, Integer> mapFunc) {
+        x = mapFunc.apply(x);
+    }
+    public void mapG(Function<Integer, Integer> mapFunc) {
+        y = mapFunc.apply(y);
+    }
+    public void mapB(Function<Integer, Integer> mapFunc) {
+        z = mapFunc.apply(z);
+    }
+    public void mapA(Function<Integer, Integer> mapFunc) {
+        w = mapFunc.apply(w);
+    }
+
 
     public int red() {
         return x;

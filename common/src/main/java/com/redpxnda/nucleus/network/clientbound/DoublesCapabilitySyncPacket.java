@@ -1,6 +1,6 @@
 package com.redpxnda.nucleus.network.clientbound;
 
-import com.redpxnda.nucleus.capability.DoublesCapability;
+import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
 import com.redpxnda.nucleus.capability.EntityCapability;
 import com.redpxnda.nucleus.network.ClientboundHandling;
 import com.redpxnda.nucleus.util.ByteBufUtil;

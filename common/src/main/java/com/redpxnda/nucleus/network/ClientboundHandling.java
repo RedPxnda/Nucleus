@@ -1,8 +1,9 @@
 package com.redpxnda.nucleus.network;
 
-import com.redpxnda.nucleus.capability.DoublesCapability;
+import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
 import com.redpxnda.nucleus.capability.EntityCapability;
-import com.redpxnda.nucleus.datapack.json.listeners.ClientCapabilityListener;
+import com.redpxnda.nucleus.capability.doubles.ClientCapabilityListener;
+import com.redpxnda.nucleus.capability.doubles.RenderingMode;
 import com.redpxnda.nucleus.impl.EntityDataManager;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import net.minecraft.Util;
@@ -63,7 +64,7 @@ public class ClientboundHandling {
     public static void handleClientDoublesCapabilityAdjustment(DoublesCapability cap, CompoundTag capData, Map<String, Long> modification) {
         Map<String, Double> prevValues = new HashMap<>();
         cap.doubles.forEach((key, val) -> {
-            ClientCapabilityListener.RenderingMode mode = ClientCapabilityListener.renderers.get(key);
+            RenderingMode mode = ClientCapabilityListener.renderers.get(key);
             if (mode != null && mode.adjustInterpolateTarget) {
                 long currentTime = Util.getMillis();
                 long lastMod = cap.getModificationTime(key, -1000);

@@ -1,11 +1,10 @@
-package com.redpxnda.nucleus.datapack.json.listeners;
+package com.redpxnda.nucleus.capability.doubles;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.redpxnda.nucleus.Nucleus;
-import com.redpxnda.nucleus.capability.DoublesCapability;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.resources.ResourceLocation;

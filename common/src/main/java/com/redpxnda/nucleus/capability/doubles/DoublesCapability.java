@@ -1,5 +1,6 @@
-package com.redpxnda.nucleus.capability;
+package com.redpxnda.nucleus.capability.doubles;
 
+import com.redpxnda.nucleus.capability.SyncedEntityCapability;
 import com.redpxnda.nucleus.impl.EntityDataManager;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.DoublesCapabilitySyncPacket;
