@@ -61,12 +61,12 @@ public class ClientboundHandling {
         return cap;
     }
 
-    public static void handleClientDoublesCapabilityAdjustment(DoublesCapability cap, CompoundTag capData, Map<String, Long> modification) {
+    public static void handleClientDoublesCapabilityAdjustment(DoublesCapability cap, CompoundTag capData) {
         Map<String, Double> prevValues = new HashMap<>();
         cap.doubles.forEach((key, val) -> {
             RenderingMode mode = ClientCapabilityListener.renderers.get(key);
+            long currentTime = Util.getMillis();
             if (mode != null && mode.adjustInterpolateTarget) {
-                long currentTime = Util.getMillis();
                 long lastMod = cap.getModificationTime(key, -1000);
                 float dif = (currentTime - lastMod) / 1000f;
                 float lerpDelta = Mth.clamp(dif/mode.interpolateTime, 0f, 1f);
@@ -74,10 +74,10 @@ public class ClientboundHandling {
             }
 
             prevValues.put(key, val);
+            cap.modifications.put(key, cap.modifications.containsKey(key) ? currentTime : -1000);
         });
         cap.prevValues = prevValues;
 
         cap.loadNbt(capData);
-        cap.modifications = modification;
     }
 }

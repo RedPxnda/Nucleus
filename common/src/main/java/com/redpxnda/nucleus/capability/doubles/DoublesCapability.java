@@ -16,8 +16,8 @@ public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
     public static final Map<String, Double> defaultValues = new HashMap<>();
 
     public final Map<String, Double> doubles = new HashMap<>();
-    public Map<String, Long> modifications = new HashMap<>();
-    public Map<String, Double> prevValues = new HashMap<>(); // only used by client
+    public Map<String, Long> modifications = new HashMap<>(); // only used and modified by client
+    public Map<String, Double> prevValues = new HashMap<>(); // only used and modified by client
 
     public static DoublesCapability getAllFor(Entity entity) {
         return EntityDataManager.getCapability(entity, DoublesCapability.class);
@@ -73,6 +73,6 @@ public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
 
     @Override
     public SimplePacket createPacket(Entity target) {
-        return new DoublesCapabilitySyncPacket(target, this, modifications);
+        return new DoublesCapabilitySyncPacket(target, this);
     }
 }

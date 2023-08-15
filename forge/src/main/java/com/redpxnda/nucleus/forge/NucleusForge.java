@@ -5,12 +5,16 @@ import com.redpxnda.nucleus.impl.EntityDataManager;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.impl.forge.EntityDataRegistryImpl;
 import com.redpxnda.nucleus.impl.forge.ShaderRegistryImpl;
+import com.redpxnda.nucleus.impl.forge.TrinketItemCreatorImpl;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.EntityEvent;
+import dev.architectury.platform.Platform;
 import dev.architectury.platform.forge.EventBuses;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -40,6 +44,10 @@ public class NucleusForge {
                 });
             return EventResult.pass();
         });
+
+        if (Platform.isModLoaded("curios")) {
+            MinecraftForge.EVENT_BUS.addGenericListener(ItemStack.class, TrinketItemCreatorImpl::attachCuriosCaps);
+        }
     }
 
     @Mod.EventBusSubscriber(modid = MOD_ID)

@@ -29,6 +29,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
@@ -46,6 +47,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
@@ -129,7 +131,8 @@ public class RenderUtil {
         ParticleProviderRegistry.register(NucleusRegistries.cubeParticle, new CubeParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
 
-        RenderEvents.LIVING_PRE.register((model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+        RenderEvents.LIVING.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+            if (stage != RenderEvents.Stage.PRE) return EventResult.pass();
             for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
                 MobEffectInstance instance = entry.getValue();
                 MobEffect effect = entry.getKey();
@@ -141,12 +144,14 @@ public class RenderUtil {
             }
             return EventResult.pass();
         });
-        RenderEvents.LIVING_POST.register((model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+        RenderEvents.LIVING.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+            if (stage != RenderEvents.Stage.POST) return EventResult.pass();
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
                 if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
                 }
             });
+            return EventResult.pass();
         });
         RenderEvents.HUD_RENDER_PRE.register((minecraft, graphics, partialTick) -> {
             for (Map.Entry<MobEffect, MobEffectInstance> entry : minecraft.player.getActiveEffectsMap().entrySet()) {
@@ -155,6 +160,14 @@ public class RenderUtil {
                     if (result)
                         return EventResult.interruptFalse();
                 }
+            }
+            return EventResult.pass();
+        });
+
+        RenderEvents.LIVING.register((stage, m, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+            if (stage != RenderEvents.Stage.POSE_SETUP) return EventResult.pass();
+            if (m instanceof HumanoidModel<? extends LivingEntity> model) {
+                model.leftArm.xRot+=90;
             }
             return EventResult.pass();
         });

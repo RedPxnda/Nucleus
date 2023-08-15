@@ -36,6 +36,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -49,6 +51,7 @@ public class Nucleus {
     public static final Gson GSON = new Gson();
     public static final Logger LOGGER = LogUtils.getLogger();
     public static MinecraftServer SERVER;
+    private static final List<String> ADDON_NAMESPACES = new ArrayList<>(List.of("nucleus"));
 
     public static void init() {
         reloadListeners();
@@ -127,7 +130,14 @@ public class Nucleus {
     }
 
     private static void reloadListeners() {
-        ReloadListenerRegistry.register(PackType.SERVER_DATA, new LuaSetupListener());
-        ReloadListenerRegistry.register(PackType.SERVER_DATA, new CapabilityRegistryListener());
+        ReloadListenerRegistry.register(PackType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces
+        ReloadListenerRegistry.register(PackType.SERVER_DATA, new CapabilityRegistryListener()); // works for nucleus and addon namespaces
+    }
+
+    public static void addAddonNamespace(String namespace) {
+        ADDON_NAMESPACES.add(namespace);
+    }
+    public static boolean isNamespaceValid(String namespace) {
+        return ADDON_NAMESPACES.contains(namespace);
     }
 }

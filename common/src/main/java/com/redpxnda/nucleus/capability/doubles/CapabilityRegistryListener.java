@@ -27,7 +27,10 @@ public class CapabilityRegistryListener extends SimpleJsonResourceReloadListener
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-        Map<String, JsonElement> map = object.entrySet().stream().map(entry -> Map.entry(entry.getKey().toString(), entry.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, JsonElement> map = object.entrySet().stream()
+                .filter(entry -> Nucleus.isNamespaceValid(entry.getKey().getNamespace()))
+                .map(entry -> Map.entry(entry.getKey().toString(), entry.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         fireWith(map);
         data = map;
     }

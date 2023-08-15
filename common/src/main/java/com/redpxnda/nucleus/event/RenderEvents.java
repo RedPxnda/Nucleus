@@ -15,31 +15,44 @@ import net.minecraft.world.entity.LivingEntity;
 
 @Environment(EnvType.CLIENT)
 public interface RenderEvents {
-    Event<EntityRenderPre<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING_PRE = EventFactory.createEventResult();
-    /**
-     * LIVING_PUSHED fires after the matrix stack is pushed, allowing modifications to the current matrix.
-     */
-    Event<EntityRenderPre<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING_PUSHED = EventFactory.createEventResult();
-    Event<EntityRenderPost<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING_POST = EventFactory.createLoop();
+    Event<EntityRender<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING = EventFactory.createEventResult();
     Event<HudRenderPre> HUD_RENDER_PRE = EventFactory.createEventResult();
 
-    interface EntityRenderPre<T extends Entity, M extends EntityModel<? extends T>> {
+    enum Stage {
+        /**
+         * PRE is called before any rendering is done. Called right at the head of the render method.
+         */
+        PRE,
+
+        /**
+         * PUSHED is called when the {@link PoseStack} is pushed. Use this to make modifications to the {@link PoseStack} provided.
+         */
+        PUSHED,
+
+        /**
+         * SETUP is called after the entity's pose has been set up. Use this to make modifications to any part of the entity's model.
+         */
+        POSE_SETUP,
+
+        /**
+         * POST is called after everything has finished. Called right at the tail of the render method.
+         * Returning an event result that interrupts further evaluation does nothing here.
+         */
+        POST
+    }
+
+    interface EntityRender<T extends Entity, M extends EntityModel<? extends T>> {
         /**
          * Fires before an entity is rendered.
          *
          * @param entity            the entity
          * @param entityYaw         i can only guess it's the entity's yaw
-         * @param partialTick       how far the client is between 2 ticks- since you usually have more frames per second than there are ticks
+         * @param tickDelta         how far the client is between 2 ticks- since you usually have more frames per second than there are ticks per second
          * @return an event result representing whether the rendering should proceed and finish rendering the entity
          */
-        EventResult render(M model, T entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight);
+        EventResult render(Stage stage, M model, T entity, float entityYaw, float tickDelta, PoseStack matrixStack, MultiBufferSource bufferSource, int packedLight);
     }
-    interface EntityRenderPost<T extends Entity, M extends EntityModel<? extends T>> {
-        /**
-         * Fires after an entity is rendered.
-         */
-        void render(M model, T entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight);
-    }
+
     interface HudRenderPre {
         /**
          * Fires before the player's hud is rendered
