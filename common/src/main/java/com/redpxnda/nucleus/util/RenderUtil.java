@@ -12,6 +12,7 @@ import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.mixin.client.ClientLevelAccessor;
+import com.redpxnda.nucleus.pose.PoseAnimationResourceListener;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import com.redpxnda.nucleus.registry.particles.*;
@@ -29,7 +30,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
@@ -47,7 +47,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix4f;
@@ -123,6 +122,7 @@ public class RenderUtil {
         //particleShaping();
         Class<?> classLoading = ClientCapabilityListener.class;
 
+        PoseAnimationResourceListener.init();
         ShaderRegistry.register(loc("rendertype_alpha_animation"), DefaultVertexFormat.BLOCK, i -> alphaAnimationShader = i);
         ShaderRegistry.register(loc("rendertype_trail"), DefaultVertexFormat.POSITION_COLOR_NORMAL, i -> trailShader = i);
         ParticleProviderRegistry.register(NucleusRegistries.emittingParticle, new EmitterParticle.Provider());
@@ -160,14 +160,6 @@ public class RenderUtil {
                     if (result)
                         return EventResult.interruptFalse();
                 }
-            }
-            return EventResult.pass();
-        });
-
-        RenderEvents.LIVING.register((stage, m, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
-            if (stage != RenderEvents.Stage.POSE_SETUP) return EventResult.pass();
-            if (m instanceof HumanoidModel<? extends LivingEntity> model) {
-                model.leftArm.xRot+=90;
             }
             return EventResult.pass();
         });
@@ -348,6 +340,19 @@ public class RenderUtil {
             crashReportCategory.setDetail("Position", () -> CrashReportCategory.formatLocation(level, x, y, z));
             throw new ReportedException(crashReport);
         }
+    }
+
+    public static long getGameTime() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? -100 : mc.level.getGameTime();
+    }
+    public static double getGameAndDeltaTime() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? -100 : mc.level.getGameTime()+mc.getDeltaFrameTime();
+    }
+    public static double getGameAndPartialTime() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level == null ? -100 : mc.level.getGameTime()+mc.getFrameTime();
     }
 
     public static float[] lerpColors(long gameTime, int duration, float[][] colors) {

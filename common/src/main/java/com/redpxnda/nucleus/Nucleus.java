@@ -13,6 +13,9 @@ import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.*;
+import com.redpxnda.nucleus.pose.ClientPoseCapability;
+import com.redpxnda.nucleus.pose.PoseAnimationResourceListener;
+import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.RenderUtil;
@@ -32,6 +35,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import org.slf4j.Logger;
@@ -69,12 +73,20 @@ public class Nucleus {
         // temp test code
         if (Platform.isDevelopmentEnvironment()) {
             InteractionEvent.RIGHT_CLICK_ITEM.register((p, hand) -> {
-                if (p instanceof ServerPlayer player && (player.getMainHandItem().is(Items.STICK) || player.getMainHandItem().is(Items.SADDLE))) {
-                    double amnt = player.getMainHandItem().is(Items.STICK) ? 5 : -5;
-                    DoublesCapability cap = DoublesCapability.getAllFor(player);
-                    double val = cap.get("nucleus:test");
-                    cap.set("nucleus:test", val+amnt);
-                    cap.sendToClient(player);
+                if (p instanceof ServerPlayer player) {
+                    if (player.getMainHandItem().is(Items.STICK) || player.getMainHandItem().is(Items.SADDLE)) {
+                        double amnt = player.getMainHandItem().is(Items.STICK) ? 5 : -5;
+                        DoublesCapability cap = DoublesCapability.getAllFor(player);
+                        double val = cap.get("nucleus:test");
+                        cap.set("nucleus:test", val + amnt);
+                        cap.sendToClient(player);
+                    } else if (player.getMainHandItem().is(Items.ALLIUM)) {
+                        ServerPoseCapability cap = ServerPoseCapability.getFor(player);
+                        String animation = cap.getPose().equals("none") ? "nucleus:test" : "none";
+                        cap.setPose(animation);
+                        cap.setUpdateTime(player.level().getGameTime());
+                        cap.sendToClient(player);
+                    }
                 }
                 return CompoundEventResult.pass();
             });
@@ -88,16 +100,25 @@ public class Nucleus {
         registerPacket(CapabilitySyncPacket.class, CapabilitySyncPacket::new);
         registerPacket(DoublesCapabilitySyncPacket.class, DoublesCapabilitySyncPacket::new);
         registerPacket(SyncCapabilitiesJsonPacket.class, SyncCapabilitiesJsonPacket::new);
+        registerPacket(PoseCapabilitySyncPacket.class, PoseCapabilitySyncPacket::new);
     }
     private static void events() {
     }
     private static void capabilities() {
         EntityDataRegistry.register(loc("simple_doubles"), e -> true, DoublesCapability.class, DoublesCapability::new);
+        EntityDataRegistry.register(loc("pose"), e -> e instanceof LivingEntity && (e.level() == null || !e.level().isClientSide), ServerPoseCapability.class, ServerPoseCapability::new);
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
+                EntityDataRegistry.register(ClientPoseCapability.loc, e -> e instanceof LivingEntity && (e.level() == null || e.level().isClientSide), ClientPoseCapability.class, ClientPoseCapability::new)
+        );
+
         PlayerEvent.PLAYER_JOIN.register(player -> {
-            DoublesCapability cap = DoublesCapability.getAllFor(player);
-            cap.sendToClient(player);
+            DoublesCapability doublesCap = DoublesCapability.getAllFor(player);
+            ServerPoseCapability poseCap = ServerPoseCapability.getFor(player);
+            doublesCap.sendToClient(player);
+            poseCap.sendToClient(player);
         });
     }
+
     public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<FriendlyByteBuf, T> decoder) {
         CHANNEL.register(cls, T::toBuffer, decoder, T::wrappedHandle);
     }
@@ -132,6 +153,7 @@ public class Nucleus {
     private static void reloadListeners() {
         ReloadListenerRegistry.register(PackType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces
         ReloadListenerRegistry.register(PackType.SERVER_DATA, new CapabilityRegistryListener()); // works for nucleus and addon namespaces
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
     }
 
     public static void addAddonNamespace(String namespace) {

@@ -5,12 +5,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.*;
 import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
@@ -19,9 +17,24 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 public class MiscCodecs {
     public static final ColorCodec COLOR = ColorCodec.INSTANCE;
+    public static final Codec<Vector3f> VECTOR_3F = PolyCodec.of(
+            Codec.FLOAT.listOf().comapFlatMap(
+                    list -> {
+                        if (list.size() != 3)
+                            return DataResult.error(() -> "Invalid array size for 3d vector! Size must be 3! Size: " + list.size());
+                        return DataResult.success(new Vector3f(list.get(0), list.get(1), list.get(2)));
+                    },
+                    vec -> List.of(vec.x, vec.y, vec.z)
+            ),
+            Codec.simpleMap(Codec.STRING, Codec.FLOAT, Keyable.forStrings(() -> Stream.of("x", "y", "z"))).xmap(
+                    map -> new Vector3f(map.get("x"), map.get("y"), map.get("z")),
+                    vec -> Map.of("x", vec.x, "y", vec.y, "z", vec.z)
+            ).codec()
+    );
 
     public static <T> Codec<T[]> array(Codec<T> codec, IntFunction<T[]> converter) {
         return codec.listOf().xmap(l -> l.toArray(converter), Arrays::asList);

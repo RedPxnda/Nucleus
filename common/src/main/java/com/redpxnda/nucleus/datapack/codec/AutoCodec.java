@@ -12,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import org.joml.Vector3f;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -78,6 +79,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
         addInherit(map, Component.class, ExtraCodecs.COMPONENT);
         addInherit(map, Color.class, Color.CODEC);
+        addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
     });
 
     public static <T> Codec<T> getOverride(Class<T> cls) {
@@ -349,7 +351,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                         entry
                 ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", key, s));
 
-                //todo maps of maps
+                //todo maps of maps?
 
                 toSet.putAll((Map) toAdd); // idk java is weird don't blame me
 
@@ -365,6 +367,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                 throw new RuntimeException(e);
             }
         });
+        if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
         return DataResult.success((C) instance);
     }
 
@@ -404,6 +407,14 @@ public class AutoCodec<C> extends MapCodec<C> {
     @java.lang.Override
     public <T> Stream<T> keys(DynamicOps<T> ops) {
         return fields.keySet().stream().map(ops::createString);
+    }
+
+
+    /**
+     * Implement this interface if you want to run code after the fields set by AutoCodec have been set.
+     */
+    public interface AdditionalConstructing {
+        void additionalSetup();
     }
 
     /**

@@ -1,11 +1,17 @@
-package com.redpxnda.nucleus.capability.doubles;
+package com.redpxnda.nucleus.math;
 
 import com.google.gson.JsonElement;
-import com.redpxnda.nucleus.math.MathUtil;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.redpxnda.nucleus.datapack.codec.AutoCodec;
+import com.redpxnda.nucleus.datapack.codec.InterfaceDispatcher;
+import com.redpxnda.nucleus.util.JsonUtil;
+import net.minecraft.util.ExtraCodecs;
 
-@Environment(EnvType.CLIENT)
+import java.util.HashMap;
+import java.util.Map;
+
+@AutoCodec.Override("codec")
 public interface InterpolateMode {
     InterpolateMode NONE = (delta, last, current) -> current;
     InterpolateMode LERP = MathUtil::lerp;
@@ -14,14 +20,30 @@ public interface InterpolateMode {
         return MathUtil.lerp(d, last, current);
     };
 
+    Map<String, Creator> interpolateModes = new HashMap<>();
+    InterfaceDispatcher<Creator> interpolateModeDispatcher = InterfaceDispatcher.of(interpolateModes, "mode");
+    Codec<InterpolateMode> codec = ExtraCodecs.JSON.flatComapMap(
+            element -> interpolateModeDispatcher.dispatcher().createFrom(element),
+            mode -> DataResult.error(() -> "Cannot turn InterpolateMode into JsonElement."));
+    Initializer initializer = new Initializer();
+
+    class Initializer {
+        static {
+            interpolateModes.put("none", e -> InterpolateMode.NONE);
+            interpolateModes.put("lerp", e -> LERP);
+            interpolateModes.put("cosine", e -> COS);
+            interpolateModes.put("easeIn", e -> new EaseIn(JsonUtil.getIfObject(e, obj -> JsonUtil.getOrElse(obj, "amplifier", 2f), 2f)));
+            interpolateModes.put("easeOut", e -> new EaseOut(JsonUtil.getIfObject(e, obj -> JsonUtil.getOrElse(obj, "amplifier", 2f), 2f)));
+            interpolateModes.put("easeInOut", e -> new EaseInOut(JsonUtil.getIfObject(e, obj -> JsonUtil.getOrElse(obj, "amplifier", 2f), 2f)));
+        }
+    }
+
     double interpolate(float delta, double last, double current);
 
-    @Environment(EnvType.CLIENT)
     interface Creator {
         InterpolateMode createFrom(JsonElement element);
     }
 
-    @Environment(EnvType.CLIENT)
     record EaseIn(float amplifier) implements InterpolateMode {
         @Override
         public double interpolate(float delta, double last, double current) {
@@ -29,7 +51,6 @@ public interface InterpolateMode {
         }
     }
 
-    @Environment(EnvType.CLIENT)
     record EaseOut(float amplifier) implements InterpolateMode {
         @Override
         public double interpolate(float delta, double last, double current) {
@@ -37,7 +58,6 @@ public interface InterpolateMode {
         }
     }
 
-    @Environment(EnvType.CLIENT)
     record EaseInOut(float amplifier) implements InterpolateMode {
         @Override
         public double interpolate(float delta, double last, double current) {

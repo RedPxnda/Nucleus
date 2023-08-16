@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.math;
 
 import net.minecraft.util.Mth;
+import org.joml.Vector3f;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -43,6 +44,22 @@ public class MathUtil extends Mth {
     }
     public static float pow(float base, float exponent) {
         return (float) Math.pow(base, exponent);
+    }
+    public static float radians(float degrees) {
+        return (float) Math.toRadians(degrees);
+    }
+
+    public static void mapVector3f(Vector3f vec, Function<Float, Float> mapper) {
+        vec.x = mapper.apply(vec.x);
+        vec.y = mapper.apply(vec.y);
+        vec.z = mapper.apply(vec.z);
+    }
+    public static Vector3f interpolateVector(InterpolateMode mode, float delta, Vector3f start, Vector3f end) {
+        Vector3f vec = new Vector3f();
+        vec.x = (float) mode.interpolate(delta, start.x, end.x);
+        vec.y = (float) mode.interpolate(delta, start.y, end.y);
+        vec.z = (float) mode.interpolate(delta, start.z, end.z);
+        return vec;
     }
 
     public static double[] arrayLerp3(int time, int maxTime, double[][] items) {

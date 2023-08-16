@@ -8,6 +8,8 @@ import com.mojang.serialization.MapLike;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.util.Color;
 
+import java.util.List;
+
 public class ColorCodec implements Codec<Color> {
     public static final ColorCodec INSTANCE = new ColorCodec();
 
@@ -29,6 +31,17 @@ public class ColorCodec implements Codec<Color> {
             int b = ops.getNumberValue(map.get("b")).getOrThrow(false, s -> Nucleus.LOGGER.error("Invalid number used for color's b value! '" + map.get("b") + "'")).intValue();
             int a = ops.getNumberValue(map.get("a"), 255).intValue();
             return DataResult.success(Pair.of(new Color(r, g, b, a), input));
+        }
+
+        DataResult<List<Integer>> listResult = Codec.INT.listOf().parse(ops, input);
+        if (listResult.result().isPresent()) {
+            List<Integer> list = listResult.result().get();
+
+            if (list.size() > 4 || list.size() < 3)
+                return DataResult.error(() -> "Invalid array size used for a color! Must be either 3 (red, green, blue- alpha defaulting to 255) or 4! (red, green, blue, alpha)");
+
+            int alpha = list.size() > 3 ? list.get(3) : 255;
+            return DataResult.success(Pair.of(new Color(list.get(0), list.get(1), list.get(2), alpha), input));
         }
 
         return DataResult.error(() -> "Could not create a color from ColorCodec! Not a valid format -> " + input);
