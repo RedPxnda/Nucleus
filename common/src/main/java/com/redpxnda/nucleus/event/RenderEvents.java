@@ -70,6 +70,18 @@ public interface RenderEvents {
     }
 
     interface ChangeRenderedHands {
+        /**
+         * Fires whenever minecraft attempts to evaluate what hands should be rendered.
+         * NOTE: enabling offhand rendering will not magically make the offhand render.
+         * Minecraft never actually renders the offhand, and has additional checks
+         * to make sure of that. This will only make a difference when the player
+         * has an offhand item, and their mainhand item prevents the rendering of the
+         * offhand item. (eg. crossbows hide offhand item when charged)
+         * If you want to actually render the offhand, there are other events where
+         * you can do that.
+         * @param player the player being checked
+         * @param hands  the hands minecraft chose to render - use this object to make any modifications.
+         */
         void evaluate(Player player, RenderedHands hands);
     }
     class RenderedHands {

@@ -55,6 +55,9 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
 
     @Environment(EnvType.CLIENT)
     public static void init() {
+        RenderEvents.CHANGE_RENDERED_HANDS.register((player, hands) -> {
+            hands.setOffhand(true);
+        });
         RenderEvents.LIVING.register((stage, m, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.Stage.POSE_SETUP) return EventResult.pass();
             if (m instanceof HumanoidModel<? extends LivingEntity> model) {
