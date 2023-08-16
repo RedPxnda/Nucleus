@@ -3,7 +3,7 @@ package com.redpxnda.nucleus.util;
 import com.redpxnda.nucleus.math.ParticleShaper;
 import org.joml.Vector3d;
 
-public class Point {
+public class MovingPoint {
     private final double x;
     private final double y;
     private final double z;
@@ -11,7 +11,7 @@ public class Point {
     private final double ys;
     private final double zs;
 
-    public Point(double x, double y, double z, double xs, double ys, double zs) {
+    public MovingPoint(double x, double y, double z, double xs, double ys, double zs) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -20,7 +20,7 @@ public class Point {
         this.zs = zs;
     }
 
-    public Point(Vector3d pos, Vector3d motion) {
+    public MovingPoint(Vector3d pos, Vector3d motion) {
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;

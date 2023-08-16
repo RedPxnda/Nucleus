@@ -1,12 +1,10 @@
 package com.redpxnda.nucleus.event;
 
-import dev.architectury.event.Event;
-import dev.architectury.event.EventFactory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 
 public interface ServerEvents {
-    Event<EndDataPackReload> END_DATA_PACK_RELOAD = EventFactory.createLoop();
+    PrioritizedEvent<EndDataPackReload> END_DATA_PACK_RELOAD = PrioritizedEvent.createLoop();
 
     interface EndDataPackReload {
         /**

@@ -1,7 +1,5 @@
 package com.redpxnda.nucleus.event;
 
-import dev.architectury.event.Event;
-import dev.architectury.event.EventFactory;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -9,8 +7,8 @@ import org.joml.Vector2d;
 
 @Environment(EnvType.CLIENT)
 public interface ClientEvents {
-    Event<ModifyCameraSensitivity> MODIFY_CAMERA_MOTION = EventFactory.createLoop(); // same as below but with modifiable motion
-    Event<MiscEvents.SingleInput<Minecraft>> CAN_MOVE_CAMERA = EventFactory.createEventResult(); // called when a client player moves their camera
+    PrioritizedEvent<ModifyCameraSensitivity> MODIFY_CAMERA_MOTION = PrioritizedEvent.createLoop(); // same as below but with modifiable motion
+    PrioritizedEvent<MiscEvents.SingleInput<Minecraft>> CAN_MOVE_CAMERA = PrioritizedEvent.createEventResult(); // called when a client player moves their camera
 
     interface ModifyCameraSensitivity {
         void move(Minecraft minecraft, CameraMotion motion);

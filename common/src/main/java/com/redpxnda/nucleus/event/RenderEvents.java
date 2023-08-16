@@ -1,8 +1,6 @@
 package com.redpxnda.nucleus.event;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.architectury.event.Event;
-import dev.architectury.event.EventFactory;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -12,11 +10,21 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 @Environment(EnvType.CLIENT)
 public interface RenderEvents {
-    Event<EntityRender<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING = EventFactory.createEventResult();
-    Event<HudRenderPre> HUD_RENDER_PRE = EventFactory.createEventResult();
+    PrioritizedEvent<EntityRender<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING = PrioritizedEvent.createEventResult();
+    PrioritizedEvent<HudRenderPre> HUD_RENDER_PRE = PrioritizedEvent.createEventResult();
+    PrioritizedEvent<ChangeRenderedHands> CHANGE_RENDERED_HANDS = PrioritizedEvent.createCustomHandler((map, args) -> {
+        Player player = args.get(0);
+        RenderedHands hands = args.get(1);
+        for (ChangeRenderedHands listener : map.keySet()) {
+            listener.evaluate(player, hands);
+            if (hands.isForced()) break;
+        }
+        return null;
+    });
 
     enum Stage {
         /**
@@ -59,5 +67,61 @@ public interface RenderEvents {
          * @return whether the hud should continue rendering
          */
         EventResult render(Minecraft minecraft, GuiGraphics graphics, float partialTick);
+    }
+
+    interface ChangeRenderedHands {
+        void evaluate(Player player, RenderedHands hands);
+    }
+    class RenderedHands {
+        public static final RenderedHands BOTH = new RenderedHands(true, true);
+        public static final RenderedHands OFFHAND = new RenderedHands(true, false);
+        public static final RenderedHands MAINHAND = new RenderedHands(false, true);
+
+        private boolean forced = false;
+        private boolean offhand;
+        private boolean mainhand;
+        private boolean hasBeenModified = false;
+
+        protected RenderedHands(boolean offhand, boolean mainhand) {
+            this.offhand = offhand;
+            this.mainhand = mainhand;
+        }
+        protected RenderedHands(RenderedHands other) {
+            this.forced = other.forced;
+            this.offhand = other.offhand;
+            this.mainhand = other.mainhand;
+            this.hasBeenModified = other.hasBeenModified;
+        }
+
+        public RenderedHands copy() {
+            return new RenderedHands(this);
+        }
+
+        public boolean hasBeenModified() {
+            return hasBeenModified;
+        }
+
+        public void setOffhand(boolean bl) {
+            offhand = bl;
+            hasBeenModified = true;
+        }
+        public void setMainhand(boolean bl) {
+            mainhand = bl;
+            hasBeenModified = true;
+        }
+
+        public boolean hasOffhand() {
+            return offhand;
+        }
+        public boolean hasMainhand() {
+            return mainhand;
+        }
+
+        public void force() {
+            forced = true;
+        }
+        public boolean isForced() {
+            return forced;
+        }
     }
 }
