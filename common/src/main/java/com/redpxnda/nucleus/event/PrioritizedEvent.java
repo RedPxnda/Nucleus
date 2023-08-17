@@ -1,7 +1,6 @@
 package com.redpxnda.nucleus.event;
 
 import com.google.common.reflect.AbstractInvocationHandler;
-import com.redpxnda.nucleus.util.ArgsGetter;
 import com.redpxnda.nucleus.util.PriorityMap;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.Event;
@@ -14,9 +13,16 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * An extension of Architectury's Event, with a priority system.
+ * Lowest priority fires first.
+ * <p></p>
+ * NOTE: all listeners must be added BEFORE the event fires, otherwise the listeners
+ * will not be fired in the correct order. If this is not achievable, run the sort
+ * method to resort the listeners whenever needed.
+ */
 public interface PrioritizedEvent<T> extends Event<T> {
     void register(T listener, float prio);
     boolean hasBeenSorted();
@@ -24,20 +30,6 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
     static <T> PrioritizedEvent<T> of(Function<PriorityMap<T>, T> function) {
         return new Impl<>(function);
-    }
-
-    @SafeVarargs
-    static <T, R> PrioritizedEvent<T> createCustomHandler(BiFunction<PriorityMap<T>, ArgsGetter, R> handler, T... typeGetter) {
-        if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
-        return createCustomHandler(handler, (Class<T>) typeGetter.getClass().getComponentType());
-    }
-    static <T, R> PrioritizedEvent<T> createCustomHandler(BiFunction<PriorityMap<T>, ArgsGetter, R> handler, Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
-            @Override
-            protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
-                return handler.apply(listeners, ArgsGetter.of(args));
-            }
-        }));
     }
 
     @SafeVarargs

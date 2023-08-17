@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.util;
+package com.redpxnda.nucleus.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -18,12 +18,15 @@ import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import com.redpxnda.nucleus.registry.particles.*;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleMorpher;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
+import com.redpxnda.nucleus.util.MiscUtil;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -60,7 +63,8 @@ import java.util.function.BiFunction;
 import static com.redpxnda.nucleus.Nucleus.loc;
 import static net.minecraft.client.renderer.RenderStateShard.*;
 
-public class RenderUtil {
+@Environment(EnvType.CLIENT)
+public class Rendering {
     public static final Vector3f[][] CUBE = {
             // TOP
             { new Vector3f(1, 1, -1), new Vector3f(1, 1, 1), new Vector3f(-1, 1, 1), new Vector3f(-1, 1, -1) },
@@ -132,7 +136,7 @@ public class RenderUtil {
         ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
 
         RenderEvents.LIVING.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
-            if (stage != RenderEvents.Stage.PRE) return EventResult.pass();
+            if (stage != RenderEvents.EntityRenderStage.PRE) return EventResult.pass();
             for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
                 MobEffectInstance instance = entry.getValue();
                 MobEffect effect = entry.getKey();
@@ -145,7 +149,7 @@ public class RenderUtil {
             return EventResult.pass();
         });
         RenderEvents.LIVING.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
-            if (stage != RenderEvents.Stage.POST) return EventResult.pass();
+            if (stage != RenderEvents.EntityRenderStage.POST) return EventResult.pass();
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
                 if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);

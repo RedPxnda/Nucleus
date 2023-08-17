@@ -2,10 +2,10 @@ package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.registry.particles.manager.PoseStackParticleManager;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
 import com.redpxnda.nucleus.util.LimitedArrayList;
-import com.redpxnda.nucleus.util.RenderUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -67,7 +67,7 @@ public abstract class DynamicPoseStackParticle extends DynamicParticle implement
     public void renderTrail(PoseStack stack, float pt) {
         if (trail == null || pastPositions == null || pastPositions.isEmpty()) return;
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        VertexConsumer vc = bufferSource.getBuffer(RenderUtil.transparentTriangleStrip);
+        VertexConsumer vc = bufferSource.getBuffer(Rendering.transparentTriangleStrip);
         int length = pastPositions.size();
         float width = trail.width/length;
         for (int i = 0; i < length; i++) {

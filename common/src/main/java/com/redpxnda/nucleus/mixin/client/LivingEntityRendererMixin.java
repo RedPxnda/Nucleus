@@ -23,7 +23,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             cancellable = true
     )
     private void nucleus$livingRenderPreEvent(T livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
-        EventResult result = RenderEvents.LIVING.invoker().render(RenderEvents.Stage.PRE, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
+        EventResult result = RenderEvents.LIVING.invoker().render(RenderEvents.EntityRenderStage.PRE, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
     }
@@ -33,7 +33,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             at = @At("TAIL")
     )
     private void nucleus$livingRenderPostEvent(T livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
-        RenderEvents.LIVING.invoker().render(RenderEvents.Stage.POST, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
+        RenderEvents.LIVING.invoker().render(RenderEvents.EntityRenderStage.POST, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
     }
 
     @Inject(
@@ -41,7 +41,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER),
             cancellable = true)
     private void nucleus$livingRenderPushEvent(T livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
-        EventResult result = RenderEvents.LIVING.invoker().render(RenderEvents.Stage.PUSHED, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
+        EventResult result = RenderEvents.LIVING.invoker().render(RenderEvents.EntityRenderStage.PUSHED, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
     }
@@ -50,7 +50,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/world/entity/Entity;FFFFF)V", shift = At.Shift.AFTER),
             cancellable = true)
     private void nucleus$livingRenderSetupPoseEvent(T livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
-        EventResult result = RenderEvents.LIVING.invoker().render(RenderEvents.Stage.POSE_SETUP, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
+        EventResult result = RenderEvents.LIVING.invoker().render(RenderEvents.EntityRenderStage.POSE_SETUP, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
     }

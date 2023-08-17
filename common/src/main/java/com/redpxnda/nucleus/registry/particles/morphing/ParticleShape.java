@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.registry.particles.morphing;
 
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.ControllerParticle;
 import com.redpxnda.nucleus.registry.particles.DynamicPoseStackParticle;
 import com.redpxnda.nucleus.registry.particles.Trail;
 import com.redpxnda.nucleus.registry.particles.manager.PoseStackParticleManager;
-import com.redpxnda.nucleus.util.RenderUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleOptions;
 import org.joml.Matrix4f;
@@ -203,7 +203,7 @@ public class ParticleShape {
     }
 
     protected ControllerParticle create(ClientLevel level) {
-        ControllerParticle controller = (ControllerParticle) RenderUtil.createParticle(
+        ControllerParticle controller = (ControllerParticle) Rendering.createParticle(
                 level, NucleusRegistries.controllerParticle.get(),
                 x, y, z, 0, 0, 0);
 
@@ -227,7 +227,7 @@ public class ParticleShape {
         controller.children.clear();
         controller.setPos(x, y, z);
         spawner = cp -> (px, py, pz) -> {
-            DynamicPoseStackParticle particle = (DynamicPoseStackParticle) RenderUtil.createParticle(
+            DynamicPoseStackParticle particle = (DynamicPoseStackParticle) Rendering.createParticle(
                     level, this.particle,
                     px, py, pz, 0, 0, 0
             );

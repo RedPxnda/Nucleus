@@ -1,20 +1,17 @@
 package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.redpxnda.nucleus.util.RenderUtil;
+import com.redpxnda.nucleus.client.Rendering;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
@@ -60,8 +57,8 @@ public class CubeParticle extends DynamicPoseStackParticle {
         super.render(vc, stack, x, y, z, camera, partialTick);
         float xSize = invert ? this.xSize : -this.xSize;
         for (int i = 0; i < 6; i++) {
-            RenderUtil.addQuad(
-                    RenderUtil.CUBE[i], stack, vc,
+            Rendering.addQuad(
+                    Rendering.CUBE[i], stack, vc,
                     red, green, blue, alpha,
                     xSize, ySize, zSize,
                     sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(),

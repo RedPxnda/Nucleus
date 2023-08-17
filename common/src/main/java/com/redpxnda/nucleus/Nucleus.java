@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
 import com.redpxnda.nucleus.capability.EntityCapability;
+import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.datapack.codec.AutoCodec;
 import com.redpxnda.nucleus.capability.doubles.CapabilityRegistryListener;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
@@ -18,7 +19,6 @@ import com.redpxnda.nucleus.pose.PoseAnimationResourceListener;
 import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
-import com.redpxnda.nucleus.util.RenderUtil;
 import com.redpxnda.nucleus.util.SupporterUtil;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.common.InteractionEvent;
@@ -65,7 +65,7 @@ public class Nucleus {
         SupporterUtil.init();
         AutoCodec.init();
         NucleusRegistries.init();
-        EnvExecutor.runInEnv(Env.CLIENT, () -> RenderUtil::init);
+        EnvExecutor.runInEnv(Env.CLIENT, () -> Rendering::init);
         ReloadSyncPackets.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);

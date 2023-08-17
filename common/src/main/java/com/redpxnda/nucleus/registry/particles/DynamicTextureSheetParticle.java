@@ -1,22 +1,14 @@
 package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.redpxnda.nucleus.util.RenderUtil;
+import com.redpxnda.nucleus.client.Rendering;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
-
-import static com.redpxnda.nucleus.util.RenderUtil.*;
 
 public abstract class DynamicTextureSheetParticle extends DynamicPoseStackParticle {
     public TextureAtlasSprite sprite;
@@ -60,8 +52,8 @@ public abstract class DynamicTextureSheetParticle extends DynamicPoseStackPartic
     public void render(VertexConsumer vc, PoseStack stack, float x, float y, float z, Camera camera, float partialTick) {
         super.render(vc, stack, x, y, z, camera, partialTick);
         if (rotateWithCamera) stack.mulPose(camera.rotation());
-        RenderUtil.addQuad(
-                RenderUtil.QUAD,
+        Rendering.addQuad(
+                Rendering.QUAD,
                 stack, vc,
                 red, green, blue, alpha,
                 1, 1, 1,

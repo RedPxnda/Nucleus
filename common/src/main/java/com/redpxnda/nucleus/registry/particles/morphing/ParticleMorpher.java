@@ -3,12 +3,11 @@ package com.redpxnda.nucleus.registry.particles.morphing;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.ControllerParticle;
 import com.redpxnda.nucleus.registry.particles.DynamicPoseStackParticle;
-import com.redpxnda.nucleus.util.RenderUtil;
+import com.redpxnda.nucleus.client.Rendering;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ParticleMorpher extends ParticleShape {
     private final ClientLevel level;
@@ -26,7 +25,7 @@ public class ParticleMorpher extends ParticleShape {
     }
 
     public void spawn() {
-        ControllerParticle cp = (ControllerParticle) RenderUtil.addParticleToWorld(
+        ControllerParticle cp = (ControllerParticle) Rendering.addParticleToWorld(
                 level, NucleusRegistries.controllerParticle.get(), true, true,
                 x, y, z, 0, 0, 0
         );

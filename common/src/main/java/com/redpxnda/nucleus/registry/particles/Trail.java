@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.redpxnda.nucleus.util.RenderUtil;
+import com.redpxnda.nucleus.client.Rendering;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.LightTexture;
@@ -71,7 +71,7 @@ public class Trail {
 
     @Environment(EnvType.CLIENT)
     public void render(MultiBufferSource bufferSource, PoseStack stack, float pt, List<Vector3f> oldPositions, Vector3f oldestPosition, Vector3f currentPosition) {
-        VertexConsumer vc = bufferSource.getBuffer(RenderUtil.transparentTriangleStrip);
+        VertexConsumer vc = bufferSource.getBuffer(Rendering.transparentTriangleStrip);
         int length = oldPositions.size();
         float width = this.width/length;
         for (int i = 0; i < length; i++) {

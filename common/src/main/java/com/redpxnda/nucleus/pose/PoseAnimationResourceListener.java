@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.datapack.codec.MiscCodecs;
 import com.redpxnda.nucleus.event.RenderEvents;
-import com.redpxnda.nucleus.util.RenderUtil;
+import com.redpxnda.nucleus.client.Rendering;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -55,11 +55,17 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
 
     @Environment(EnvType.CLIENT)
     public static void init() {
-        RenderEvents.CHANGE_RENDERED_HANDS.register((player, hands) -> {
+        /*RenderEvents.CHANGE_RENDERED_HANDS.register((player, hands) -> {
             hands.setOffhand(true);
+            hands.setMainhand(true);
         });
+        RenderEvents.RENDER_ARM_WITH_ITEM.register((stage, armRenderer, player, matrices, buffer, stack, hand, partialTicks, pitch, swingProgress, equippedProgress, combinedLight) -> {
+            if (stage != RenderEvents.ArmRenderStage.ARM) return EventResult.pass();
+            armRenderer.renderPlayerArm();
+            return EventResult.interruptFalse();
+        });*/
         RenderEvents.LIVING.register((stage, m, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
-            if (stage != RenderEvents.Stage.POSE_SETUP) return EventResult.pass();
+            if (stage != RenderEvents.EntityRenderStage.POSE_SETUP) return EventResult.pass();
             if (m instanceof HumanoidModel<? extends LivingEntity> model) {
                 ClientPoseCapability cap = ClientPoseCapability.getFor(entity);
                 if (cap == null || cap.animation == null) return EventResult.pass();
@@ -73,7 +79,7 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                 else if (animation.frames.size() > 0) {
                     // configuring elapsedTime (making loops work and making sure it doesn't go over maxLength)
                     float maxLength = animation.length*20f;
-                    double elapsedTime = RenderUtil.getGameAndPartialTime()-cap.updateTime;
+                    double elapsedTime = Rendering.getGameAndPartialTime()-cap.updateTime;
                     if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength*animation.loops)) && elapsedTime >= maxLength) {
                         cap.frameIndex = 0;
                         elapsedTime %= maxLength;
