@@ -5,6 +5,7 @@ import com.redpxnda.nucleus.impl.EntityDataManager;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.PoseCapabilitySyncPacket;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -14,6 +15,7 @@ public class ServerPoseCapability implements SyncedEntityCapability<CompoundTag>
     }
 
     protected String pose = "none";
+    protected InteractionHand usedHand = InteractionHand.MAIN_HAND;
     protected long updateTime = -100;
 
     @Override
@@ -21,6 +23,7 @@ public class ServerPoseCapability implements SyncedEntityCapability<CompoundTag>
         CompoundTag tag = new CompoundTag();
         tag.putString("pose", pose);
         tag.putLong("updateTime", updateTime);
+        tag.putString("usedHand", usedHand == InteractionHand.MAIN_HAND ? "main" : "off");
         return tag;
     }
 
@@ -28,8 +31,17 @@ public class ServerPoseCapability implements SyncedEntityCapability<CompoundTag>
     public void loadNbt(CompoundTag tag) {
         pose = tag.getString("pose");
         updateTime = tag.getLong("updateTime");
+        usedHand = tag.getString("usedHand").equals("main") ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
     }
 
+    public void set(String pose, long time) {
+        setPose(pose);
+        setUpdateTime(time);
+    }
+    public void set(String pose, long time, InteractionHand usedHand) {
+        set(pose, time);
+        setUsedHand(usedHand);
+    }
     public void setPose(String pose) {
         this.pose = pose;
     }
@@ -41,6 +53,12 @@ public class ServerPoseCapability implements SyncedEntityCapability<CompoundTag>
     }
     public long getUpdateTime() {
         return updateTime;
+    }
+    public InteractionHand getUsedHand() {
+        return usedHand;
+    }
+    public void setUsedHand(InteractionHand usedHand) {
+        this.usedHand = usedHand;
     }
 
     @Override

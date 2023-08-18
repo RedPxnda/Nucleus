@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 
 @Environment(EnvType.CLIENT)
 public interface RenderEvents {
-    PrioritizedEvent<EntityRender<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING = PrioritizedEvent.createEventResult();
+    PrioritizedEvent<EntityRender<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING_ENTITY_RENDER = PrioritizedEvent.createEventResult();
     PrioritizedEvent<HudRenderPre> HUD_RENDER_PRE = PrioritizedEvent.createEventResult();
     PrioritizedEvent<ChangeRenderedHands> CHANGE_RENDERED_HANDS = PrioritizedEvent.of(listeners -> (player, hands) -> {
         for (ChangeRenderedHands listener : listeners.keySet()) {
@@ -57,10 +57,10 @@ public interface RenderEvents {
          *
          * @param entity            the entity
          * @param entityYaw         i can only guess it's the entity's yaw
-         * @param tickDelta         how far the client is between 2 ticks- since you usually have more frames per second than there are ticks per second
+         * @param partialTick       how far the client is between 2 ticks- since you usually have more frames per second than there are ticks per second
          * @return an event result representing whether the rendering should proceed and finish rendering the entity
          */
-        EventResult render(EntityRenderStage stage, M model, T entity, float entityYaw, float tickDelta, PoseStack matrixStack, MultiBufferSource bufferSource, int packedLight);
+        EventResult render(EntityRenderStage stage, M model, T entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource bufferSource, int packedLight);
     }
 
     interface HudRenderPre {

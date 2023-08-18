@@ -18,8 +18,11 @@
     "client.PoseStackAccessor"
   ],
   "mixins": [
+    "ChunkMapAccessor",
     "LivingEntityMixin",
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "ServerEntityMixin",
+    "TrackedEntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

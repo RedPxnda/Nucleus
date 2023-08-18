@@ -57,7 +57,7 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * @see Settings
  * @param <C> The type this {@link AutoCodec} represents
  */
-public class AutoCodec<C> extends MapCodec<C> {
+public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup stuff
     private static final Map<Class<?>, Supplier<Codec<?>>> inheritOverrides = MiscUtil.initialize(new HashMap<>(), map -> {
         addInherit(map, Integer.class, Codec.INT);
         addInherit(map, int.class, Codec.INT);

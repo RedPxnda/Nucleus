@@ -1,11 +1,16 @@
 package com.redpxnda.nucleus.network;
 
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.mixin.ChunkMapAccessor;
+import com.redpxnda.nucleus.mixin.TrackedEntityAccessor;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
 import java.util.function.Supplier;
 
@@ -24,9 +29,19 @@ public interface SimplePacket {
         Nucleus.CHANNEL.sendToPlayers(players, this);
     }
     default void send(ServerLevel level) {
-        this.send(level.players());
+        send(level.players());
     }
     default void send(MinecraftServer server) {
-        this.send(server.getPlayerList().getPlayers());
+        send(server.getPlayerList().getPlayers());
+    }
+
+    /**
+     * send to all players tracking the trackedEntity
+     */
+    default void sendToTrackers(Entity trackedEntity) {
+        if (trackedEntity.level().getChunkSource() instanceof ServerChunkCache chunkCache) {
+            ChunkMap.TrackedEntity tracked = ((ChunkMapAccessor) chunkCache.chunkMap).getEntityMap().get(trackedEntity.getId());
+            if (tracked != null) ((TrackedEntityAccessor) tracked).getSeenBy().forEach(cnct -> send(cnct.getPlayer()));
+        }
     }
 }

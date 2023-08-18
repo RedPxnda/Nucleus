@@ -20,6 +20,8 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
     public @AutoCodec.Optional int loops = 1; // -1 for indefinite
     public @AutoCodec.Ignored float length = -1;
     public @AutoCodec.Optional Frame initialPose = null;
+    public @AutoCodec.Optional boolean resetFirstPersonView = false;
+    public @AutoCodec.Optional FrameMultiplier leftHandMultiplier = FrameMultiplier.LEFT_HAND_INVERT;
 
     @Override
     public void additionalSetup() {
@@ -29,11 +31,38 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
     @AutoCodec.Settings(optionalByDefault = true)
     @AutoCodec.Override("codec")
+    public static class FrameMultiplier {
+        public static final Codec<FrameMultiplier> codec = AutoCodec.of(FrameMultiplier.class).codec();
+        public static final Vector3f ONE_VEC = new Vector3f(1, 1, 1);
+        public static final FrameMultiplier EMPTY = new FrameMultiplier();
+        public static final FrameMultiplier LEFT_HAND_INVERT = new FrameMultiplier(new Vector3f(-1, 1, 1), new Vector3f(1, -1, -1), ONE_VEC);
+
+        public Vector3f position = ONE_VEC;
+        public Vector3f rotation = ONE_VEC;
+        public Vector3f scale = ONE_VEC;
+
+        public FrameMultiplier() {
+        }
+        public FrameMultiplier(Vector3f position, Vector3f rotation, Vector3f scale) {
+            this.position = position;
+            this.rotation = rotation;
+            this.scale = scale;
+        }
+    }
+
+    @AutoCodec.Settings(optionalByDefault = true)
+    @AutoCodec.Override("codec")
     public static class Frame {
         public static final Codec<Frame> codec = AutoCodec.of(Frame.class).codec();
 
         public PartState head = PartState.EMPTY;
         public PartState body = PartState.EMPTY;
+        public PartState fpUsedArm = PartState.EMPTY; // fp = first person
+        public PartState fpUnusedArm = PartState.EMPTY;
+        public PartState fpRightArm = PartState.EMPTY;
+        public PartState fpLeftArm = PartState.EMPTY;
+        public PartState usedArm = PartState.EMPTY;
+        public PartState unusedArm = PartState.EMPTY;
         public PartState rightArm = PartState.EMPTY;
         public PartState leftArm = PartState.EMPTY;
         public PartState rightLeg = PartState.EMPTY;
@@ -43,9 +72,35 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
         public Frame() {
         }
-        public Frame(PartState head, PartState body, PartState rightArm, PartState leftArm, PartState rightLeg, PartState leftLeg, InterpolateMode interpolate, float endTime) {
+        public Frame(PartState fpUsedArm, PartState fpUnusedArm, PartState fpRightArm, PartState fpLeftArm, InterpolateMode interpolate, float endTime) {
+            this.fpUsedArm = fpUsedArm;
+            this.fpUnusedArm = fpUnusedArm;
+            this.fpRightArm = fpRightArm;
+            this.fpLeftArm = fpLeftArm;
+            this.interpolate = interpolate;
+            this.endTime = endTime;
+        }
+        public Frame(PartState head, PartState body, PartState usedArm, PartState unusedArm, PartState rightArm, PartState leftArm, PartState rightLeg, PartState leftLeg, InterpolateMode interpolate, float endTime) {
             this.head = head;
             this.body = body;
+            this.usedArm = usedArm;
+            this.unusedArm = unusedArm;
+            this.rightArm = rightArm;
+            this.leftArm = leftArm;
+            this.rightLeg = rightLeg;
+            this.leftLeg = leftLeg;
+            this.interpolate = interpolate;
+            this.endTime = endTime;
+        }
+        public Frame(PartState head, PartState body, PartState fpUsedArm, PartState fpUnusedArm, PartState fpRightArm, PartState fpLeftArm, PartState usedArm, PartState unusedArm, PartState rightArm, PartState leftArm, PartState rightLeg, PartState leftLeg, InterpolateMode interpolate, float endTime) {
+            this.head = head;
+            this.body = body;
+            this.fpUsedArm = fpUsedArm;
+            this.fpUnusedArm = fpUnusedArm;
+            this.fpRightArm = fpRightArm;
+            this.fpLeftArm = fpLeftArm;
+            this.usedArm = usedArm;
+            this.unusedArm = unusedArm;
             this.rightArm = rightArm;
             this.leftArm = leftArm;
             this.rightLeg = rightLeg;
@@ -54,10 +109,22 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
             this.endTime = endTime;
         }
 
+        public Frame interpFpTo(float delta, Frame other) {
+            return new Frame(
+                    fpUsedArm.interpTo(interpolate, delta, other.fpUsedArm),
+                    fpUnusedArm.interpTo(interpolate, delta, other.fpUnusedArm),
+                    fpRightArm.interpTo(interpolate, delta, other.fpRightArm),
+                    fpLeftArm.interpTo(interpolate, delta, other.fpLeftArm),
+                    interpolate, endTime
+            );
+        }
+
         public Frame interpTo(float delta, Frame other) {
             return new Frame(
                     head.interpTo(interpolate, delta, other.head),
                     body.interpTo(interpolate, delta, other.body),
+                    usedArm.interpTo(interpolate, delta, other.usedArm),
+                    unusedArm.interpTo(interpolate, delta, other.unusedArm),
                     rightArm.interpTo(interpolate, delta, other.rightArm),
                     leftArm.interpTo(interpolate, delta, other.leftArm),
                     rightLeg.interpTo(interpolate, delta, other.rightLeg),

@@ -26,4 +26,9 @@ public class EntityDataManager {
     public static <T extends EntityCapability<?>> T getCapability(Entity entity, Class<T> cap, Supplier<T> ifFailed) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static <T extends EntityCapability<?>> boolean entityHasCapability(Entity entity, Class<T> cap) {
+        throw new AssertionError();
+    }
 }

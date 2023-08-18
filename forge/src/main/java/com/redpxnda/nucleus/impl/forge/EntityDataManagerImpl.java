@@ -25,4 +25,8 @@ public class EntityDataManagerImpl {
     public static <T extends EntityCapability<?>> T getOrCreateCapability(Entity entity, Class<T> cap) {
         return getCapability(entity, cap);
     }
+
+    public static <T extends EntityCapability<?>> boolean entityHasCapability(Entity entity, Class<T> cap) {
+        return getCapability(entity, cap) != null;
+    }
 }

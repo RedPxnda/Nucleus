@@ -3,11 +3,12 @@ package com.redpxnda.nucleus;
 import com.ezylang.evalex.config.ExpressionConfiguration;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
-import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
 import com.redpxnda.nucleus.capability.EntityCapability;
+import com.redpxnda.nucleus.capability.TrackingUpdateSyncer;
+import com.redpxnda.nucleus.capability.doubles.CapabilityRegistryListener;
+import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.datapack.codec.AutoCodec;
-import com.redpxnda.nucleus.capability.doubles.CapabilityRegistryListener;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.math.evalex.ListContains;
@@ -35,7 +36,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import org.slf4j.Logger;
@@ -67,6 +68,7 @@ public class Nucleus {
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> Rendering::init);
         ReloadSyncPackets.init();
+        TrackingUpdateSyncer.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
@@ -83,8 +85,8 @@ public class Nucleus {
                     } else if (player.getMainHandItem().is(Items.ALLIUM)) {
                         ServerPoseCapability cap = ServerPoseCapability.getFor(player);
                         String animation = cap.getPose().equals("none") ? "nucleus:test" : "none";
-                        cap.setPose(animation);
-                        cap.setUpdateTime(player.level().getGameTime());
+                        InteractionHand usedHand = !player.isShiftKeyDown() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+                        cap.set(animation, player.level().getGameTime(), usedHand);
                         cap.sendToClient(player);
                     }
                 }
@@ -106,9 +108,9 @@ public class Nucleus {
     }
     private static void capabilities() {
         EntityDataRegistry.register(loc("simple_doubles"), e -> true, DoublesCapability.class, DoublesCapability::new);
-        EntityDataRegistry.register(loc("pose"), e -> e instanceof LivingEntity && (e.level() == null || !e.level().isClientSide), ServerPoseCapability.class, ServerPoseCapability::new);
+        EntityDataRegistry.register(loc("pose"), e -> e instanceof Player && (e.level() == null || !e.level().isClientSide), ServerPoseCapability.class, ServerPoseCapability::new);
         EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
-                EntityDataRegistry.register(ClientPoseCapability.loc, e -> e instanceof LivingEntity && (e.level() == null || e.level().isClientSide), ClientPoseCapability.class, ClientPoseCapability::new)
+                EntityDataRegistry.register(ClientPoseCapability.loc, e -> e instanceof Player && (e.level() == null || e.level().isClientSide), ClientPoseCapability.class, ClientPoseCapability::new)
         );
 
         PlayerEvent.PLAYER_JOIN.register(player -> {

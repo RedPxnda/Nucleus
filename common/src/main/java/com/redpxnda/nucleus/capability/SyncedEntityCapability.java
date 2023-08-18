@@ -7,14 +7,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 public interface SyncedEntityCapability<T extends Tag> extends EntityCapability<T> {
-    default void sendToClients(Iterable<ServerPlayer> players, Entity entity) {
-        createPacket(entity).send(players);
+    default void sendToClients(Entity capHolder, Iterable<ServerPlayer> players) {
+        createPacket(capHolder).send(players);
     }
-    default void sendToClient(ServerPlayer player) {
-        sendToClient(player, player);
+    default void sendToTrackers(Entity capHolder) {
+        createPacket(capHolder).sendToTrackers(capHolder);
     }
-    default void sendToClient(Entity entity, ServerPlayer player) {
-        createPacket(entity).send(player);
+    default void sendToClient(ServerPlayer holder) {
+        sendToClient(holder, holder);
+    }
+    default void sendToClient(Entity capHolder, ServerPlayer player) {
+        createPacket(capHolder).send(player);
     }
     default SimplePacket createPacket(Entity target) {
         return new CapabilitySyncPacket<>(target, this);

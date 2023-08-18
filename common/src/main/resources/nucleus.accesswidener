@@ -7,6 +7,7 @@ accessible method net/minecraft/client/particle/BreakingItemParticle <init> (Lne
 accessible method net/minecraft/nbt/NbtIo readUnnamedTag (Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;
 accessible method net/minecraft/client/renderer/RenderType translucentState (Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState;
 accessible class net/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection
+accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
 
 accessible field net/minecraft/client/particle/Particle MAXIMUM_COLLISION_VELOCITY_SQUARED D
 accessible field net/minecraft/client/particle/Particle stoppedByCollision Z

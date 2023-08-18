@@ -135,7 +135,7 @@ public class Rendering {
         ParticleProviderRegistry.register(NucleusRegistries.cubeParticle, new CubeParticle.Provider());
         ParticleProviderRegistry.register(NucleusRegistries.blockChunkParticle, new ChunkParticle.Provider());
 
-        RenderEvents.LIVING.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+        RenderEvents.LIVING_ENTITY_RENDER.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.PRE) return EventResult.pass();
             for (Map.Entry<MobEffect, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
                 MobEffectInstance instance = entry.getValue();
@@ -148,7 +148,7 @@ public class Rendering {
             }
             return EventResult.pass();
         });
-        RenderEvents.LIVING.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+        RenderEvents.LIVING_ENTITY_RENDER.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.POST) return EventResult.pass();
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
                 if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
