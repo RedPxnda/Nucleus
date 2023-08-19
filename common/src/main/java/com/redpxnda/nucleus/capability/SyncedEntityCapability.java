@@ -1,6 +1,6 @@
 package com.redpxnda.nucleus.capability;
 
-import com.redpxnda.nucleus.network.SimplePacket;
+import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.CapabilitySyncPacket;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,7 +19,7 @@ public interface SyncedEntityCapability<T extends Tag> extends EntityCapability<
     default void sendToClient(Entity capHolder, ServerPlayer player) {
         createPacket(capHolder).send(player);
     }
-    default SimplePacket createPacket(Entity target) {
+    default PlayerSendable createPacket(Entity target) {
         return new CapabilitySyncPacket<>(target, this);
     }
 }

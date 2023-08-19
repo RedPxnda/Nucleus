@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.capability.doubles;
 
 import com.redpxnda.nucleus.capability.SyncedEntityCapability;
 import com.redpxnda.nucleus.impl.EntityDataManager;
-import com.redpxnda.nucleus.network.SimplePacket;
+import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.DoublesCapabilitySyncPacket;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -72,7 +72,7 @@ public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
     }
 
     @Override
-    public SimplePacket createPacket(Entity target) {
+    public PlayerSendable createPacket(Entity target) {
         return new DoublesCapabilitySyncPacket(target, this);
     }
 }

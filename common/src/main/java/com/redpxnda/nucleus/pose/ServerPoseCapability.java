@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.pose;
 
 import com.redpxnda.nucleus.capability.SyncedEntityCapability;
 import com.redpxnda.nucleus.impl.EntityDataManager;
-import com.redpxnda.nucleus.network.SimplePacket;
+import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.PoseCapabilitySyncPacket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
@@ -62,7 +62,7 @@ public class ServerPoseCapability implements SyncedEntityCapability<CompoundTag>
     }
 
     @Override
-    public SimplePacket createPacket(Entity target) {
+    public PlayerSendable createPacket(Entity target) {
         return new PoseCapabilitySyncPacket(target, this);
     }
 }
