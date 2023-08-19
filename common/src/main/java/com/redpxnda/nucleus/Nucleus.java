@@ -21,12 +21,9 @@ import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
-import dev.architectury.event.CompoundEventResult;
-import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkChannel;
-import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -34,11 +31,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -73,7 +67,7 @@ public class Nucleus {
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
         // temp test code
-        if (Platform.isDevelopmentEnvironment()) {
+        /*if (Platform.isDevelopmentEnvironment()) {
             InteractionEvent.RIGHT_CLICK_ITEM.register((p, hand) -> {
                 if (p instanceof ServerPlayer player) {
                     if (player.getMainHandItem().is(Items.STICK) || player.getMainHandItem().is(Items.SADDLE)) {
@@ -92,7 +86,7 @@ public class Nucleus {
                 }
                 return CompoundEventResult.pass();
             });
-        }
+        }*/
     }
 
     private static void packets() {
