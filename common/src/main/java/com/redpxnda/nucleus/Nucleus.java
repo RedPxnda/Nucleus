@@ -21,6 +21,7 @@ import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
+import com.redpxnda.nucleus.wrappers.Wrappers;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkChannel;
@@ -63,6 +64,7 @@ public class Nucleus {
         EnvExecutor.runInEnv(Env.CLIENT, () -> Rendering::init);
         ReloadSyncPackets.init();
         TrackingUpdateSyncer.init();
+        Wrappers.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
