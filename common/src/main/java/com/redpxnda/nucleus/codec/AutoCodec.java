@@ -6,12 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.core.Registry;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.lang.annotation.ElementType;
@@ -19,7 +16,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -57,8 +57,8 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * @see Settings
  * @param <C> The type this {@link AutoCodec} represents
  */
-public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup stuff
-    private static final Map<Class<?>, Supplier<Codec<?>>> inheritOverrides = MiscUtil.initialize(new HashMap<>(), map -> {
+public class AutoCodec<C> extends MapCodec<C> {
+    private static final Map<Class<?>, CodecGetter<?>> inheritOverrides = MiscUtil.initialize(new HashMap<>(), map -> {
         addInherit(map, Integer.class, Codec.INT);
         addInherit(map, int.class, Codec.INT);
         addInherit(map, Double.class, Codec.DOUBLE);
@@ -76,25 +76,36 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
         addInherit(map, String.class, Codec.STRING);
         addInherit(map, ResourceLocation.class, ResourceLocation.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
-        addInherit(map, Component.class, ExtraCodecs.COMPONENT);
+        //addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
+        //addInherit(map, Component.class, ExtraCodecs.COMPONENT);
         addInherit(map, Color.class, Color.CODEC);
         addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
     });
 
-    public static <T> Codec<T> getOverride(Class<T> cls) {
-        Supplier<Codec<?>> sup = inheritOverrides.get(cls);
-        return sup == null ? null : (Codec<T>) sup.get();
+    public static <T> Codec<T> getOverride(Class<T> cls, Type[] typeParams) {
+        CodecGetter<?> sup = inheritOverrides.get(cls);
+        return sup == null ? null : (Codec<T>) sup.getCodec(typeParams);
+    }
+    public static <T> CodecGetter<T> getOverride(Class<T> cls) {
+        return (CodecGetter<T>) inheritOverrides.get(cls);
     }
     public static <T> void addInherit(Class<T> cls, Codec<T> codec) {
-        inheritOverrides.put(cls, () -> codec);
+        inheritOverrides.put(cls, CodecGetter.of(codec));
     }
-    // a little unsafe, make sure you use this correctly.
-    public static <T> void addInherit(Class<T> cls, Supplier<Codec<?>> codec) {
+    public static <T> void addInherit(Class<T> cls, CodecGetter<T> codec) {
         inheritOverrides.put(cls, codec);
     }
-    public static <T> void addInherit(Map<Class<?>, Supplier<Codec<?>>> map, Class<T> cls, Codec<T> codec) {
-        map.put(cls, () -> codec);
+    public static <T> void addInheritIfAbsent(Class<T> cls, CodecGetter<T> codec) {
+        inheritOverrides.putIfAbsent(cls, codec);
+    }
+
+    // a little unsafe, make sure you use this correctly.
+    public static <T> void addInherit(Class<T> cls, Supplier<Codec<?>> codec) {
+        inheritOverrides.put(cls, CodecGetter.ofSupplier(codec));
+    }
+
+    public static <T> void addInherit(Map<Class<?>, CodecGetter<?>> map, Class<T> cls, Codec<T> codec) {
+        map.put(cls, CodecGetter.of(codec));
     }
 
     // adding registries into auto codec overrides
@@ -104,7 +115,7 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
             if (field.getGenericType() instanceof ParameterizedType pt && pt.getActualTypeArguments()[0] instanceof Class<?> cls) {
                 try {
                     Registry<?> reg = (Registry<?>) field.get(null);
-                    inheritOverrides.putIfAbsent(cls, reg::byNameCodec);
+                    inheritOverrides.putIfAbsent(cls, CodecGetter.ofSupplier(reg::byNameCodec));
                 } catch (IllegalAccessException e) {
                     LOGGER.error("Failed to add '{}' from BuiltInRegistries as an inherit override.", field.getName());
                     throw new RuntimeException(e);
@@ -143,7 +154,7 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
         return new AutoCodec<>(cls, errorMsg);
     }
 
-    private Codec<?> getCodec(FieldCallback callback, Type fieldType, boolean allowFieldSearching) {
+    protected Codec<?> getCodec(FieldCallback callback, Type fieldType, boolean allowFieldSearching) {
         if (fieldType instanceof TypeVariable<?>) {
             LOGGER.error("Field's Type for AutoCodec cannot contain or be a TypeVariable!");
             throw new IllegalArgumentException();
@@ -215,7 +226,7 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
             return MiscCodecs.ofEnum((Class<? extends Enum>) cls);
 
         // global override
-        Codec<?> c = getOverride(cls);
+        Codec<?> c = getOverride(cls, params);
         if (c != null) return c;
 
         // class override
@@ -227,13 +238,18 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
                 int mods = field.getModifiers();
                 if (!Modifier.isStatic(mods))
                     LOGGER.error("Field mentioned in AutoCodec.Override annotation for class '{}' must be static!", cls.getSimpleName());
-                return (Codec<?>) field.get(null);
+                Object obj = field.get(null);
+                if (obj instanceof Codec<?> codec) {
+                    inheritOverrides.putIfAbsent(cls, CodecGetter.of(codec));
+                    return codec;
+                }
+                return ((CodecGetter<?>) obj).getCodec(params);
             } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-                LOGGER.error("Field mentioned in AutoCodec.Override annotation for class '{}' is either non-existent, inaccessible, or not a valid Codec! -> {}", cls.getSimpleName(), e);
+                LOGGER.error("Field mentioned in AutoCodec.Override annotation for class '{}' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)! -> {}", cls.getSimpleName(), e);
             }
         }
 
-        // class searching to find suitable codec (unsafe)
+        // class searching to find suitable codec (unsafe?)
         if (allowFieldSearching)
             for (Field field : cls.getDeclaredFields()) {
                 int mods = field.getModifiers();
@@ -247,7 +263,7 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
                 ) continue;
                 try {
                     Codec<?> codec = (Codec<?>) field.get(null);
-                    inheritOverrides.put(cls, () -> codec);
+                    inheritOverrides.put(cls, CodecGetter.of(codec));
                     return codec;
                 } catch (IllegalAccessException | ClassCastException ignored) {}
             }
@@ -409,6 +425,16 @@ public class AutoCodec<C> extends MapCodec<C> { //todo proper additional setup s
         return fields.keySet().stream().map(ops::createString);
     }
 
+    public interface CodecGetter<T> {
+        static <T> CodecGetter<T> of(Codec<T> codec) {
+            return p -> codec;
+        }
+        static CodecGetter<?> ofSupplier(Supplier<Codec<?>> codec) {
+            return p -> (Codec<Object>) codec.get();
+        }
+
+        Codec<T> getCodec(@Nullable Type[] typeParams);
+    }
 
     /**
      * Implement this interface if you want to run code after the fields set by AutoCodec have been set.

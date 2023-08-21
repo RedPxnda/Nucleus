@@ -2,14 +2,28 @@ package com.redpxnda.nucleus.wrappers;
 
 import com.google.common.reflect.TypeToken;
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.codec.AutoCodec;
+import com.redpxnda.nucleus.codec.ResolvableCodec;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@AutoCodec.Override("codecGetter")
 public class Resolvable<T> {
+    public static AutoCodec.CodecGetter<Resolvable> codecGetter = params -> {
+        if (params != null && params.length == 1) {
+            if (String.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forString);
+            if (Double.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forDouble);
+            if (Float.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forFloat);
+            if (Boolean.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forBoolean);
+            if (Integer.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forInteger);
+        }
+        return new ResolvableCodec<>(Resolvable::new);
+    };
+
     protected String base;
     protected final Map<String, WrapperHolder<?>> permanentContexts = new HashMap<>();
-    protected final Map<String, WrapperHolder<?>> ephemeralContexts = new HashMap<>();
+    protected final Map<String, WrapperHolder<?>> temporaryContexts = new HashMap<>();
 
     public Resolvable(String string) {
         base = string;
@@ -38,33 +52,36 @@ public class Resolvable<T> {
         providePermanent(name, null, instance);
     }
 
-    public <A> void provideEphemeral(String name, A instance) {
-        provideEphemeral(name, getWrapperFor(instance), instance);
+    public <A> void provideTemporary(String name, A instance) {
+        provideTemporary(name, getWrapperFor(instance), instance);
     }
 
-    public <A> void provideEphemeral(String name, Wrapper<A> wrapper, A instance) {
+    public <A> void provideTemporary(String name, Wrapper<A> wrapper, A instance) {
         WrapperHolder<A> holder = new WrapperHolder<>(wrapper, instance);
-        ephemeralContexts.put(name, holder);
+        temporaryContexts.put(name, holder);
     }
 
-    public void provideEphemeral(String name, Number instance) {
-        provideEphemeral(name, null, instance);
+    public void provideTemporary(String name, Number instance) {
+        provideTemporary(name, null, instance);
     }
-    public void provideEphemeral(String name, boolean instance) {
-        provideEphemeral(name, null, instance);
+    public void provideTemporary(String name, boolean instance) {
+        provideTemporary(name, null, instance);
     }
-    public void provideEphemeral(String name, String instance) {
-        provideEphemeral(name, null, instance);
+    public void provideTemporary(String name, String instance) {
+        provideTemporary(name, null, instance);
     }
 
+    public String getBase() {
+        return base;
+    }
 
     public void resetEphemerals() {
-        ephemeralContexts.clear();
-        ephemeralContexts.putAll(permanentContexts);
+        temporaryContexts.clear();
+        temporaryContexts.putAll(permanentContexts);
     }
 
     public T resolve() {
-        ephemeralContexts.putAll(permanentContexts);
+        temporaryContexts.putAll(permanentContexts);
 
         String[] parts = base.split("\\.");
         int index = -1;
@@ -75,7 +92,7 @@ public class Resolvable<T> {
         for (String part : parts) {
             index++;
             if (index == 0) {
-                WrapperHolder<?> holder = ephemeralContexts.get(part);
+                WrapperHolder<?> holder = temporaryContexts.get(part);
                 if (holder == null) {
                     throw new RuntimeException("Failed to get context '" + part + "' from Resolvable! Unprovided?");
                 }

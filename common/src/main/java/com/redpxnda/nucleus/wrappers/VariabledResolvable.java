@@ -4,23 +4,60 @@ import com.ezylang.evalex.EvaluationException;
 import com.ezylang.evalex.Expression;
 import com.ezylang.evalex.data.EvaluationValue;
 import com.ezylang.evalex.parser.ParseException;
+import com.redpxnda.nucleus.codec.AutoCodec;
+import com.redpxnda.nucleus.codec.ResolvableCodec;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
+@AutoCodec.Override("codecGetter")
 public abstract class VariabledResolvable<T> extends Resolvable<T> {
-    /*public static void main(String[] args) {
+    public static AutoCodec.CodecGetter<VariabledResolvable> codecGetter = params -> {
+        if (params != null && params.length == 1) {
+            if (String.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forString);
+            if (Double.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forDouble);
+            if (Float.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forFloat);
+            if (Boolean.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forBoolean);
+            if (Integer.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forInteger);
+        }
+        return null;
+    };
+
+    /*public static class TestObject {
+        public VariabledResolvable<String> str;
+        public VariabledResolvable<Boolean> bool;
+        public Resolvable<Double> doub;
+        public Resolvable<Float> floa;
+    }
+
+    public static void main(String[] args) {
         Wrappers.init();
 
-        DoubleExpression ex = forDouble("$[testVar.a] * $[testVar.b]");
-        ex.providePermanent("testVar", Map.of("a", 5, "b", 7));
-        System.out.println(ex.getValue());
-        System.out.println("======");
-        System.out.println(ex.base);
-        System.out.println(ex.resolved);
-        System.out.println(ex.getValue());
+        Gson gson = new Gson();
+        JsonElement element = gson.fromJson("""
+                {
+                    "str": "abcd efghi $[var] and 82",
+                    "bool": "$[var] > 6",
+                    "doub": "$[var] * 3",
+                    "floa": "$[var] * 3.4"
+                }
+                """, JsonElement.class);
+        TestObject obj = AutoCodec.of(TestObject.class).codec().parse(JsonOps.INSTANCE, element).getOrThrow(false, s -> System.out.println(s));
+        System.out.println(obj);
+        System.out.println("=====\nbool:");
+        obj.bool.provideTemporary("var", 7);
+        System.out.println(obj.bool.resolve());
+        System.out.println("=====\nstr:");
+        obj.str.provideTemporary("var", "STRING WORKS");
+        System.out.println(obj.str.resolve());
+        System.out.println("=====\ndouble:");
+        obj.doub.provideTemporary("var", 4);
+        System.out.println(obj.doub.resolve());
+        System.out.println("=====\nfloat:");
+        obj.floa.provideTemporary("var", 1);
+        System.out.println(obj.floa.resolve());
     }
 
     static final Logger LOGGER = LogUtils.getLogger();*/
@@ -118,8 +155,8 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
         resolved = base;
     }
 
-    public <A> void provideEphemeral(String name, Wrapper<A> wrapper, A instance) {
-        super.provideEphemeral(name, wrapper, instance);
+    public <A> void provideTemporary(String name, Wrapper<A> wrapper, A instance) {
+        super.provideTemporary(name, wrapper, instance);
         resolved = reshapeWith(resolved, name, wrapper, instance);
     }
 
@@ -144,7 +181,7 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
             return resolved;
         }
     }
-    public static abstract class ExpressionResolvable<N> extends VariabledResolvable<EvaluationValue> {
+    public static abstract class ExpressionResolvable<N> extends VariabledResolvable<N> {
         public ExpressionResolvable(String base) {
             super(base);
         }
@@ -152,14 +189,7 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
             super(base, regex, varGroup);
         }
 
-        public N getValue() {
-            return getValue(resolve());
-        }
-
-        protected abstract N getValue(EvaluationValue eval);
-
-        @Override
-        public EvaluationValue calculate() {
+        protected EvaluationValue getValue() {
             try {
                 return new Expression(resolved).evaluate();
             } catch (EvaluationException | ParseException e) {
@@ -177,8 +207,8 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
         }
 
         @Override
-        protected Double getValue(EvaluationValue eval) {
-            return eval.getNumberValue().doubleValue();
+        protected Double calculate() {
+            return getValue().getNumberValue().doubleValue();
         }
     }
     public static class FloatExpression extends ExpressionResolvable<Float> {
@@ -190,8 +220,8 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
         }
 
         @Override
-        protected Float getValue(EvaluationValue eval) {
-            return eval.getNumberValue().floatValue();
+        protected Float calculate() {
+            return getValue().getNumberValue().floatValue();
         }
     }
     public static class IntegerExpression extends ExpressionResolvable<Integer> {
@@ -203,8 +233,8 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
         }
 
         @Override
-        protected Integer getValue(EvaluationValue eval) {
-            return eval.getNumberValue().intValue();
+        protected Integer calculate() {
+            return getValue().getNumberValue().intValue();
         }
     }
     public static class BooleanExpression extends ExpressionResolvable<Boolean> {
@@ -216,8 +246,8 @@ public abstract class VariabledResolvable<T> extends Resolvable<T> {
         }
 
         @Override
-        protected Boolean getValue(EvaluationValue eval) {
-            return eval.getBooleanValue();
+        protected Boolean calculate() {
+            return getValue().getBooleanValue();
         }
     }
 }
