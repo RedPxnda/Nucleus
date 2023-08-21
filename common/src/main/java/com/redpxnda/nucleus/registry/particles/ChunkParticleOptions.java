@@ -1,12 +1,11 @@
 package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.datapack.codec.AutoCodec;
+import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
 

@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.datapack.codec;
+package com.redpxnda.nucleus.codec;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

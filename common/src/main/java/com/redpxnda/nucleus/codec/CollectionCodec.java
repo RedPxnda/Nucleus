@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.datapack.codec;
+package com.redpxnda.nucleus.codec;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;

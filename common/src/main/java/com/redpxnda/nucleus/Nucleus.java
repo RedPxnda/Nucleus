@@ -8,7 +8,7 @@ import com.redpxnda.nucleus.capability.TrackingUpdateSyncer;
 import com.redpxnda.nucleus.capability.doubles.CapabilityRegistryListener;
 import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
 import com.redpxnda.nucleus.client.Rendering;
-import com.redpxnda.nucleus.datapack.codec.AutoCodec;
+import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.impl.EntityDataRegistry;
 import com.redpxnda.nucleus.math.evalex.ListContains;

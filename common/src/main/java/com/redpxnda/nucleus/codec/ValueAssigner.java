@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.datapack.codec;
+package com.redpxnda.nucleus.codec;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;

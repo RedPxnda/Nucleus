@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.client.Rendering;
-import com.redpxnda.nucleus.datapack.codec.MiscCodecs;
+import com.redpxnda.nucleus.codec.MiscCodecs;
 import com.redpxnda.nucleus.event.RenderEvents;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;

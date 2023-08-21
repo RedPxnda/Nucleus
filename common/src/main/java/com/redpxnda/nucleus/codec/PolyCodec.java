@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.datapack.codec;
+package com.redpxnda.nucleus.codec;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
@@ -7,10 +7,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.EitherCodec;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 
 /**

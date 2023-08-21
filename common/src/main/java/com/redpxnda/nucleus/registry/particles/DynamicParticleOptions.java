@@ -1,15 +1,11 @@
 package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.datapack.codec.AutoCodec;
-import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ByteBufUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-
-import java.util.function.Supplier;
 
 public abstract class DynamicParticleOptions implements ParticleOptions {
     public int lifetime = 100;

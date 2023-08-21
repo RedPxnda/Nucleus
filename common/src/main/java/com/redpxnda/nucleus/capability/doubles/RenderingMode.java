@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.capability.doubles;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.datapack.codec.AutoCodec;
+import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.Color;

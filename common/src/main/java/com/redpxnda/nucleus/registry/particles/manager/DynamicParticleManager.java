@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.registry.particles.manager;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.datapack.codec.ValueAssigner;
+import com.redpxnda.nucleus.codec.ValueAssigner;
 
 public interface DynamicParticleManager {
     ValueAssigner.CodecBuilder<DynamicParticleManager> setupBuilder = new ValueAssigner.CodecBuilder<DynamicParticleManager>()

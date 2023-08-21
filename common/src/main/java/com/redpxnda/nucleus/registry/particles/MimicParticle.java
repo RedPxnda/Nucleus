@@ -1,6 +1,6 @@
 package com.redpxnda.nucleus.registry.particles;
 
-import com.redpxnda.nucleus.datapack.codec.ValueAssigner;
+import com.redpxnda.nucleus.codec.ValueAssigner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;

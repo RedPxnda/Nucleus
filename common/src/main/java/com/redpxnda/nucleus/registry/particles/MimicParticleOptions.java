@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.redpxnda.nucleus.datapack.codec.ValueAssigner;
+import com.redpxnda.nucleus.codec.ValueAssigner;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.manager.DynamicParticleManager;
 import com.redpxnda.nucleus.util.ByteBufUtil;

@@ -3,8 +3,8 @@ package com.redpxnda.nucleus.math;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.redpxnda.nucleus.datapack.codec.AutoCodec;
-import com.redpxnda.nucleus.datapack.codec.InterfaceDispatcher;
+import com.redpxnda.nucleus.codec.AutoCodec;
+import com.redpxnda.nucleus.codec.InterfaceDispatcher;
 import com.redpxnda.nucleus.util.JsonUtil;
 import net.minecraft.util.ExtraCodecs;
 

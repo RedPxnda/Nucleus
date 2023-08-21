@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.util;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.datapack.codec.ColorCodec;
+import com.redpxnda.nucleus.codec.ColorCodec;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.joml.Vector4f;
