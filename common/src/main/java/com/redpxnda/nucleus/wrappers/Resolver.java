@@ -1,36 +1,53 @@
 package com.redpxnda.nucleus.wrappers;
 
-import com.google.common.reflect.TypeToken;
-import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.AutoCodec;
-import com.redpxnda.nucleus.codec.ResolvableCodec;
+import com.redpxnda.nucleus.codec.ResolverCodec;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @AutoCodec.Override("codecGetter")
-public class Resolvable<T> {
-    public static AutoCodec.CodecGetter<Resolvable> codecGetter = params -> {
+public class Resolver<T> {
+    public static AutoCodec.CodecGetter<Resolver> rawCodecGetter = params -> {
+        Class<?> cls = params != null && params.length == 1 ? params[0] instanceof Class<?> c ? c : Object.class : Object.class;
+        return new ResolverCodec<>(str -> new Resolver<>(cls, str));
+    };
+    public static AutoCodec.CodecGetter<Resolver> codecGetter = params -> {
+        Class<?> cls;
         if (params != null && params.length == 1) {
-            if (String.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forString);
-            if (Double.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forDouble);
-            if (Float.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forFloat);
-            if (Boolean.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forBoolean);
-            if (Integer.class.equals(params[0])) return new ResolvableCodec<>(VariabledResolvable::forInteger);
-        }
-        return new ResolvableCodec<>(Resolvable::new);
+            if (String.class.equals(params[0])) return new ResolverCodec<>(VariabledResolver::forString);
+            if (Double.class.equals(params[0])) return new ResolverCodec<>(VariabledResolver::forDouble);
+            if (Float.class.equals(params[0])) return new ResolverCodec<>(VariabledResolver::forFloat);
+            if (Boolean.class.equals(params[0])) return new ResolverCodec<>(VariabledResolver::forBoolean);
+            if (Integer.class.equals(params[0])) return new ResolverCodec<>(VariabledResolver::forInteger);
+            cls = params[0] instanceof Class<?> c ? c : Object.class;
+        } else cls = Object.class;
+        return new ResolverCodec<>(str -> new Resolver<>(cls, str));
     };
 
     protected String base;
+    protected final String[] segments;
+    protected final Class<T> clazz;
     protected final Map<String, WrapperHolder<?>> permanentContexts = new HashMap<>();
     protected final Map<String, WrapperHolder<?>> temporaryContexts = new HashMap<>();
 
-    public Resolvable(String string) {
+    /**
+     * @param outputClass   the class of the output
+     * @param string        the expression string
+     * @param setupSegments whether to split the string into segments or not
+     */
+    protected Resolver(Class<T> outputClass, String string, boolean setupSegments) {
         base = string;
+        segments = setupSegments ? base.split("\\.") : null;
+        clazz = outputClass;
+    }
+
+    public Resolver(Class<T> outputClass, String string) {
+        this(outputClass, string, true);
     }
 
     protected <A> Wrapper<A> getWrapperFor(A instance) {
-        return (Wrapper<A>) Wrappers.get(instance.getClass());
+        return instance == null ? Wrapper.emptyWrapper : (Wrapper<A>) Wrappers.get(instance.getClass());
     }
 
     public <A> void providePermanent(String name, A instance) {
@@ -80,16 +97,16 @@ public class Resolvable<T> {
         temporaryContexts.putAll(permanentContexts);
     }
 
+    // override this resolve method and no other resolve methods for subclasses
     public T resolve() {
         temporaryContexts.putAll(permanentContexts);
 
-        String[] parts = base.split("\\.");
         int index = -1;
 
         Object object = null;
         Wrapper<Object> wrapper = null;
 
-        for (String part : parts) {
+        for (String part : segments) {
             index++;
             if (index == 0) {
                 WrapperHolder<?> holder = temporaryContexts.get(part);
@@ -102,18 +119,16 @@ public class Resolvable<T> {
                 continue;
             }
 
-            object = wrapper.get(object, part);
+            object = wrapper.invoke(object, part);
             wrapper = getWrapperFor(object);
         }
 
         resetEphemerals();
-        try {
-            return (T) object;
-        } catch (Exception e) {
-            TypeToken<T> typeToken = new TypeToken<T>(getClass()) {};
-            Nucleus.LOGGER.error("Unexpected output for resolvable! Expected '{}' but recieved '{}' instead!", typeToken.getRawType().getSimpleName(), object.getClass().getSimpleName());
-            throw new RuntimeException(e);
-        }
+
+        if (object != null && !clazz.isAssignableFrom(object.getClass()))
+            throw new RuntimeException("Unexpected output for Resolver! Expected '%s' but received '%s' instead!".formatted(clazz, object.getClass()));
+
+        return (T) object;
     }
 
     public record WrapperHolder<T>(Wrapper<T> wrapper, T instance) {}
