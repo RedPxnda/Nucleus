@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.wrappers;
+package com.redpxnda.nucleus.resolving;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;

@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.wrappers;
+package com.redpxnda.nucleus.resolving;
 
 import com.redpxnda.nucleus.Nucleus;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +41,10 @@ public class Wrappers {
             return Wrapper.super.isEmpty(instance) || instance.isEmpty();
         }
     };
+
+    public static <A> Wrapper<A> getWrapperFor(A instance) {
+        return instance == null ? Wrapper.emptyWrapper : (Wrapper<A>) Wrappers.get(instance.getClass());
+    }
 
     public static <T> void register(Class<T> cls, Wrapper<T> wrapper) {
         wrappers.put(cls, wrapper);

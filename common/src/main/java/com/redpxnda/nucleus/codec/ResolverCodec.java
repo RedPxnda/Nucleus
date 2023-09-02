@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.redpxnda.nucleus.wrappers.Resolver;
+import com.redpxnda.nucleus.resolving.Resolver;
 
 import java.util.function.Function;
 

@@ -21,7 +21,7 @@ import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
-import com.redpxnda.nucleus.wrappers.Wrappers;
+import com.redpxnda.nucleus.resolving.Wrappers;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkChannel;
