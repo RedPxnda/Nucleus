@@ -2,6 +2,8 @@ package com.redpxnda.nucleus.resolving;
 
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.codec.ResolverCodec;
+import com.redpxnda.nucleus.resolving.wrappers.Wrapper;
+import com.redpxnda.nucleus.resolving.wrappers.WrapperHolder;
 import org.intellij.lang.annotations.RegExp;
 
 @AutoCodec.Override("codecGetter")
@@ -17,11 +19,11 @@ public class DirectResolver<T> extends Resolver<T> {
      * @param outputClass   the class of the output
      * @param base        the expression string
      */
-    protected DirectResolver(Class<T> outputClass, String base) {
+    public DirectResolver(Class<T> outputClass, String base) {
         this(outputClass, base, "\\.");
     }
 
-    protected DirectResolver(Class<T> outputClass, String base, @RegExp String segmentsRegex) {
+    public DirectResolver(Class<T> outputClass, String base, @RegExp String segmentsRegex) {
         super(outputClass, base);
         splitRegex = segmentsRegex;
     }

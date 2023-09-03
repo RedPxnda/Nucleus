@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.resolving;
+package com.redpxnda.nucleus.resolving.wrappers;
 
 import com.redpxnda.nucleus.util.MiscUtil;
 import org.jetbrains.annotations.NotNull;

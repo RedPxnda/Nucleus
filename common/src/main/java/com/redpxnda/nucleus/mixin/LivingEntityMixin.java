@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.mixin;
 
 import com.redpxnda.nucleus.event.MiscEvents;
+import com.redpxnda.nucleus.resolving.wrappers.LivingEntityWrapping;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin {
+public class LivingEntityMixin implements LivingEntityWrapping {
     @Inject(
             method = "jumpFromGround",
             at = @At("HEAD"),

@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.mixin;
 
 import com.redpxnda.nucleus.event.ServerEvents;
+import com.redpxnda.nucleus.resolving.wrappers.MinecraftServerWrapping;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,7 +13,7 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftServer.class)
-public class MinecraftServerMixin {
+public class MinecraftServerMixin implements MinecraftServerWrapping {
     @Shadow
     private MinecraftServer.ReloadableResources resources;
 

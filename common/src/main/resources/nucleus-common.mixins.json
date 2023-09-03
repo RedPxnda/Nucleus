@@ -18,7 +18,11 @@
     "client.PoseStackAccessor"
   ],
   "mixins": [
+    "AABBMixin",
+    "BlockPosMixin",
     "ChunkMapAccessor",
+    "EntityMixin",
+    "LevelMixin",
     "LivingEntityMixin",
     "MinecraftServerMixin",
     "ServerEntityMixin",

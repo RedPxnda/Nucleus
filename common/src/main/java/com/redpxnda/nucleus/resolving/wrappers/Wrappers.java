@@ -1,6 +1,15 @@
-package com.redpxnda.nucleus.resolving;
+package com.redpxnda.nucleus.resolving.wrappers;
 
 import com.redpxnda.nucleus.Nucleus;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class Wrappers {
     private static final Map<Class<?>, Wrapper<?>> wrappers = new HashMap<>();
@@ -31,14 +41,25 @@ public class Wrappers {
                 int index = Integer.parseInt(key);
                 return list.get(index);
             } catch (Exception e) {
-                Nucleus.LOGGER.error("Cannot use key '{}' for list wrapper! Key must be an integer representing object index!", key);
-                throw new RuntimeException(e);
+                return collectionWrapper.customInvoke(list, key);
+//                Nucleus.LOGGER.error("Cannot use key '{}' for list wrapper! Key must be an integer representing object index!", key);
+//                throw new RuntimeException(e);
             }
         }
 
         @Override
         public boolean isEmpty(List<?> instance) {
             return Wrapper.super.isEmpty(instance) || instance.isEmpty();
+        }
+    };
+    public static final Wrapper collectionWrapper = new Wrapper<Collection<?>>() {
+        @Override
+        public Object customInvoke(@NotNull Collection<?> instance, String key) {
+            return switch (key) {
+                case "as_list" -> instance.stream().toList();
+                case "stream" -> instance.stream();
+                default -> null;
+            };
         }
     };
 
@@ -113,9 +134,45 @@ public class Wrappers {
 
     public static void init() {
         register(Map.class, mapWrapper);
-        register(HashMap.class, mapWrapper);
         register(List.class, listWrapper);
-        register(ArrayList.class, listWrapper);
+        register(Collection.class, collectionWrapper);
+        register(Stream.class, (instance, key) -> switch (key) {
+            case "as_list" -> instance.toList();
+            case "count", "size" -> instance.count();
+            case "any" -> instance.findAny().orElse(null);
+            case "first" -> instance.findFirst().orElse(null);
+            default -> null;
+        });
+
+        register(Entity.class, createAutoFor(Entity.class, "nucleusWrapper$"));
+        register(BlockPos.class, createAutoFor(BlockPos.class, "nucleusWrapper$"));
+        register(AABB.class, createAutoFor(AABB.class, "nucleusWrapper$"));
+        register(Level.class, createAutoFor(Level.class, "nucleusWrapper$"));
+        register(MinecraftServer.class, createAutoFor(MinecraftServer.class, "nucleusWrapper$"));
+        register(LivingEntity.class, createAutoFor(LivingEntity.class, "nucleusWrapper$"));
+        register(Vec3.class, (instance, key) -> switch (key) {
+            case "x" -> instance.x;
+            case "y" -> instance.y;
+            case "z" -> instance.z;
+            default -> null;
+        });
+        register(Vec2.class, (instance, key) -> switch (key) {
+            case "x" -> instance.x;
+            case "y" -> instance.y;
+            default -> null;
+        });
+        register(Direction.class, (instance, key) -> {
+            if (key.equals("str") || key.equals("string") || key.equals("name"))
+                return switch (instance) {
+                    case DOWN -> "down";
+                    case UP -> "up";
+                    case NORTH -> "north";
+                    case SOUTH -> "south";
+                    case WEST -> "west";
+                    case EAST -> "east";
+                };
+            return null;
+        });
     }
 
     private Wrappers() {}

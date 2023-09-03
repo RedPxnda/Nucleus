@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.resolving;
+package com.redpxnda.nucleus.resolving.wrappers;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

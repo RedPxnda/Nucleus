@@ -19,9 +19,9 @@ import com.redpxnda.nucleus.pose.ClientPoseCapability;
 import com.redpxnda.nucleus.pose.PoseAnimationResourceListener;
 import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
+import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
-import com.redpxnda.nucleus.resolving.Wrappers;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkChannel;
@@ -67,6 +67,11 @@ public class Nucleus {
         Wrappers.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
+
+        /*Resolver<Integer> r = Resolver.forInteger("$[vec.y]");
+        r.providePermanent("vec", new Vec3(1, 2.2, 3));
+        System.out.println(r.resolve());
+        throw new RuntimeException("done!");*/
 
         // temp test code
         /*if (Platform.isDevelopmentEnvironment()) {

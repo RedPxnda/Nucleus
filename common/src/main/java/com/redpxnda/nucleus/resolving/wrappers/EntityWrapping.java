@@ -1,8 +1,9 @@
-package com.redpxnda.nucleus.resolving;
+package com.redpxnda.nucleus.resolving.wrappers;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -10,9 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.entity.vehicle.MinecartSpawner;
 import net.minecraft.world.item.ItemStack;
@@ -31,13 +30,13 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public interface EntityWrapping {
-    default Entity getAsEntity() {
-        return (Entity) this;
+    static Entity getAsEntity(EntityWrapping wrapping) {
+        return (Entity) wrapping;
     }
 
     @WrapperMethod(alias = "team_color")
     default int nucleusWrapper$getTeamColor() {
-        return getAsEntity().getTeamColor();
+        return getAsEntity(this).getTeamColor();
     }
 
     /**
@@ -45,22 +44,22 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_spectator")
     default boolean nucleusWrapper$isSpectator() {
-        return getAsEntity().isSpectator();
+        return getAsEntity(this).isSpectator();
     }
 
     @WrapperMethod(alias = "type")
-    default EntityType<?> nucleusWrapper$getType() {
-        return getAsEntity().getType();
+    default String nucleusWrapper$getType() {
+        return BuiltInRegistries.ENTITY_TYPE.getKey(getAsEntity(this).getType()).toString();
     }
 
     @WrapperMethod(alias = "id")
     default int nucleusWrapper$getId() {
-        return getAsEntity().getId();
+        return getAsEntity(this).getId();
     }
 
     @WrapperMethod(alias = "tags")
     default Set<String> nucleusWrapper$getTags() {
-        return getAsEntity().getTags();
+        return getAsEntity(this).getTags();
     }
 
     /*@WrapperMethod(alias = "entity_data")
@@ -68,19 +67,19 @@ public interface EntityWrapping {
         return getAsEntity().getEntityData();
     }*/
 
-    @WrapperMethod(alias = "pose")
+    /*@WrapperMethod(alias = "pose")
     default Pose nucleusWrapper$getPose() {
-        return getAsEntity().getPose();
-    }
+        return nucleusWrapper$getSelfAsEntity(this).getPose();
+    }*/
 
     @WrapperMethod(alias = "portal_cooldown")
     default int nucleusWrapper$getPortalCooldown() {
-        return getAsEntity().getPortalCooldown();
+        return getAsEntity(this).getPortalCooldown();
     }
 
     @WrapperMethod(alias = "is_on_portal_cooldown")
     default boolean nucleusWrapper$isOnPortalCooldown() {
-        return getAsEntity().isOnPortalCooldown();
+        return getAsEntity(this).isOnPortalCooldown();
     }
 
     /**
@@ -88,22 +87,22 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "portal_wait_time")
     default int nucleusWrapper$getPortalWaitTime() {
-        return getAsEntity().getPortalWaitTime();
+        return getAsEntity(this).getPortalWaitTime();
     }
 
     @WrapperMethod(alias = "remaining_fire_ticks")
     default int nucleusWrapper$getRemainingFireTicks() {
-        return getAsEntity().getRemainingFireTicks();
+        return getAsEntity(this).getRemainingFireTicks();
     }
 
     @WrapperMethod(alias = "on_ground")
     default boolean nucleusWrapper$onGround() {
-        return getAsEntity().onGround();
+        return getAsEntity(this).onGround();
     }
 
     @WrapperMethod(alias = "on_pos")
     default BlockPos nucleusWrapper$getOnPos() {
-        return getAsEntity().getOnPos();
+        return getAsEntity(this).getOnPos();
     }
 
     /**
@@ -111,22 +110,22 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_silent")
     default boolean nucleusWrapper$isSilent() {
-        return getAsEntity().isSilent();
+        return getAsEntity(this).isSilent();
     }
 
     @WrapperMethod(alias = "is_no_gravity")
     default boolean nucleusWrapper$isNoGravity() {
-        return getAsEntity().isNoGravity();
+        return getAsEntity(this).isNoGravity();
     }
 
     @WrapperMethod(alias = "dampens_vibrations")
     default boolean nucleusWrapper$dampensVibrations() {
-        return getAsEntity().dampensVibrations();
+        return getAsEntity(this).dampensVibrations();
     }
 
     @WrapperMethod(alias = "fire_immune")
     default boolean nucleusWrapper$fireImmune() {
-        return getAsEntity().fireImmune();
+        return getAsEntity(this).fireImmune();
     }
 
     /**
@@ -134,7 +133,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_in_water")
     default boolean nucleusWrapper$isInWater() {
-        return getAsEntity().isInWater();
+        return getAsEntity(this).isInWater();
     }
 
     /**
@@ -142,42 +141,42 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_in_water_or_rain")
     default boolean nucleusWrapper$isInWaterOrRain() {
-        return getAsEntity().isInWaterOrRain();
+        return getAsEntity(this).isInWaterOrRain();
     }
 
     @WrapperMethod(alias = "is_in_water_rain_or_bubble")
     default boolean nucleusWrapper$isInWaterRainOrBubble() {
-        return getAsEntity().isInWaterRainOrBubble();
+        return getAsEntity(this).isInWaterRainOrBubble();
     }
 
     @WrapperMethod(alias = "is_in_water_or_bubble")
     default boolean nucleusWrapper$isInWaterOrBubble() {
-        return getAsEntity().isInWaterOrBubble();
+        return getAsEntity(this).isInWaterOrBubble();
     }
 
     @WrapperMethod(alias = "is_under_water")
     default boolean nucleusWrapper$isUnderWater() {
-        return getAsEntity().isUnderWater();
+        return getAsEntity(this).isUnderWater();
     }
 
     @WrapperMethod(alias = "block_state_on")
     default BlockState nucleusWrapper$getBlockStateOn() {
-        return getAsEntity().getBlockStateOn();
+        return getAsEntity(this).getBlockStateOn();
     }
 
     @WrapperMethod(alias = "can_spawn_sprint_particle")
     default boolean nucleusWrapper$canSpawnSprintParticle() {
-        return getAsEntity().canSpawnSprintParticle();
+        return getAsEntity(this).canSpawnSprintParticle();
     }
 
     @WrapperMethod(alias = "is_in_lava")
     default boolean nucleusWrapper$isInLava() {
-        return getAsEntity().isInLava();
+        return getAsEntity(this).isInLava();
     }
 
     @WrapperMethod(alias = "can_be_hit_by_projectile")
     default boolean nucleusWrapper$canBeHitByProjectile() {
-        return getAsEntity().canBeHitByProjectile();
+        return getAsEntity(this).canBeHitByProjectile();
     }
 
     /**
@@ -185,7 +184,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_pickable")
     default boolean nucleusWrapper$isPickable() {
-        return getAsEntity().isPickable();
+        return getAsEntity(this).isPickable();
     }
 
     /**
@@ -193,7 +192,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_pushable")
     default boolean nucleusWrapper$isPushable() {
-        return getAsEntity().isPushable();
+        return getAsEntity(this).isPushable();
     }
 
     /**
@@ -201,7 +200,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_alive")
     default boolean nucleusWrapper$isAlive() {
-        return getAsEntity().isAlive();
+        return getAsEntity(this).isAlive();
     }
 
     /**
@@ -209,12 +208,12 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_in_wall")
     default boolean nucleusWrapper$isInWall() {
-        return getAsEntity().isInWall();
+        return getAsEntity(this).isInWall();
     }
 
     @WrapperMethod(alias = "can_be_collided_with")
     default boolean nucleusWrapper$canBeCollidedWith() {
-        return getAsEntity().canBeCollidedWith();
+        return getAsEntity(this).canBeCollidedWith();
     }
 
     /**
@@ -222,7 +221,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "my_riding_offset")
     default double nucleusWrapper$getMyRidingOffset() {
-        return getAsEntity().getMyRidingOffset();
+        return getAsEntity(this).getMyRidingOffset();
     }
 
     /**
@@ -230,17 +229,17 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "passengers_riding_offset")
     default double nucleusWrapper$getPassengersRidingOffset() {
-        return getAsEntity().getPassengersRidingOffset();
+        return getAsEntity(this).getPassengersRidingOffset();
     }
 
     @WrapperMethod(alias = "show_vehicle_health")
     default boolean nucleusWrapper$showVehicleHealth() {
-        return getAsEntity().showVehicleHealth();
+        return getAsEntity(this).showVehicleHealth();
     }
 
     @WrapperMethod(alias = "pick_radius")
     default float nucleusWrapper$getPickRadius() {
-        return getAsEntity().getPickRadius();
+        return getAsEntity(this).getPickRadius();
     }
 
     /**
@@ -248,7 +247,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "look_angle")
     default Vec3 nucleusWrapper$getLookAngle() {
-        return getAsEntity().getLookAngle();
+        return getAsEntity(this).getLookAngle();
     }
 
     /**
@@ -256,12 +255,12 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "rotation_vector")
     default Vec2 nucleusWrapper$getRotationVector() {
-        return getAsEntity().getRotationVector();
+        return getAsEntity(this).getRotationVector();
     }
 
     @WrapperMethod(alias = "forward")
     default Vec3 nucleusWrapper$getForward() {
-        return getAsEntity().getForward();
+        return getAsEntity(this).getForward();
     }
 
     /**
@@ -269,22 +268,22 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "dimension_changing_delay")
     default int nucleusWrapper$getDimensionChangingDelay() {
-        return getAsEntity().getDimensionChangingDelay();
+        return getAsEntity(this).getDimensionChangingDelay();
     }
 
     @WrapperMethod(alias = "hand_slots")
     default Iterable<ItemStack> nucleusWrapper$getHandSlots() {
-        return getAsEntity().getHandSlots();
+        return getAsEntity(this).getHandSlots();
     }
 
     @WrapperMethod(alias = "armor_slots")
     default Iterable<ItemStack> nucleusWrapper$getArmorSlots() {
-        return getAsEntity().getArmorSlots();
+        return getAsEntity(this).getArmorSlots();
     }
 
     @WrapperMethod(alias = "all_slots")
     default Iterable<ItemStack> nucleusWrapper$getAllSlots() {
-        return getAsEntity().getAllSlots();
+        return getAsEntity(this).getAllSlots();
     }
 
     /**
@@ -292,12 +291,12 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_on_fire")
     default boolean nucleusWrapper$isOnFire() {
-        return getAsEntity().isOnFire();
+        return getAsEntity(this).isOnFire();
     }
 
     @WrapperMethod(alias = "is_passenger")
     default boolean nucleusWrapper$isPassenger() {
-        return getAsEntity().isPassenger();
+        return getAsEntity(this).isPassenger();
     }
 
     /**
@@ -305,42 +304,42 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_vehicle")
     default boolean nucleusWrapper$isVehicle() {
-        return getAsEntity().isVehicle();
+        return getAsEntity(this).isVehicle();
     }
 
     @WrapperMethod(alias = "dismounts_underwater")
     default boolean nucleusWrapper$dismountsUnderwater() {
-        return getAsEntity().dismountsUnderwater();
+        return getAsEntity(this).dismountsUnderwater();
     }
 
     @WrapperMethod(alias = "is_shift_key_down")
     default boolean nucleusWrapper$isShiftKeyDown() {
-        return getAsEntity().isShiftKeyDown();
+        return getAsEntity(this).isShiftKeyDown();
     }
 
     @WrapperMethod(alias = "is_stepping_carefully")
     default boolean nucleusWrapper$isSteppingCarefully() {
-        return getAsEntity().isSteppingCarefully();
+        return getAsEntity(this).isSteppingCarefully();
     }
 
     @WrapperMethod(alias = "is_suppressing_bounce")
     default boolean nucleusWrapper$isSuppressingBounce() {
-        return getAsEntity().isSuppressingBounce();
+        return getAsEntity(this).isSuppressingBounce();
     }
 
     @WrapperMethod(alias = "is_discrete")
     default boolean nucleusWrapper$isDiscrete() {
-        return getAsEntity().isDiscrete();
+        return getAsEntity(this).isDiscrete();
     }
 
     @WrapperMethod(alias = "is_descending")
     default boolean nucleusWrapper$isDescending() {
-        return getAsEntity().isDescending();
+        return getAsEntity(this).isDescending();
     }
 
     @WrapperMethod(alias = "is_crouching")
     default boolean nucleusWrapper$isCrouching() {
-        return getAsEntity().isCrouching();
+        return getAsEntity(this).isCrouching();
     }
 
     /**
@@ -348,82 +347,82 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_sprinting")
     default boolean nucleusWrapper$isSprinting() {
-        return getAsEntity().isSprinting();
+        return getAsEntity(this).isSprinting();
     }
 
     @WrapperMethod(alias = "is_swimming")
     default boolean nucleusWrapper$isSwimming() {
-        return getAsEntity().isSwimming();
+        return getAsEntity(this).isSwimming();
     }
 
     @WrapperMethod(alias = "is_visually_swimming")
     default boolean nucleusWrapper$isVisuallySwimming() {
-        return getAsEntity().isVisuallySwimming();
+        return getAsEntity(this).isVisuallySwimming();
     }
 
     @WrapperMethod(alias = "is_visually_crawling")
     default boolean nucleusWrapper$isVisuallyCrawling() {
-        return getAsEntity().isVisuallyCrawling();
+        return getAsEntity(this).isVisuallyCrawling();
     }
 
     @WrapperMethod(alias = "is_currently_glowing")
     default boolean nucleusWrapper$isCurrentlyGlowing() {
-        return getAsEntity().isCurrentlyGlowing();
+        return getAsEntity(this).isCurrentlyGlowing();
     }
 
     @WrapperMethod(alias = "is_invisible")
     default boolean nucleusWrapper$isInvisible() {
-        return getAsEntity().isInvisible();
+        return getAsEntity(this).isInvisible();
     }
 
     @WrapperMethod(alias = "is_on_rails")
     default boolean nucleusWrapper$isOnRails() {
-        return getAsEntity().isOnRails();
+        return getAsEntity(this).isOnRails();
     }
 
-    @WrapperMethod(alias = "team")
+    @WrapperMethod(alias = "team") //todo teams
     default Team nucleusWrapper$getTeam() {
-        return getAsEntity().getTeam();
+        return getAsEntity(this).getTeam();
     }
 
     @WrapperMethod(alias = "max_air_supply")
     default int nucleusWrapper$getMaxAirSupply() {
-        return getAsEntity().getMaxAirSupply();
+        return getAsEntity(this).getMaxAirSupply();
     }
 
     @WrapperMethod(alias = "air_supply")
     default int nucleusWrapper$getAirSupply() {
-        return getAsEntity().getAirSupply();
+        return getAsEntity(this).getAirSupply();
     }
 
     @WrapperMethod(alias = "ticks_frozen")
     default int nucleusWrapper$getTicksFrozen() {
-        return getAsEntity().getTicksFrozen();
+        return getAsEntity(this).getTicksFrozen();
     }
 
     @WrapperMethod(alias = "percent_frozen")
     default float nucleusWrapper$getPercentFrozen() {
-        return getAsEntity().getPercentFrozen();
+        return getAsEntity(this).getPercentFrozen();
     }
 
     @WrapperMethod(alias = "is_fully_frozen")
     default boolean nucleusWrapper$isFullyFrozen() {
-        return getAsEntity().isFullyFrozen();
+        return getAsEntity(this).isFullyFrozen();
     }
 
     @WrapperMethod(alias = "ticks_required_to_freeze")
     default int nucleusWrapper$getTicksRequiredToFreeze() {
-        return getAsEntity().getTicksRequiredToFreeze();
+        return getAsEntity(this).getTicksRequiredToFreeze();
     }
 
     @WrapperMethod(alias = "name")
     default Component nucleusWrapper$getName() {
-        return getAsEntity().getName();
+        return getAsEntity(this).getName();
     }
 
-    @WrapperMethod(alias = "yhead_rot")
+    @WrapperMethod(alias = "y_head_rot")
     default float nucleusWrapper$getYHeadRot() {
-        return getAsEntity().getYHeadRot();
+        return getAsEntity(this).getYHeadRot();
     }
 
     /**
@@ -431,12 +430,12 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_attackable")
     default boolean nucleusWrapper$isAttackable() {
-        return getAsEntity().isAttackable();
+        return getAsEntity(this).isAttackable();
     }
 
     @WrapperMethod(alias = "is_invulnerable")
     default boolean nucleusWrapper$isInvulnerable() {
-        return getAsEntity().isInvulnerable();
+        return getAsEntity(this).isInvulnerable();
     }
 
     /**
@@ -444,7 +443,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "can_change_dimensions")
     default boolean nucleusWrapper$canChangeDimensions() {
-        return getAsEntity().canChangeDimensions();
+        return getAsEntity(this).canChangeDimensions();
     }
 
     /**
@@ -452,7 +451,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "max_fall_distance")
     default int nucleusWrapper$getMaxFallDistance() {
-        return getAsEntity().getMaxFallDistance();
+        return getAsEntity(this).getMaxFallDistance();
     }
 
     /**
@@ -460,7 +459,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "is_ignoring_block_triggers")
     default boolean nucleusWrapper$isIgnoringBlockTriggers() {
-        return getAsEntity().isIgnoringBlockTriggers();
+        return getAsEntity(this).isIgnoringBlockTriggers();
     }
 
     /**
@@ -468,17 +467,17 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "display_fire_animation")
     default boolean nucleusWrapper$displayFireAnimation() {
-        return getAsEntity().displayFireAnimation();
+        return getAsEntity(this).displayFireAnimation();
     }
 
     @WrapperMethod(alias = "uuid")
     default UUID nucleusWrapper$getUUID() {
-        return getAsEntity().getUUID();
+        return getAsEntity(this).getUUID();
     }
 
     @WrapperMethod(alias = "string_uuid")
     default String nucleusWrapper$getStringUUID() {
-        return getAsEntity().getStringUUID();
+        return getAsEntity(this).getStringUUID();
     }
 
     /**
@@ -486,37 +485,37 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "scoreboard_name")
     default String nucleusWrapper$getScoreboardName() {
-        return getAsEntity().getScoreboardName();
+        return getAsEntity(this).getScoreboardName();
     }
 
     @WrapperMethod(alias = "is_pushed_by_fluid")
     default boolean nucleusWrapper$isPushedByFluid() {
-        return getAsEntity().isPushedByFluid();
+        return getAsEntity(this).isPushedByFluid();
     }
 
     @WrapperMethod(alias = "display_name")
     default Component nucleusWrapper$getDisplayName() {
-        return getAsEntity().getDisplayName();
+        return getAsEntity(this).getDisplayName();
     }
 
     @WrapperMethod(alias = "custom_name")
     default Component nucleusWrapper$getCustomName() {
-        return getAsEntity().getCustomName();
+        return getAsEntity(this).getCustomName();
     }
 
     @WrapperMethod(alias = "has_custom_name")
     default boolean nucleusWrapper$hasCustomName() {
-        return getAsEntity().hasCustomName();
+        return getAsEntity(this).hasCustomName();
     }
 
     @WrapperMethod(alias = "is_custom_name_visible")
     default boolean nucleusWrapper$isCustomNameVisible() {
-        return getAsEntity().isCustomNameVisible();
+        return getAsEntity(this).isCustomNameVisible();
     }
 
     @WrapperMethod(alias = "should_show_name")
     default boolean nucleusWrapper$shouldShowName() {
-        return getAsEntity().shouldShowName();
+        return getAsEntity(this).shouldShowName();
     }
 
     /**
@@ -524,7 +523,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "direction")
     default Direction nucleusWrapper$getDirection() {
-        return getAsEntity().getDirection();
+        return getAsEntity(this).getDirection();
     }
 
     /**
@@ -532,7 +531,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "motion_direction")
     default Direction nucleusWrapper$getMotionDirection() {
-        return getAsEntity().getMotionDirection();
+        return getAsEntity(this).getMotionDirection();
     }
 
     /**
@@ -540,7 +539,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "bounding_box_for_culling")
     default AABB nucleusWrapper$getBoundingBoxForCulling() {
-        return getAsEntity().getBoundingBoxForCulling();
+        return getAsEntity(this).getBoundingBoxForCulling();
     }
 
     /**
@@ -548,7 +547,7 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "command_sender_world")
     default Level nucleusWrapper$getCommandSenderWorld() {
-        return getAsEntity().getCommandSenderWorld();
+        return getAsEntity(this).getCommandSenderWorld();
     }
 
     /**
@@ -556,12 +555,12 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "server")
     default MinecraftServer nucleusWrapper$getServer() {
-        return getAsEntity().getServer();
+        return getAsEntity(this).getServer();
     }
 
     @WrapperMethod(alias = "ignore_explosion")
     default boolean nucleusWrapper$ignoreExplosion() {
-        return getAsEntity().ignoreExplosion();
+        return getAsEntity(this).ignoreExplosion();
     }
 
     /**
@@ -569,52 +568,52 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "only_op_can_set_nbt")
     default boolean nucleusWrapper$onlyOpCanSetNbt() {
-        return getAsEntity().onlyOpCanSetNbt();
+        return getAsEntity(this).onlyOpCanSetNbt();
     }
 
     @WrapperMethod(alias = "controlling_passenger")
     default LivingEntity nucleusWrapper$getControllingPassenger() {
-        return getAsEntity().getControllingPassenger();
+        return getAsEntity(this).getControllingPassenger();
     }
 
     @WrapperMethod(alias = "first_passenger")
     default Entity nucleusWrapper$getFirstPassenger() {
-        return getAsEntity().getFirstPassenger();
+        return getAsEntity(this).getFirstPassenger();
     }
 
     @WrapperMethod(alias = "self_and_passengers")
     default Stream<Entity> nucleusWrapper$getSelfAndPassengers() {
-        return getAsEntity().getSelfAndPassengers();
+        return getAsEntity(this).getSelfAndPassengers();
     }
 
     @WrapperMethod(alias = "passengers_and_self")
     default Stream<Entity> nucleusWrapper$getPassengersAndSelf() {
-        return getAsEntity().getPassengersAndSelf();
+        return getAsEntity(this).getPassengersAndSelf();
     }
 
     @WrapperMethod(alias = "indirect_passengers")
     default Iterable<Entity> nucleusWrapper$getIndirectPassengers() {
-        return getAsEntity().getIndirectPassengers();
+        return getAsEntity(this).getIndirectPassengers();
     }
 
     @WrapperMethod(alias = "has_exactly_one_player_passenger")
     default boolean nucleusWrapper$hasExactlyOnePlayerPassenger() {
-        return getAsEntity().hasExactlyOnePlayerPassenger();
+        return getAsEntity(this).hasExactlyOnePlayerPassenger();
     }
 
     @WrapperMethod(alias = "root_vehicle")
     default Entity nucleusWrapper$getRootVehicle() {
-        return getAsEntity().getRootVehicle();
+        return getAsEntity(this).getRootVehicle();
     }
 
     @WrapperMethod(alias = "is_controlled_by_local_instance")
     default boolean nucleusWrapper$isControlledByLocalInstance() {
-        return getAsEntity().isControlledByLocalInstance();
+        return getAsEntity(this).isControlledByLocalInstance();
     }
 
     @WrapperMethod(alias = "is_effective_ai")
     default boolean nucleusWrapper$isEffectiveAi() {
-        return getAsEntity().isEffectiveAi();
+        return getAsEntity(this).isEffectiveAi();
     }
 
     /**
@@ -622,166 +621,166 @@ public interface EntityWrapping {
      */
     @WrapperMethod(alias = "vehicle")
     default Entity nucleusWrapper$getVehicle() {
-        return getAsEntity().getVehicle();
+        return getAsEntity(this).getVehicle();
     }
 
     @WrapperMethod(alias = "controlled_vehicle")
     default Entity nucleusWrapper$getControlledVehicle() {
-        return getAsEntity().getControlledVehicle();
+        return getAsEntity(this).getControlledVehicle();
     }
 
     @WrapperMethod(alias = "piston_push_reaction")
     default PushReaction nucleusWrapper$getPistonPushReaction() {
-        return getAsEntity().getPistonPushReaction();
+        return getAsEntity(this).getPistonPushReaction();
     }
 
     @WrapperMethod(alias = "sound_source")
     default SoundSource nucleusWrapper$getSoundSource() {
-        return getAsEntity().getSoundSource();
+        return getAsEntity(this).getSoundSource();
     }
 
     @WrapperMethod(alias = "create_command_source_stack")
     default CommandSourceStack nucleusWrapper$createCommandSourceStack() {
-        return getAsEntity().createCommandSourceStack();
+        return getAsEntity(this).createCommandSourceStack();
     }
 
     @WrapperMethod(alias = "accepts_success")
     default boolean nucleusWrapper$acceptsSuccess() {
-        return getAsEntity().acceptsSuccess();
+        return getAsEntity(this).acceptsSuccess();
     }
 
     @WrapperMethod(alias = "accepts_failure")
     default boolean nucleusWrapper$acceptsFailure() {
-        return getAsEntity().acceptsFailure();
+        return getAsEntity(this).acceptsFailure();
     }
 
     @WrapperMethod(alias = "should_inform_admins")
     default boolean nucleusWrapper$shouldInformAdmins() {
-        return getAsEntity().shouldInformAdmins();
+        return getAsEntity(this).shouldInformAdmins();
     }
 
     @WrapperMethod(alias = "touching_unloaded_chunk")
     default boolean nucleusWrapper$touchingUnloadedChunk() {
-        return getAsEntity().touchingUnloadedChunk();
+        return getAsEntity(this).touchingUnloadedChunk();
     }
 
     @WrapperMethod(alias = "fluid_jump_threshold")
     default double nucleusWrapper$getFluidJumpThreshold() {
-        return getAsEntity().getFluidJumpThreshold();
+        return getAsEntity(this).getFluidJumpThreshold();
     }
 
     @WrapperMethod(alias = "name_tag_offset_y")
     default float nucleusWrapper$getNameTagOffsetY() {
-        return getAsEntity().getNameTagOffsetY();
+        return getAsEntity(this).getNameTagOffsetY();
     }
 
     @WrapperMethod(alias = "add_entity_packet")
     default Packet<ClientGamePacketListener> nucleusWrapper$getAddEntityPacket() {
-        return getAsEntity().getAddEntityPacket();
+        return getAsEntity(this).getAddEntityPacket();
     }
 
     @WrapperMethod(alias = "position")
     default Vec3 nucleusWrapper$position() {
-        return getAsEntity().position();
+        return getAsEntity(this).position();
     }
 
     @WrapperMethod(alias = "tracking_position")
     default Vec3 nucleusWrapper$trackingPosition() {
-        return getAsEntity().trackingPosition();
+        return getAsEntity(this).trackingPosition();
     }
 
     @WrapperMethod(alias = "block_position")
     default BlockPos nucleusWrapper$blockPosition() {
-        return getAsEntity().blockPosition();
+        return getAsEntity(this).blockPosition();
     }
 
     @WrapperMethod(alias = "feet_block_state")
     default BlockState nucleusWrapper$getFeetBlockState() {
-        return getAsEntity().getFeetBlockState();
+        return getAsEntity(this).getFeetBlockState();
     }
 
     @WrapperMethod(alias = "chunk_position")
     default ChunkPos nucleusWrapper$chunkPosition() {
-        return getAsEntity().chunkPosition();
+        return getAsEntity(this).chunkPosition();
     }
 
     @WrapperMethod(alias = "delta_movement")
     default Vec3 nucleusWrapper$getDeltaMovement() {
-        return getAsEntity().getDeltaMovement();
+        return getAsEntity(this).getDeltaMovement();
     }
 
     @WrapperMethod(alias = "random_y")
     default double nucleusWrapper$getRandomY() {
-        return getAsEntity().getRandomY();
+        return getAsEntity(this).getRandomY();
     }
 
     @WrapperMethod(alias = "eye_y")
     default double nucleusWrapper$getEyeY() {
-        return getAsEntity().getEyeY();
+        return getAsEntity(this).getEyeY();
     }
 
     @WrapperMethod(alias = "pick_result")
     default ItemStack nucleusWrapper$getPickResult() {
-        return getAsEntity().getPickResult();
+        return getAsEntity(this).getPickResult();
     }
 
     @WrapperMethod(alias = "can_freeze")
     default boolean nucleusWrapper$canFreeze() {
-        return getAsEntity().canFreeze();
+        return getAsEntity(this).canFreeze();
     }
 
     @WrapperMethod(alias = "is_freezing")
     default boolean nucleusWrapper$isFreezing() {
-        return getAsEntity().isFreezing();
+        return getAsEntity(this).isFreezing();
     }
 
     @WrapperMethod(alias = "yrot")
     default float nucleusWrapper$getYRot() {
-        return getAsEntity().getYRot();
+        return getAsEntity(this).getYRot();
     }
 
     @WrapperMethod(alias = "visual_rotation_yin_degrees")
     default float nucleusWrapper$getVisualRotationYInDegrees() {
-        return getAsEntity().getVisualRotationYInDegrees();
+        return getAsEntity(this).getVisualRotationYInDegrees();
     }
 
     @WrapperMethod(alias = "xrot")
     default float nucleusWrapper$getXRot() {
-        return getAsEntity().getXRot();
+        return getAsEntity(this).getXRot();
     }
 
     @WrapperMethod(alias = "can_sprint")
     default boolean nucleusWrapper$canSprint() {
-        return getAsEntity().canSprint();
+        return getAsEntity(this).canSprint();
     }
 
     @WrapperMethod(alias = "max_up_step")
     default float nucleusWrapper$maxUpStep() {
-        return getAsEntity().maxUpStep();
+        return getAsEntity(this).maxUpStep();
     }
 
     @WrapperMethod(alias = "removal_reason")
     default Entity.RemovalReason nucleusWrapper$getRemovalReason() {
-        return getAsEntity().getRemovalReason();
+        return getAsEntity(this).getRemovalReason();
     }
 
     @WrapperMethod(alias = "should_be_saved")
     default boolean nucleusWrapper$shouldBeSaved() {
-        return getAsEntity().shouldBeSaved();
+        return getAsEntity(this).shouldBeSaved();
     }
 
     @WrapperMethod(alias = "is_always_ticking")
     default boolean nucleusWrapper$isAlwaysTicking() {
-        return getAsEntity().isAlwaysTicking();
+        return getAsEntity(this).isAlwaysTicking();
     }
 
     @WrapperMethod(alias = "level")
     default Level nucleusWrapper$level() {
-        return getAsEntity().level();
+        return getAsEntity(this).level();
     }
 
     @WrapperMethod(alias = "damage_sources")
     default DamageSources nucleusWrapper$damageSources() {
-        return getAsEntity().damageSources();
+        return getAsEntity(this).damageSources();
     }
 }

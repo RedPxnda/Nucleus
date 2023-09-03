@@ -4,12 +4,14 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.codec.ResolverCodec;
+import com.redpxnda.nucleus.resolving.wrappers.Wrapper;
+import com.redpxnda.nucleus.resolving.wrappers.WrapperHolder;
+import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -39,15 +41,14 @@ public abstract class Resolver<T> {
         public Resolvable<Float> floa;
     }*/
 
-    public static void main(String[] args) {
-        Wrappers.init();
-
-        Resolver<String> r = new DirectResolver<>(String.class, "map.$[answer.$[next.0]]");
-        r.providePermanent("map", Map.of("a", "answer picked was A!", "b", "B! this time"));
-        r.providePermanent("next", List.of("1", "0"));
-        r.providePermanent("answer", List.of("b", "a"));
-        System.out.println(r.resolve());
-    }
+//    public static void main(String[] args) {
+//        Wrappers.init();
+//
+//        Resolver<Integer> r = new DirectResolver<>(Integer.class, "pos.x");
+//        r.providePermanent("pos", new BlockPos(5, 10, 15));
+//        System.out.println(r.resolved);
+//        System.out.println(r.resolve());
+//    }
 
     static final Logger LOGGER = LogUtils.getLogger();
 
@@ -125,6 +126,10 @@ public abstract class Resolver<T> {
 
     public String getBase() {
         return base;
+    }
+
+    public String getResolved() {
+        return resolved;
     }
 
     public void resetToBase() {
