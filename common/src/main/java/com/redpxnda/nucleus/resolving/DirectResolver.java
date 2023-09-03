@@ -30,7 +30,6 @@ public class DirectResolver<T> extends Resolver<T> {
     protected T calculate() {
         int index = -1;
 
-        System.out.println("ended as!!! -> " + resolved);
         Object object = null;
         Wrapper<Object> wrapper = null;
 

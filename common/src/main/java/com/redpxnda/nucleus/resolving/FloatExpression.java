@@ -1,8 +1,13 @@
 package com.redpxnda.nucleus.resolving;
 
+import com.mojang.serialization.Codec;
+import com.redpxnda.nucleus.codec.ResolverCodec;
+
 import java.util.function.Function;
 
 public class FloatExpression extends ExpressionResolver<Float> {
+    public static final Codec<FloatExpression> codec = new ResolverCodec<>(Resolver::forFloat, Codec.FLOAT);
+
     public FloatExpression(String base) {
         super(Float.class, base);
     }

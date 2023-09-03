@@ -1,8 +1,13 @@
 package com.redpxnda.nucleus.resolving;
 
+import com.mojang.serialization.Codec;
+import com.redpxnda.nucleus.codec.ResolverCodec;
+
 import java.util.function.Function;
 
 public class IntegerExpression extends ExpressionResolver<Integer> {
+    public static final Codec<IntegerExpression> codec = new ResolverCodec<>(Resolver::forInteger, Codec.INT);
+
     public IntegerExpression(String base) {
         super(Integer.class, base);
     }

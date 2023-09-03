@@ -1,8 +1,11 @@
 package com.redpxnda.nucleus.resolving;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.codec.ResolverCodec;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -19,11 +22,11 @@ public abstract class Resolver<T> {
     public static AutoCodec.CodecGetter<Resolver> codecGetter = params -> {
         Class<?> cls;
         if (params != null && params.length == 1) {
-            if (String.class.equals(params[0])) return new ResolverCodec<>(Resolver::forString);
-            if (Double.class.equals(params[0])) return new ResolverCodec<>(Resolver::forDouble);
-            if (Float.class.equals(params[0])) return new ResolverCodec<>(Resolver::forFloat);
-            if (Boolean.class.equals(params[0])) return new ResolverCodec<>(Resolver::forBoolean);
-            if (Integer.class.equals(params[0])) return new ResolverCodec<>(Resolver::forInteger);
+            if (String.class.equals(params[0])) return (Codec) StringResolver.codec;
+            if (Double.class.equals(params[0])) return (Codec) DoubleExpression.codec;
+            if (Float.class.equals(params[0])) return (Codec) FloatExpression.codec;
+            if (Boolean.class.equals(params[0])) return (Codec) BooleanExpression.codec;
+            if (Integer.class.equals(params[0])) return (Codec) IntegerExpression.codec;
             cls = params[0] instanceof Class<?> clz ? clz : Object.class;
         } else cls = Object.class;
         return new ResolverCodec<>(str -> new DirectResolver<>(cls, str));
@@ -64,6 +67,7 @@ public abstract class Resolver<T> {
         return new StringResolver(expression);
     }
 
+    protected @Nullable T definiteAnswer = null;
     protected String base;
     protected String resolved;
     protected final Class<T> clazz;
@@ -101,6 +105,10 @@ public abstract class Resolver<T> {
 
     public Function<String, String> getRegexFunction() {
         return regex;
+    }
+
+    public void setDefiniteAnswer(@NotNull T definiteAnswer) {
+        this.definiteAnswer = definiteAnswer;
     }
 
     public void setRegexFunction(Function<String, String> regex) {
@@ -165,6 +173,8 @@ public abstract class Resolver<T> {
     }
 
     public <A> void providePermanent(String name, Wrapper<A> wrapper, A instance) {
+        if (definiteAnswer != null) return;
+
         WrapperHolder<A> holder = new WrapperHolder<>(wrapper, instance);
         permanentContexts.put(name, holder);
         temporaryContexts.put(name, holder);
@@ -186,6 +196,8 @@ public abstract class Resolver<T> {
     }
 
     public <A> void provideTemporary(String name, Wrapper<A> wrapper, A instance) {
+        if (definiteAnswer != null) return;
+
         WrapperHolder<A> holder = new WrapperHolder<>(wrapper, instance);
         temporaryContexts.put(name, holder);
 
@@ -205,6 +217,8 @@ public abstract class Resolver<T> {
     }
 
     public T resolve() {
+        if (definiteAnswer != null) return definiteAnswer;
+
         T result = calculate();
         resetToBase();
         return result;
