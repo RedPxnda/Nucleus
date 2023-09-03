@@ -9,6 +9,7 @@
     "client.GameRendererMixin",
     "client.GuiGraphicsAccessor",
     "client.GuiMixin",
+    "client.ItemInHandLayerMixin",
     "client.ItemInHandRendererMixin",
     "client.LevelRendererAccessor",
     "client.LivingEntityRendererMixin",

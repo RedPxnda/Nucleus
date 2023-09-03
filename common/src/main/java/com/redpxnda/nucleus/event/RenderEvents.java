@@ -13,7 +13,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 @Environment(EnvType.CLIENT)
@@ -27,6 +29,7 @@ public interface RenderEvents {
         }
     });
     PrioritizedEvent<RenderArmWithItem> RENDER_ARM_WITH_ITEM = PrioritizedEvent.createEventResult();
+    PrioritizedEvent<RenderItemHandLayer<LivingEntity, EntityModel<LivingEntity>>> ITEM_HAND_LAYER_RENDER = PrioritizedEvent.createEventResult();
 
     enum EntityRenderStage {
         /**
@@ -121,6 +124,13 @@ public interface RenderEvents {
                            MultiBufferSource buffer, ItemStack stack, InteractionHand hand,
                            float partialTicks, float pitch, float swingProgress,
                            float equippedProgress, int combinedLight);
+    }
+
+    interface RenderItemHandLayer<T extends LivingEntity, M extends EntityModel<T>> {
+        /**
+         * Fires when an entity's held item is rendered (in third person, not first person)
+         */
+        EventResult render(HumanoidArm arm, LivingEntity livingEntity, ItemStack itemStack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight);
     }
 
     interface ChangeRenderedHands {
