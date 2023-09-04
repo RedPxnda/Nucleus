@@ -65,6 +65,51 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
             hands.setOffhand(true);
             hands.setMainhand(true);
         });*/
+        RenderEvents.ITEM_HAND_LAYER_RENDER.register((model, player, stack, displayContext, arm, matrices, buffer, light) -> {
+            ClientPoseCapability cap = ClientPoseCapability.getFor(player);
+            if (cap == null || cap.animation == null) return EventResult.pass();
+
+            HumanoidArm playerArm = player.getMainArm();
+            boolean isUsedArm = (arm == playerArm && cap.usedHand == InteractionHand.MAIN_HAND) || (arm != playerArm && cap.usedHand != InteractionHand.MAIN_HAND);
+            boolean isRightArm = arm == HumanoidArm.RIGHT;
+            Function<HumanoidPoseAnimation.Frame, HumanoidPoseAnimation.PartState> relPartState = isUsedArm ? frame -> frame.usedItem : frame -> frame.unusedItem;
+            Function<HumanoidPoseAnimation.Frame, HumanoidPoseAnimation.PartState> exactPartState = isRightArm ? frame -> frame.rightItem : frame -> frame.leftItem;
+            HumanoidPoseAnimation animation = cap.animation;
+
+            HumanoidPoseAnimation.FrameMultiplier leftHandMult = isRightArm ? null : animation.leftHandMultiplier;
+
+            if (animation.initialPose != null) {
+                positionMatricesToState(leftHandMult, relPartState.apply(animation.initialPose), exactPartState.apply(animation.initialPose), matrices);
+            }
+
+            if (animation.frames.size() == 1) {
+                HumanoidPoseAnimation.Frame fm = animation.frames.get(0);
+                positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
+            } else if (animation.frames.size() > 0) {
+                float maxLength = animation.length*20f;
+                double elapsedTime = Rendering.getGameAndPartialTime()-cap.updateTime;
+                if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength*animation.loops)) && elapsedTime >= maxLength) {
+                    cap.frameIndex = 0;
+                    elapsedTime %= maxLength;
+                } else elapsedTime = Math.min(elapsedTime, maxLength);
+
+                HumanoidPoseAnimation.Frame frame = animation.frames.get(cap.frameIndex);
+                while (frame.endTime*20 < elapsedTime) {
+                    cap.frameIndex++;
+                    frame = animation.frames.get(cap.frameIndex);
+                }
+                int nextIndex = cap.frameIndex+1;
+                HumanoidPoseAnimation.Frame nextFrame = nextIndex >= animation.frames.size() ? animation.frames.get(0) : animation.frames.get(nextIndex);
+
+                float cTime = frame.endTime*20;
+                float nTime = nextFrame.endTime*20;
+                float delta = (float) ((elapsedTime+20 - cTime)/(nTime-cTime));
+
+                HumanoidPoseAnimation.Frame fm = frame.interpItemTo(delta, nextFrame);
+                positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
+            }
+            return EventResult.pass();
+        });
         RenderEvents.RENDER_ARM_WITH_ITEM.register((stage, armRenderer, player, matrices, buffer, stack, hand, partialTicks, pitch, swingProgress, equippedProgress, combinedLight) -> {
             if (stage == RenderEvents.ArmRenderStage.ARM || stage == RenderEvents.ArmRenderStage.ITEM) {
                 ClientPoseCapability cap = ClientPoseCapability.getFor(player);

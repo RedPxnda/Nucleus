@@ -1,7 +1,5 @@
 package com.redpxnda.nucleus.mixin.client;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.redpxnda.nucleus.event.RenderEvents;
 import dev.architectury.event.EventResult;
@@ -15,24 +13,29 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandLayer.class)
 public class ItemInHandLayerMixin<T extends LivingEntity, M extends EntityModel<T> & ArmedModel> {
-    @WrapOperation(
-            method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/entity/layers/ItemInHandLayer;renderArmWithItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;Lnet/minecraft/world/entity/HumanoidArm;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"
-            )
+    @Inject(
+            method = "renderArmWithItem",
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", shift = At.Shift.AFTER),
+            cancellable = true
     )
-    private void nucleus$itemHandLayerEvent(
-            ItemInHandLayer<T, M> instance, LivingEntity livingEntity, ItemStack itemStack,
-            ItemDisplayContext displayContext, HumanoidArm arm, PoseStack poseStack,
-            MultiBufferSource buffer, int packedLight, Operation<Void> original) {
-        EventResult result = RenderEvents.ITEM_HAND_LAYER_RENDER.invoker().render(
-                arm, livingEntity, itemStack, displayContext, poseStack, buffer, packedLight
-        );
+    private void nucleus$thirdPersonItemRenderEvent(
+            LivingEntity livingEntity, ItemStack itemStack, ItemDisplayContext displayContext,
+            HumanoidArm arm, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
 
-        if (!result.interruptsFurtherEvaluation()) original.call(instance, livingEntity, itemStack, displayContext, arm, poseStack, buffer, packedLight);
+        if ((Object) this instanceof ItemInHandLayer l) {
+            EventResult result = RenderEvents.ITEM_HAND_LAYER_RENDER.invoker().render(
+                    l.getParentModel(), livingEntity, itemStack, displayContext, arm, poseStack, buffer, packedLight
+            );
+
+            if (result.interruptsFurtherEvaluation()) {
+                ci.cancel();
+                poseStack.popPose();
+            }
+        }
     }
 }

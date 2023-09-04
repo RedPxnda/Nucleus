@@ -11,6 +11,11 @@
         "position": [-0.1, 0.15, 0],
         "rotation": [50, -90, 60],
         "scale": [1, 1, 1]
+      },
+      "usedItem": {
+        "position": [0, -0.1, 0],
+        "rotation": [0, 0, 180],
+        "scale": [1, 1, 1]
       }
     }
   ]

@@ -65,12 +65,22 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         public PartState unusedArm = PartState.EMPTY;
         public PartState rightArm = PartState.EMPTY;
         public PartState leftArm = PartState.EMPTY;
+        public PartState usedItem = PartState.EMPTY;
+        public PartState unusedItem = PartState.EMPTY;
+        public PartState rightItem = PartState.EMPTY;
+        public PartState leftItem = PartState.EMPTY;
         public PartState rightLeg = PartState.EMPTY;
         public PartState leftLeg = PartState.EMPTY;
         public InterpolateMode interpolate = InterpolateMode.NONE;
         public float endTime = 0; // in seconds
 
         public Frame() {
+        }
+        public Frame(PartState usedItem, PartState unusedItem, PartState rightItem, PartState leftItem) {
+            this.usedItem = usedItem;
+            this.unusedItem = unusedItem;
+            this.rightItem = rightItem;
+            this.leftItem = leftItem;
         }
         public Frame(PartState fpUsedArm, PartState fpUnusedArm, PartState fpRightArm, PartState fpLeftArm, InterpolateMode interpolate, float endTime) {
             this.fpUsedArm = fpUsedArm;
@@ -119,6 +129,15 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
             );
         }
 
+        public Frame interpItemTo(float delta, Frame other) {
+            return new Frame(
+                    usedItem.interpTo(interpolate, delta, other.usedItem),
+                    unusedItem.interpTo(interpolate, delta, other.unusedItem),
+                    rightItem.interpTo(interpolate, delta, other.rightItem),
+                    leftItem.interpTo(interpolate, delta, other.leftItem)
+            );
+        }
+
         public Frame interpTo(float delta, Frame other) {
             return new Frame(
                     head.interpTo(interpolate, delta, other.head),
@@ -145,26 +164,20 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         public Vector3f position = EMPTY_VEC;
         public Vector3f rotation = EMPTY_VEC;
         public Vector3f scale = ONE_VEC;
-        public boolean visible = true;
 
         public PartState() {
         }
-        public PartState(Vector3f position, Vector3f rotation, Vector3f scale, boolean visible) {
+        public PartState(Vector3f position, Vector3f rotation, Vector3f scale) {
             this.position = position;
             this.rotation = rotation;
             this.scale = scale;
-            this.visible = visible;
         }
 
         public PartState interpTo(InterpolateMode mode, float delta, PartState other) {
-            if (delta < .5 && !visible) return this;
-            if (delta >= .5 && !other.visible) return other;
-
             return new PartState(
                     MathUtil.interpolateVector(mode, delta, position, other.position),
                     MathUtil.interpolateVector(mode, delta, rotation, other.rotation),
-                    MathUtil.interpolateVector(mode, delta, scale, other.scale),
-                    true
+                    MathUtil.interpolateVector(mode, delta, scale, other.scale)
             );
         }
 

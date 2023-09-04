@@ -128,9 +128,11 @@ public interface RenderEvents {
 
     interface RenderItemHandLayer<T extends LivingEntity, M extends EntityModel<T>> {
         /**
-         * Fires when an entity's held item is rendered (in third person, not first person)
+         * Fires when an entity's held item is rendered (in third person, not first person) (once for left, once for right)
+         * @return event result representing whether vanilla rendering should continue or not
          */
-        EventResult render(HumanoidArm arm, LivingEntity livingEntity, ItemStack itemStack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight);
+        EventResult render(M model, LivingEntity livingEntity, ItemStack stack, ItemDisplayContext displayContext,
+                           HumanoidArm arm, PoseStack matrices, MultiBufferSource buffer, int light);
     }
 
     interface ChangeRenderedHands {

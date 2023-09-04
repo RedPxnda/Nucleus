@@ -7,12 +7,14 @@ import net.fabricmc.api.Environment;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public class ClientPoseCapability extends ServerPoseCapability {
     public static final ResourceLocation loc = Nucleus.loc("client_pose");
     public static @Nullable ClientPoseCapability getFor(LivingEntity entity) {
+        if (!(entity instanceof Player)) return null;
         return EntityDataManager.getCapability(entity, ClientPoseCapability.class);
     }
 
