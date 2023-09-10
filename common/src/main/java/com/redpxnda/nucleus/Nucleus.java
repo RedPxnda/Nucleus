@@ -117,8 +117,8 @@ public class Nucleus {
         PlayerEvent.PLAYER_JOIN.register(player -> {
             DoublesCapability doublesCap = DoublesCapability.getAllFor(player);
             ServerPoseCapability poseCap = ServerPoseCapability.getFor(player);
-            doublesCap.sendToClient(player);
-            poseCap.sendToClient(player);
+            if (doublesCap != null) doublesCap.sendToClient(player);
+            if (poseCap != null) poseCap.sendToClient(player);
         });
     }
 
