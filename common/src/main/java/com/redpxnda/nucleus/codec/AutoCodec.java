@@ -6,8 +6,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.core.Registry;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -76,8 +80,8 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, String.class, Codec.STRING);
         addInherit(map, ResourceLocation.class, ResourceLocation.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        //addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
-        //addInherit(map, Component.class, ExtraCodecs.COMPONENT);
+        addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
+        addInherit(map, Component.class, ExtraCodecs.COMPONENT);
         addInherit(map, Color.class, Color.CODEC);
         addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
     });
