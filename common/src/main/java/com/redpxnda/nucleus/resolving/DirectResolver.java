@@ -6,6 +6,8 @@ import com.redpxnda.nucleus.resolving.wrappers.Wrapper;
 import com.redpxnda.nucleus.resolving.wrappers.WrapperHolder;
 import org.intellij.lang.annotations.RegExp;
 
+import java.util.Arrays;
+
 @AutoCodec.Override("codecGetter")
 public class DirectResolver<T> extends Resolver<T> {
     public static final AutoCodec.CodecGetter<DirectResolver> codecGetter = params -> {
@@ -30,12 +32,16 @@ public class DirectResolver<T> extends Resolver<T> {
 
     @Override
     protected T calculate() {
-        int index = -1;
+        String[] parts = resolved.split(splitRegex);
+        if (parts.length < 1) return null;
 
-        Object object = null;
+        WrapperHolder<?> holder = temporaryContexts.get(parts[0]);
+        Object object = evaluateObjectCallTree(Arrays.copyOfRange(parts, 1, parts.length), resolved, (Wrapper) holder.wrapper(), holder.instance());
+
+        /*Object object = null;
         Wrapper<Object> wrapper = null;
 
-        for (String part : resolved.split(splitRegex)) {
+        for (String part : ) {
             index++;
             if (index == 0) {
                 WrapperHolder<?> holder = temporaryContexts.get(part);
@@ -50,7 +56,7 @@ public class DirectResolver<T> extends Resolver<T> {
 
             object = wrapper.invoke(object, part);
             wrapper = getWrapperFor(object);
-        }
+        }*/
 
         if (object != null && !clazz.isAssignableFrom(object.getClass()))
             throw new RuntimeException("Unexpected output for Resolver! Expected '%s' but received '%s' instead!".formatted(clazz, object.getClass()));

@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.resolving.wrappers;
 
+import com.google.gson.*;
 import com.redpxnda.nucleus.Nucleus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -141,6 +142,27 @@ public class Wrappers {
             case "count", "size" -> instance.count();
             case "any" -> instance.findAny().orElse(null);
             case "first" -> instance.findFirst().orElse(null);
+            default -> null;
+        });
+
+        register(JsonObject.class, JsonObject::get);
+        register(JsonArray.class, (instance, key) -> listWrapper.customInvoke(instance.asList(), key));
+        register(JsonNull.class, new Wrapper<JsonNull>() {
+            @Override
+            public Object customInvoke(@NotNull JsonNull instance, String key) {
+                return null;
+            }
+
+            @Override
+            public boolean isEmpty(JsonNull instance) {
+                return true;
+            }
+        });
+        register(JsonPrimitive.class, (instance, key) -> switch (key) {
+            case "as_int" -> instance.isNumber() ? instance.getAsInt() : null;
+            case "as_number" -> instance.isNumber() ? instance.getAsNumber() : null;
+            case "as_bool" -> instance.isBoolean() ? instance.getAsBoolean() : null;
+            case "as_str", "as_string" -> instance.isString() ? instance.getAsString() : null;
             default -> null;
         });
 

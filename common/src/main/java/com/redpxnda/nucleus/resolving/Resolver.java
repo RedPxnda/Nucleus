@@ -41,14 +41,15 @@ public abstract class Resolver<T> {
         public Resolvable<Float> floa;
     }*/
 
-//    public static void main(String[] args) {
-//        Wrappers.init();
-//
-//        Resolver<Integer> r = new DirectResolver<>(Integer.class, "pos.x");
-//        r.providePermanent("pos", new BlockPos(5, 10, 15));
-//        System.out.println(r.resolved);
-//        System.out.println(r.resolve());
-//    }
+    /*public static void main(String[] args) {
+        Wrappers.init();
+
+        Resolver<Integer> r = new DirectResolver<>(Integer.class, "pos.x.anotherThing.$[var2]");
+        r.providePermanent("pos", Map.of("x", Map.of("anotherThing", new BlockPos(5, 10, 0))));
+        r.providePermanent("var2", "x");
+        System.out.println(r.resolved);
+        System.out.println(r.resolve());
+    }*/
 
     static final Logger LOGGER = LogUtils.getLogger();
 
@@ -138,6 +139,25 @@ public abstract class Resolver<T> {
         resolved = base;
     }
 
+    protected <A> Object evaluateObjectCallTree(String[] parts, String originalTarget, Wrapper<A> wrapper, A instance) {
+        Object currentObj = instance;
+        Wrapper<Object> currentWrapper = (Wrapper<Object>) wrapper;
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            if (currentWrapper == null)
+                throw new RuntimeException("Cannot get properties (specifically '" + part + "') from object '" + currentObj + "' as it has no specified wrapper!\n" +
+                        "Attempt: " + originalTarget);
+            currentObj = currentWrapper.invoke(currentObj, part);
+            currentWrapper = getWrapperFor(currentObj);
+        }
+
+        return currentObj;
+    }
+
+    protected <A> Object evaluateObjectCallTree(String target, Wrapper<A> wrapper, A instance) {
+        return evaluateObjectCallTree(target.split("\\."), target, wrapper, instance);
+    }
+
     protected <A> String reshapeWith(String replacement, String name, Wrapper<A> wrapper, A instance) {
         Pattern pattern = Pattern.compile(regex.apply(name));
         Matcher matcher = pattern.matcher(base);
@@ -146,20 +166,9 @@ public abstract class Resolver<T> {
             String wholeMatch = matcher.group();
             String match = matcher.group(group);
             if (match == null) match = "";
-            String[] parts = match.split("\\.");
+            Object result = evaluateObjectCallTree(match, wrapper, instance);
 
-            Object currentObj = instance;
-            Wrapper<Object> currentWrapper = (Wrapper<Object>) wrapper;
-            for (String part : parts) {
-                if (part.isEmpty()) continue;
-                if (currentWrapper == null)
-                    throw new RuntimeException("Cannot get properties (specifically '" + part + "') from object '" + currentObj + "' as it has no specified wrapper!\n" +
-                            "Variable attempted to use: " + match);
-                currentObj = currentWrapper.invoke(currentObj, part);
-                currentWrapper = getWrapperFor(currentObj);
-            }
-
-            if (currentObj == null) {
+            if (result == null) {
                 LOGGER.error("""
                         Object resolved from context provided to Resolvable is null!
                         Match: '{}', Provided object instance: '{}'
@@ -167,7 +176,7 @@ public abstract class Resolver<T> {
                 throw new RuntimeException("Failed to get valid object from Wrapper! (See logger error above)");
             }
 
-            replacement = replacement.replace(wholeMatch, currentObj.toString());
+            replacement = replacement.replace(wholeMatch, result.toString());
             matcher.reset(replacement);
         }
 
@@ -175,6 +184,27 @@ public abstract class Resolver<T> {
     }
     protected <A> String reshapeResolvedWith(String replacement, String name, Wrapper<A> wrapper, A instance) {
         return replacement;
+    }
+
+    public <A> void provide(boolean permanent, String name, Wrapper<A> wrapper, A instance) {
+        if (permanent) providePermanent(name, wrapper, instance);
+        else provideTemporary(name, wrapper, instance);
+    }
+    public <A> void provide(boolean permanent, String name, A instance) {
+        if (permanent) providePermanent(name, instance);
+        else provideTemporary(name, instance);
+    }
+    public void provide(boolean permanent, String name, Number instance) {
+        if (permanent) providePermanent(name, instance);
+        else provideTemporary(name, instance);
+    }
+    public void provide(boolean permanent, String name, boolean instance) {
+        if (permanent) providePermanent(name, instance);
+        else provideTemporary(name, instance);
+    }
+    public void provide(boolean permanent, String name, String instance) {
+        if (permanent) providePermanent(name, instance);
+        else provideTemporary(name, instance);
     }
 
     public <A> void providePermanent(String name, Wrapper<A> wrapper, A instance) {
