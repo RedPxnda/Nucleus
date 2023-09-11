@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.network.clientbound;
 
-import com.redpxnda.nucleus.capability.EntityCapability;
-import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
+import com.redpxnda.nucleus.capability.entity.EntityCapability;
+import com.redpxnda.nucleus.capability.entity.doubles.DoublesCapability;
 import com.redpxnda.nucleus.network.ClientboundHandling;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.nbt.CompoundTag;

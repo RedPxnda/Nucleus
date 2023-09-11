@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.datapack.references.entity;
 
-import com.redpxnda.nucleus.capability.EntityCapability;
+import com.redpxnda.nucleus.capability.entity.EntityCapability;
 import com.redpxnda.nucleus.datapack.references.*;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
 import com.redpxnda.nucleus.datapack.references.block.BlockStateReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.*;
-import com.redpxnda.nucleus.impl.EntityDataManager;
-import com.redpxnda.nucleus.impl.EntityDataRegistry;
+import com.redpxnda.nucleus.capability.entity.EntityDataManager;
+import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
 import com.redpxnda.nucleus.util.StatManager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;

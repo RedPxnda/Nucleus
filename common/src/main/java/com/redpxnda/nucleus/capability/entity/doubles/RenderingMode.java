@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.capability.doubles;
+package com.redpxnda.nucleus.capability.entity.doubles;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;

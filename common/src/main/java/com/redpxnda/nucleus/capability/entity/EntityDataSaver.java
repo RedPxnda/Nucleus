@@ -1,6 +1,6 @@
-package com.redpxnda.nucleus.fabric;
+package com.redpxnda.nucleus.capability.entity;
 
-import com.redpxnda.nucleus.capability.EntityCapability;
+import com.redpxnda.nucleus.capability.entity.EntityCapability;
 
 import java.util.Map;
 

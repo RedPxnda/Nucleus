@@ -1,5 +1,6 @@
-package com.redpxnda.nucleus.capability;
+package com.redpxnda.nucleus.capability.entity;
 
+import com.redpxnda.nucleus.capability.entity.EntityCapability;
 import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.CapabilitySyncPacket;
 import net.minecraft.nbt.Tag;

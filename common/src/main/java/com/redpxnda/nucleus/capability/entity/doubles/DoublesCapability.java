@@ -1,7 +1,7 @@
-package com.redpxnda.nucleus.capability.doubles;
+package com.redpxnda.nucleus.capability.entity.doubles;
 
-import com.redpxnda.nucleus.capability.SyncedEntityCapability;
-import com.redpxnda.nucleus.impl.EntityDataManager;
+import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
+import com.redpxnda.nucleus.capability.entity.EntityDataManager;
 import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.DoublesCapabilitySyncPacket;
 import net.minecraft.Util;
@@ -23,7 +23,7 @@ public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
         return EntityDataManager.getCapability(entity, DoublesCapability.class);
     }
 
-    public DoublesCapability() {
+    public DoublesCapability(Entity entity) {
         doubles.putAll(defaultValues);
     }
 

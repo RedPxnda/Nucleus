@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.network.clientbound;
 
-import com.redpxnda.nucleus.capability.SyncedEntityCapability;
-import com.redpxnda.nucleus.impl.EntityDataRegistry;
+import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
+import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
 import com.redpxnda.nucleus.network.ClientboundHandling;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.util.ByteBufUtil;

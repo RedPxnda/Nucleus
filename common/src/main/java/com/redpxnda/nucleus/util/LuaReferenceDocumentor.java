@@ -1,22 +1,6 @@
 package com.redpxnda.nucleus.util;
 
-import com.redpxnda.nucleus.capability.EntityCapability;
-import com.redpxnda.nucleus.datapack.references.GameEventReference;
-import com.redpxnda.nucleus.datapack.references.LevelReference;
 import com.redpxnda.nucleus.datapack.references.Statics;
-import com.redpxnda.nucleus.datapack.references.block.BlockEntityReference;
-import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
-import com.redpxnda.nucleus.datapack.references.block.BlockReference;
-import com.redpxnda.nucleus.datapack.references.block.BlockStateReference;
-import com.redpxnda.nucleus.datapack.references.effect.MobEffectInstanceReference;
-import com.redpxnda.nucleus.datapack.references.entity.EntityReference;
-import com.redpxnda.nucleus.datapack.references.entity.LivingEntityReference;
-import com.redpxnda.nucleus.datapack.references.entity.PlayerReference;
-import com.redpxnda.nucleus.datapack.references.item.*;
-import com.redpxnda.nucleus.datapack.references.storage.*;
-import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
-import com.redpxnda.nucleus.datapack.references.tag.ListTagReference;
-import com.redpxnda.nucleus.datapack.references.tag.TagReference;
 import org.luaj.vm2.LuaFunction;
 
 import java.io.FileWriter;
@@ -24,7 +8,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.util.*;
 
 public class LuaReferenceDocumentor {
     /*public static void main(String[] args) {

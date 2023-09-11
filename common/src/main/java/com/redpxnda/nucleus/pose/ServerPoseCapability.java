@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.pose;
 
-import com.redpxnda.nucleus.capability.SyncedEntityCapability;
-import com.redpxnda.nucleus.impl.EntityDataManager;
+import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
+import com.redpxnda.nucleus.capability.entity.EntityDataManager;
 import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.PoseCapabilitySyncPacket;
 import net.minecraft.nbt.CompoundTag;
@@ -17,6 +17,9 @@ public class ServerPoseCapability implements SyncedEntityCapability<CompoundTag>
     protected String pose = "none";
     protected InteractionHand usedHand = InteractionHand.MAIN_HAND;
     protected long updateTime = -100;
+
+    public ServerPoseCapability(Entity entity) {
+    }
 
     @Override
     public CompoundTag toNbt() {

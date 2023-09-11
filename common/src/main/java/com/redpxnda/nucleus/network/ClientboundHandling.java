@@ -1,11 +1,11 @@
 package com.redpxnda.nucleus.network;
 
-import com.redpxnda.nucleus.capability.doubles.DoublesCapability;
-import com.redpxnda.nucleus.capability.EntityCapability;
-import com.redpxnda.nucleus.capability.doubles.ClientCapabilityListener;
-import com.redpxnda.nucleus.capability.doubles.RenderingMode;
-import com.redpxnda.nucleus.impl.EntityDataManager;
-import com.redpxnda.nucleus.impl.EntityDataRegistry;
+import com.redpxnda.nucleus.capability.entity.doubles.DoublesCapability;
+import com.redpxnda.nucleus.capability.entity.EntityCapability;
+import com.redpxnda.nucleus.capability.entity.doubles.ClientCapabilityListener;
+import com.redpxnda.nucleus.capability.entity.doubles.RenderingMode;
+import com.redpxnda.nucleus.capability.entity.EntityDataManager;
+import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;

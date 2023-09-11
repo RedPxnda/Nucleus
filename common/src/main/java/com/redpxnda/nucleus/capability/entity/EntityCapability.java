@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.capability;
+package com.redpxnda.nucleus.capability.entity;
 
 import net.minecraft.nbt.Tag;
 
