@@ -18,7 +18,7 @@ public interface MinecraftServerWrapping {
 
     @WrapperMethod(alias = "is_nether_enabled")
     default boolean nucleusWrapper$isNetherEnabled() {
-        return getAsServer(this).isNetherEnabled();
+        return getAsServer(this).isNetherAllowed();
     }
 
     /**
@@ -26,7 +26,7 @@ public interface MinecraftServerWrapping {
      */
     @WrapperMethod(alias = "player_count")
     default int nucleusWrapper$getPlayerCount() {
-        return getAsServer(this).getPlayerCount();
+        return getAsServer(this).getCurrentPlayerCount();
     }
 
     /**
@@ -34,7 +34,7 @@ public interface MinecraftServerWrapping {
      */
     @WrapperMethod(alias = "max_players")
     default int nucleusWrapper$getMaxPlayers() {
-        return getAsServer(this).getMaxPlayers();
+        return getAsServer(this).getMaxPlayerCount();
     }
 
     @WrapperMethod(alias = "is_singleplayer")
@@ -44,26 +44,26 @@ public interface MinecraftServerWrapping {
 
     @WrapperMethod(alias = "are_npcs_enabled")
     default boolean nucleusWrapper$areNpcsEnabled() {
-        return getAsServer(this).areNpcsEnabled();
+        return getAsServer(this).shouldSpawnNpcs();
     }
 
     @WrapperMethod(alias = "is_pvp_allowed")
     default boolean nucleusWrapper$isPvpAllowed() {
-        return getAsServer(this).isPvpAllowed();
+        return getAsServer(this).isPvpEnabled();
     }
 
     @WrapperMethod(alias = "is_flight_allowed")
     default boolean nucleusWrapper$isFlightAllowed() {
-        return getAsServer(this).isFlightAllowed();
+        return getAsServer(this).isFlightEnabled();
     }
 
     @WrapperMethod(alias = "motd")
     default String nucleusWrapper$getMotd() {
-        return getAsServer(this).getMotd();
+        return getAsServer(this).getServerMotd();
     }
 
     @WrapperMethod(alias = "hides_online_players")
     default boolean nucleusWrapper$hidesOnlinePlayers() {
-        return getAsServer(this).hidesOnlinePlayers();
+        return getAsServer(this).hideOnlinePlayers();
     }
 }

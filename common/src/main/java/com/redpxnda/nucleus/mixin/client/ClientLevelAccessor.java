@@ -1,12 +1,12 @@
 package com.redpxnda.nucleus.mixin.client;
 
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ClientLevel.class)
+@Mixin(ClientWorld.class)
 public interface ClientLevelAccessor {
     @Accessor
-    LevelRenderer getLevelRenderer();
+    WorldRenderer getWorldRenderer();
 }

@@ -1,10 +1,10 @@
 package com.redpxnda.nucleus.datapack.references.tag;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtElement;
 
 @SuppressWarnings("unused")
-public class TagReference<T extends Tag> extends Reference<T> {
+public class TagReference<T extends NbtElement> extends Reference<T> {
     static { Reference.register(TagReference.class); }
 
     public TagReference(T instance) {
@@ -18,7 +18,7 @@ public class TagReference<T extends Tag> extends Reference<T> {
 
     // Generated from Tag::getId
     public byte getId() {
-        return instance.getId();
+        return instance.getType();
     }
 
     // Generated from Tag::copy
@@ -28,6 +28,6 @@ public class TagReference<T extends Tag> extends Reference<T> {
 
     // Generated from Tag::getAsString
     public String getAsString() {
-        return instance.getAsString();
+        return instance.asString();
     }
 }

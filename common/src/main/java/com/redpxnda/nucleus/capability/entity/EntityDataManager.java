@@ -1,6 +1,6 @@
 package com.redpxnda.nucleus.capability.entity;
 
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;

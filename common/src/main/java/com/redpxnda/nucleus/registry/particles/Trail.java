@@ -1,12 +1,12 @@
 package com.redpxnda.nucleus.registry.particles;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.redpxnda.nucleus.client.Rendering;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -70,7 +70,7 @@ public class Trail {
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(MultiBufferSource bufferSource, PoseStack stack, float pt, List<Vector3f> oldPositions, Vector3f oldestPosition, Vector3f currentPosition) {
+    public void render(VertexConsumerProvider bufferSource, MatrixStack stack, float pt, List<Vector3f> oldPositions, Vector3f oldestPosition, Vector3f currentPosition) {
         VertexConsumer vc = bufferSource.getBuffer(Rendering.transparentTriangleStrip);
         int length = oldPositions.size();
         float width = this.width/length;
@@ -85,14 +85,14 @@ public class Trail {
             float offset = width*(i);
             float nextOffset = width*(i+1);
 
-            int light = emissive ? LightTexture.FULL_BRIGHT : LightTexture.FULL_SKY;
+            int light = emissive ? LightmapTextureManager.MAX_LIGHT_COORDINATE : LightmapTextureManager.MAX_SKY_LIGHT_COORDINATE;
 
-            vc.vertex(stack.last().pose(), current.x, current.y+offset, current.z).color(red, green, blue, 0f).uv2(light).endVertex();
-            vc.vertex(stack.last().pose(), current.x, current.y-offset, current.z).color(red, green, blue, 0f).uv2(light).endVertex();
-            vc.vertex(stack.last().pose(), next.x, next.y-nextOffset, next.z).color(red, green, blue, 0f).uv2(light).endVertex();
-            vc.vertex(stack.last().pose(), current.x, current.y+offset, current.z).color(red, green, blue, alpha).uv2(light).endVertex();
-            vc.vertex(stack.last().pose(), next.x, next.y-nextOffset, next.z).color(red, green, blue, alpha).uv2(light).endVertex();
-            vc.vertex(stack.last().pose(), next.x, next.y+nextOffset, next.z).color(red, green, blue, alpha).uv2(light).endVertex();
+            vc.vertex(stack.peek().getPositionMatrix(), current.x, current.y+offset, current.z).color(red, green, blue, 0f).light(light).next();
+            vc.vertex(stack.peek().getPositionMatrix(), current.x, current.y-offset, current.z).color(red, green, blue, 0f).light(light).next();
+            vc.vertex(stack.peek().getPositionMatrix(), next.x, next.y-nextOffset, next.z).color(red, green, blue, 0f).light(light).next();
+            vc.vertex(stack.peek().getPositionMatrix(), current.x, current.y+offset, current.z).color(red, green, blue, alpha).light(light).next();
+            vc.vertex(stack.peek().getPositionMatrix(), next.x, next.y-nextOffset, next.z).color(red, green, blue, alpha).light(light).next();
+            vc.vertex(stack.peek().getPositionMatrix(), next.x, next.y+nextOffset, next.z).color(red, green, blue, alpha).light(light).next();
         }
     }
 }

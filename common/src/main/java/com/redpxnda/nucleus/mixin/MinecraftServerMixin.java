@@ -15,12 +15,12 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin implements MinecraftServerWrapping {
     @Shadow
-    private MinecraftServer.ReloadableResources resources;
+    private MinecraftServer.ResourceManagerHolder resourceManagerHolder;
 
     @Inject(method = "reloadResources", at = @At("TAIL"))
     private void endResourceReload(Collection<String> collection, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         cir.getReturnValue().handleAsync((value, throwable) -> {
-            ServerEvents.END_DATA_PACK_RELOAD.invoker().endDataPackReload((MinecraftServer) (Object) this, this.resources.resourceManager(), throwable == null);
+            ServerEvents.END_DATA_PACK_RELOAD.invoker().endDataPackReload((MinecraftServer) (Object) this, this.resourceManagerHolder.resourceManager(), throwable == null);
             return value;
         }, (MinecraftServer) (Object) this);
     }

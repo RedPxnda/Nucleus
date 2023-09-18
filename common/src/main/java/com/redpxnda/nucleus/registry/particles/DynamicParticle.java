@@ -1,14 +1,14 @@
 package com.redpxnda.nucleus.registry.particles;
 
-import com.mojang.blaze3d.vertex.*;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.registry.particles.manager.DynamicParticleManager;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
-import net.minecraft.client.Camera;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3d;
 
 public abstract class DynamicParticle extends Particle implements DynamicParticleManager {
@@ -23,28 +23,28 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     public float oldScale;
     public ParticleShape.MotionFunction motionFunction = (a, b, c) -> {};
 
-    protected DynamicParticle(ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+    protected DynamicParticle(ClientWorld clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
         super(clientLevel, x, y, z);
-        this.xd = xSpeed;
-        this.yd = ySpeed;
-        this.zd = zSpeed;
+        this.velocityX = xSpeed;
+        this.velocityY = ySpeed;
+        this.velocityZ = zSpeed;
         this.red = 1;
         this.green = 1;
         this.blue = 1;
         this.alpha = 1;
         this.scale = 1;
-        this.lifetime = 100;
+        this.maxAge = 100;
     }
     public void applyOptions(DynamicParticleOptions options) {
-        lifetime = options.lifetime;
-        gravity = options.gravity;
-        friction = options.friction;
+        maxAge = options.lifetime;
+        gravityStrength = options.gravity;
+        velocityMultiplier = options.friction;
         scale = options.scale;
         red = options.red;
         green = options.green;
         blue = options.blue;
         alpha = options.alpha;
-        hasPhysics = options.physics;
+        collidesWithWorld = options.physics;
     }
 
     public double getX() {
@@ -57,22 +57,22 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
         return z;
     }
     public double getXO() {
-        return xo;
+        return prevPosX;
     }
     public double getYO() {
-        return yo;
+        return prevPosY;
     }
     public double getZO() {
-        return zo;
+        return prevPosZ;
     }
     public double getXSpeed() {
-        return xd;
+        return velocityX;
     }
     public double getYSpeed() {
-        return yd;
+        return velocityY;
     }
     public double getZSpeed() {
-        return zd;
+        return velocityZ;
     }
     @Override
     public int getAge() {
@@ -88,14 +88,14 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     }
     @Override
     public void _setLifetime(int lifetime) {
-        this.lifetime = lifetime;
+        this.maxAge = lifetime;
     }
     public void updateLifetime() {
-        this.lifetime = expectedLifetime + MathUtil.random(lifetimeMarginMin, lifetimeMarginMax);
+        this.maxAge = expectedLifetime + MathUtil.random(lifetimeMarginMin, lifetimeMarginMax);
     }
     @Override
     public float getFriction() {
-        return friction;
+        return velocityMultiplier;
     }
     @Override
     public float getRed() {
@@ -119,7 +119,7 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     }
     @Override
     public void setFriction(float friction) {
-        this.friction = friction;
+        this.velocityMultiplier = friction;
     }
     @Override
     public void setRed(float r) {
@@ -146,28 +146,28 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
         scale = s;
     }
     public float getGravity() {
-        return gravity;
+        return gravityStrength;
     }
     @Override
     public void setGravity(float grav) {
-        this.gravity = grav;
+        this.gravityStrength = grav;
     }
     @Override
     public boolean hasPhysics() {
-        return hasPhysics;
+        return collidesWithWorld;
     }
     @Override
     public void setPhysicsEnabled(boolean bl) {
-        this.hasPhysics = bl;
+        this.collidesWithWorld = bl;
     }
     public void setXSpeed(double speed) {
-        this.xd = speed;
+        this.velocityX = speed;
     }
     public void setYSpeed(double speed) {
-        this.yd = speed;
+        this.velocityY = speed;
     }
     public void setZSpeed(double speed) {
-        this.zd = speed;
+        this.velocityZ = speed;
     }
     public void setX(double x) {
         this.x = x;
@@ -178,16 +178,16 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     public void setZ(double z) {
         this.z = z;
     }
-    public ClientLevel getLevel() {
-        return this.level;
+    public ClientWorld getLevel() {
+        return this.world;
     }
 
     @Override
-    public void render(VertexConsumer vertexConsumer, Camera camera, float f) {
-        Vec3 vec3 = camera.getPosition();
-        float x = (float)(Mth.lerp(f, this.xo, this.x) - vec3.x());
-        float y = (float)(Mth.lerp(f, this.yo, this.y) - vec3.y());
-        float z = (float)(Mth.lerp(f, this.zo, this.z) - vec3.z());
+    public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float f) {
+        Vec3d vec3 = camera.getPos();
+        float x = (float)(MathHelper.lerp(f, this.prevPosX, this.x) - vec3.getX());
+        float y = (float)(MathHelper.lerp(f, this.prevPosY, this.y) - vec3.getY());
+        float z = (float)(MathHelper.lerp(f, this.prevPosZ, this.z) - vec3.getZ());
         this.render(vertexConsumer, x, y, z, camera, f);
     }
 
@@ -197,7 +197,7 @@ public abstract class DynamicParticle extends Particle implements DynamicParticl
     public void tick() {
         oldScale = scale;
         Vector3d pos = new Vector3d(x, y, z);
-        Vector3d motion = new Vector3d(xd, yd, zd);
+        Vector3d motion = new Vector3d(velocityX, velocityY, velocityZ);
         motionFunction.move(pos, motion, this.age/((double) this.expectedLifetime));
         this.setXSpeed(motion.x);
         this.setYSpeed(motion.y);

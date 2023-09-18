@@ -6,7 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.codec.InterfaceDispatcher;
 import com.redpxnda.nucleus.util.JsonUtil;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.dynamic.Codecs;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ public interface InterpolateMode {
 
     Map<String, Creator> interpolateModes = new HashMap<>();
     InterfaceDispatcher<Creator> interpolateModeDispatcher = InterfaceDispatcher.of(interpolateModes, "mode");
-    Codec<InterpolateMode> codec = ExtraCodecs.JSON.flatComapMap(
+    Codec<InterpolateMode> codec = Codecs.JSON_ELEMENT.flatComapMap(
             element -> interpolateModeDispatcher.dispatcher().createFrom(element),
             mode -> DataResult.error(() -> "Cannot turn InterpolateMode into JsonElement."));
     Initializer initializer = new Initializer();

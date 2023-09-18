@@ -1,14 +1,14 @@
 package com.redpxnda.nucleus.mixin;
 
-import net.minecraft.server.level.ChunkMap;
-import net.minecraft.server.network.ServerPlayerConnection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Set;
+import net.minecraft.server.world.EntityTrackingListener;
+import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 
-@Mixin(ChunkMap.TrackedEntity.class)
+@Mixin(ThreadedAnvilChunkStorage.EntityTracker.class)
 public interface TrackedEntityAccessor {
     @Accessor
-    Set<ServerPlayerConnection> getSeenBy();
+    Set<EntityTrackingListener> getListeners();
 }

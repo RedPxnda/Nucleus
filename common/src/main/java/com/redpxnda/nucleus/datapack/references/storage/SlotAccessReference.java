@@ -2,13 +2,13 @@ package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
-import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.inventory.StackReference;
 
 @SuppressWarnings("unused")
-public class SlotAccessReference extends Reference<SlotAccess> {
+public class SlotAccessReference extends Reference<StackReference> {
     static { Reference.register(SlotAccessReference.class); }
 
-    public SlotAccessReference(SlotAccess instance) {
+    public SlotAccessReference(StackReference instance) {
         super(instance);
     }
 

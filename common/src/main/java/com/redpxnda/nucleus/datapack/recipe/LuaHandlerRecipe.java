@@ -5,14 +5,14 @@ import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.datapack.references.item.CraftingContainerReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.inventory.RecipeInputInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.ShapedRecipe;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.Nullable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceLuaToJava;
@@ -21,11 +21,11 @@ import static org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce;
 
 public class LuaHandlerRecipe extends ShapedRecipe {
     private final ShapedRecipe compose;
-    private final @Nullable ResourceLocation handler;
+    private final @Nullable Identifier handler;
     private final @Nullable HandlingType type;
 
-    public LuaHandlerRecipe(ShapedRecipe c, @Nullable ResourceLocation handler, @Nullable HandlingType type) {
-        super(c.getId(), c.getGroup(), c.category(), c.getWidth(), c.getHeight(), c.getIngredients(), c.getResultItem(null));
+    public LuaHandlerRecipe(ShapedRecipe c, @Nullable Identifier handler, @Nullable HandlingType type) {
+        super(c.getId(), c.getGroup(), c.getCategory(), c.getWidth(), c.getHeight(), c.getIngredients(), c.getOutput(null));
         this.compose = c;
         this.handler = handler;
         this.type = type;
@@ -37,8 +37,8 @@ public class LuaHandlerRecipe extends ShapedRecipe {
     }*/
 
     @Override
-    public ItemStack assemble(CraftingContainer inv, RegistryAccess registryAccess) {
-        ItemStack result = super.assemble(inv, registryAccess);
+    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryAccess) {
+        ItemStack result = super.craft(inv, registryAccess);
         if (handler == null || type == null) return result;
         LuaValue value = LuaSetupListener.getCraftingHandler(handler).call(coerce(new ItemStackReference(result)), coerce(new CraftingContainerReference(inv)));
         switch (type) {
@@ -55,27 +55,27 @@ public class LuaHandlerRecipe extends ShapedRecipe {
 
     public static class Serializer extends ShapedRecipe.Serializer {
         @Override
-        public LuaHandlerRecipe fromJson(ResourceLocation rl, JsonObject jsonObject) {
+        public LuaHandlerRecipe read(Identifier rl, JsonObject jsonObject) {
             HandlingType type = HandlingType.MODIFY;
             if (jsonObject.has("action"))
-                type = HandlingType.valueOf(GsonHelper.getAsString(jsonObject, "action").toUpperCase());
-            return new LuaHandlerRecipe(super.fromJson(rl, jsonObject), new ResourceLocation(GsonHelper.getAsString(jsonObject, "lua_handler")), type);
+                type = HandlingType.valueOf(JsonHelper.getString(jsonObject, "action").toUpperCase());
+            return new LuaHandlerRecipe(super.read(rl, jsonObject), new Identifier(JsonHelper.getString(jsonObject, "lua_handler")), type);
         }
 
         @Override
-        public LuaHandlerRecipe fromNetwork(ResourceLocation rl, FriendlyByteBuf buf) {
-            return new LuaHandlerRecipe(super.fromNetwork(rl, buf), null, null);
+        public LuaHandlerRecipe read(Identifier rl, PacketByteBuf buf) {
+            return new LuaHandlerRecipe(super.read(rl, buf), null, null);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buf, ShapedRecipe recipe) {
-            super.toNetwork(buf, recipe);
+        public void write(PacketByteBuf buf, ShapedRecipe recipe) {
+            super.write(buf, recipe);
             if (recipe instanceof LuaHandlerRecipe lua) {
-                buf.writeUtf(lua.handler.toString());
-                buf.writeUtf(lua.type.name());
+                buf.writeString(lua.handler.toString());
+                buf.writeString(lua.type.name());
             } else {
-                buf.writeUtf("");
-                buf.writeUtf("MODIFY");
+                buf.writeString("");
+                buf.writeString("MODIFY");
             }
         }
     }

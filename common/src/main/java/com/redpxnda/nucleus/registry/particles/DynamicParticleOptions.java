@@ -2,12 +2,12 @@ package com.redpxnda.nucleus.registry.particles;
 
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.util.ByteBufUtil;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
+import net.minecraft.registry.Registries;
 
-public abstract class DynamicParticleOptions implements ParticleOptions {
+public abstract class DynamicParticleOptions implements ParticleEffect {
     public int lifetime = 100;
     public float gravity = 0f, friction = 0.98f, scale = 1,
     red = 1, green = 1, blue = 1, alpha = 1;
@@ -21,12 +21,12 @@ public abstract class DynamicParticleOptions implements ParticleOptions {
     public abstract ParticleType<?> getType();
 
     @Override
-    public void writeToNetwork(FriendlyByteBuf buf) {
+    public void write(PacketByteBuf buf) {
         ByteBufUtil.writeWithCodec(buf, this, (Codec) codec());
     }
 
     @Override
-    public String writeToString() {
-        return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()).toString();
+    public String asString() {
+        return Registries.PARTICLE_TYPE.getId(this.getType()).toString();
     }
 }

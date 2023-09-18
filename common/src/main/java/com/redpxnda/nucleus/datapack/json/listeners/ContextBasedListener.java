@@ -8,18 +8,17 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.datapack.json.passive.ContextHolder;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.resource.JsonDataLoader;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 
 import static com.redpxnda.nucleus.Nucleus.GSON;
 
-public class ContextBasedListener<T extends ContextHoldingHandler> extends SimpleJsonResourceReloadListener {
+public class ContextBasedListener<T extends ContextHoldingHandler> extends JsonDataLoader {
     protected final Codec<T> codec;
     protected final List<T> deserialized = new ArrayList<>();
 
@@ -29,7 +28,7 @@ public class ContextBasedListener<T extends ContextHoldingHandler> extends Simpl
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+    protected void apply(Map<Identifier, JsonElement> object, ResourceManager resourceManager, Profiler profilerFiller) {
         object.forEach((loc, json) -> {
             Either<T, DataResult.PartialResult<T>> result = codec.parse(JsonOps.INSTANCE, json).get();
             result.ifRight(partial -> Nucleus.LOGGER.error("Error whilst parsing JSON at " + loc + ".\nMessage:\n" + partial.message()));

@@ -5,8 +5,8 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.datapack.lua.LuaSyncedReloadListener;
 import com.redpxnda.nucleus.network.SimplePacket;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 
@@ -16,29 +16,29 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SyncLuaFilePacket implements SimplePacket {
-    protected final Map<ResourceLocation, byte[]> values;
+    protected final Map<Identifier, byte[]> values;
     protected final String syncId;
 
-    public SyncLuaFilePacket(Map<ResourceLocation, byte[]> values, String syncId) {
+    public SyncLuaFilePacket(Map<Identifier, byte[]> values, String syncId) {
         this.values = values;
         this.syncId = syncId;
     }
 
-    public SyncLuaFilePacket(FriendlyByteBuf buf) {
-        this.syncId = buf.readUtf();
+    public SyncLuaFilePacket(PacketByteBuf buf) {
+        this.syncId = buf.readString();
         this.values = new HashMap<>();
         int amnt = buf.readInt();
         for (int i = 0; i < amnt; i++) {
-            values.put(new ResourceLocation(buf.readUtf()), buf.readByteArray());
+            values.put(new Identifier(buf.readString()), buf.readByteArray());
         }
     }
 
     @Override
-    public void toBuffer(FriendlyByteBuf buf) {
-        buf.writeUtf(syncId);
+    public void toBuffer(PacketByteBuf buf) {
+        buf.writeString(syncId);
         buf.writeInt(values.keySet().size());
         values.forEach((key, value) -> {
-            buf.writeUtf(key.toString());
+            buf.writeString(key.toString());
             buf.writeBytes(value);
         });
     }
@@ -46,7 +46,7 @@ public class SyncLuaFilePacket implements SimplePacket {
     @Override
     public void handle(NetworkManager.PacketContext context) {
         Globals globals = LuaSyncedReloadListener.clientGlobals.get(syncId);
-        Map<ResourceLocation, LuaValue> parsed = values.entrySet().stream().map(entry -> {
+        Map<Identifier, LuaValue> parsed = values.entrySet().stream().map(entry -> {
             try {
                 return Pair.of(entry.getKey(), globals.load(new String(entry.getValue(), StandardCharsets.UTF_8)));
             } catch (Exception e) {

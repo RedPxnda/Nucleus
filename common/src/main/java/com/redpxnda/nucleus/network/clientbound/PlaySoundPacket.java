@@ -3,22 +3,22 @@ package com.redpxnda.nucleus.network.clientbound;
 import com.redpxnda.nucleus.network.ClientboundHandling;
 import com.redpxnda.nucleus.network.SimplePacket;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.Identifier;
 
 public class PlaySoundPacket implements SimplePacket {
     private final double x;
     private final double y;
     private final double z;
     private final SoundEvent event;
-    private final SoundSource category;
+    private final SoundCategory category;
     private final float volume;
     private final float pitch;
 
-    public PlaySoundPacket(double x, double y, double z, SoundEvent event, SoundSource category, float volume, float pitch) {
+    public PlaySoundPacket(double x, double y, double z, SoundEvent event, SoundCategory category, float volume, float pitch) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -28,23 +28,23 @@ public class PlaySoundPacket implements SimplePacket {
         this.pitch = pitch;
     }
 
-    public PlaySoundPacket(FriendlyByteBuf buf) {
+    public PlaySoundPacket(PacketByteBuf buf) {
         this.x = buf.readDouble();
         this.y = buf.readDouble();
         this.z = buf.readDouble();
-        this.event = BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(buf.readUtf()));
-        this.category = SoundSource.valueOf(buf.readUtf());
+        this.event = Registries.SOUND_EVENT.get(new Identifier(buf.readString()));
+        this.category = SoundCategory.valueOf(buf.readString());
         this.volume = buf.readFloat();
         this.pitch = buf.readFloat();
     }
 
     @Override
-    public void toBuffer(FriendlyByteBuf buf) {
+    public void toBuffer(PacketByteBuf buf) {
         buf.writeDouble(x);
         buf.writeDouble(y);
         buf.writeDouble(z);
-        buf.writeUtf(BuiltInRegistries.SOUND_EVENT.getKey(event).toString());
-        buf.writeUtf(category.name());
+        buf.writeString(Registries.SOUND_EVENT.getId(event).toString());
+        buf.writeString(category.name());
         buf.writeFloat(volume);
         buf.writeFloat(pitch);
     }

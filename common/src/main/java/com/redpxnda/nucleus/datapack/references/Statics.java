@@ -11,31 +11,30 @@ import com.redpxnda.nucleus.datapack.references.storage.*;
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
 import com.redpxnda.nucleus.datapack.references.tag.ListTagReference;
 import dev.architectury.platform.Platform;
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.TntEntity;
+import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
+import net.minecraft.util.UseAction;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 
 import static com.redpxnda.nucleus.util.MiscUtil.getMobEffect;
 
@@ -53,61 +52,61 @@ public class Statics {
         return Platform.isForge();
     }
     public static BlockReference<?> blockOf(String block) {
-        return new BlockReference<>(BuiltInRegistries.BLOCK.get(new ResourceLocation(block)));
+        return new BlockReference<>(Registries.BLOCK.get(new Identifier(block)));
     }
     public static ItemReference<?> itemOf(String item) {
-        return new ItemReference<>(BuiltInRegistries.ITEM.get(new ResourceLocation(item)));
+        return new ItemReference<>(Registries.ITEM.get(new Identifier(item)));
     }
     public static TargetingConditionsReference createTargetingConditions(boolean forCombat) {
-        return new TargetingConditionsReference(forCombat ? TargetingConditions.forCombat() : TargetingConditions.forNonCombat());
+        return new TargetingConditionsReference(forCombat ? TargetPredicate.createAttackable() : TargetPredicate.createNonAttackable());
     }
     public static AABBReference createAABB(double x1, double y1, double z1, double x2, double y2, double z2) {
-        return new AABBReference(new AABB(x1, y1, z1, x2, y2, z2));
+        return new AABBReference(new Box(x1, y1, z1, x2, y2, z2));
     }
     public static BlockPosReference createBlockPos(int x, int y, int z) {
         return new BlockPosReference(new BlockPos(x, y, z));
     }
     public static Vec3Reference createVec3(double x, double y, double z) {
-        return new Vec3Reference(new Vec3(x, y, z));
+        return new Vec3Reference(new Vec3d(x, y, z));
     }
     public static MobEffectInstanceReference createMEI(ResourceLocationReference reference) {
-        return new MobEffectInstanceReference(new MobEffectInstance(getMobEffect(reference)));
+        return new MobEffectInstanceReference(new StatusEffectInstance(getMobEffect(reference)));
     }
     public static MobEffectInstanceReference createMEI(ResourceLocationReference reference, int duration, int amplifier) {
-        return new MobEffectInstanceReference(new MobEffectInstance(getMobEffect(reference), duration, amplifier));
+        return new MobEffectInstanceReference(new StatusEffectInstance(getMobEffect(reference), duration, amplifier));
     }
     public static MobEffectInstanceReference createMEI(ResourceLocationReference reference, int duration, int amplifier, boolean ambient, boolean visible, boolean showIcon) {
         // ambient defaults to false, visible defaults to true, showIcon defaults to true
-        return new MobEffectInstanceReference(new MobEffectInstance(getMobEffect(reference), duration, amplifier, ambient, visible, showIcon));
+        return new MobEffectInstanceReference(new StatusEffectInstance(getMobEffect(reference), duration, amplifier, ambient, visible, showIcon));
     }
     public static Vec2Reference createVec2(float x, float y) {
-        return new Vec2Reference(new Vec2(x, y));
+        return new Vec2Reference(new Vec2f(x, y));
     }
     public static ChunkPosReference createChunkPos(int x, int z) {
         return new ChunkPosReference(new ChunkPos(x, z));
     }
     public static CompoundTagReference createCompoundTag() {
-        return new CompoundTagReference(new CompoundTag());
+        return new CompoundTagReference(new NbtCompound());
     }
     public static ListTagReference createListTag() {
-        return new ListTagReference(new ListTag());
+        return new ListTagReference(new NbtList());
     }
     public static ResourceLocationReference createResourceLocation(String namespace, String path) {
-        return new ResourceLocationReference(new ResourceLocation(namespace, path));
+        return new ResourceLocationReference(new Identifier(namespace, path));
     }
     public static ResourceLocationReference createResourceLocation(String str) {
-        return new ResourceLocationReference(new ResourceLocation(str));
+        return new ResourceLocationReference(new Identifier(str));
     }
 
     public static class Entities {
-        public static EntityReference<PrimedTnt> createTNT(LevelReference ref, double x, double y, double z) {
-            return new EntityReference<>(new PrimedTnt(ref.instance, x, y, z, null));
+        public static EntityReference<TntEntity> createTNT(LevelReference ref, double x, double y, double z) {
+            return new EntityReference<>(new TntEntity(ref.instance, x, y, z, null));
         }
-        public static EntityReference<PrimedTnt> createTNT(LevelReference ref, double x, double y, double z, LivingEntityReference<?> ent) {
-            return new EntityReference<>(new PrimedTnt(ref.instance, x, y, z, ent.instance));
+        public static EntityReference<TntEntity> createTNT(LevelReference ref, double x, double y, double z, LivingEntityReference<?> ent) {
+            return new EntityReference<>(new TntEntity(ref.instance, x, y, z, ent.instance));
         }
-        public static EntityReference<PrimedTnt> createTNT(LevelReference ref, double x, double y, double z, LivingEntityReference<?> ent, int fuse) {
-            PrimedTnt tnt = new PrimedTnt(ref.instance, x, y, z, ent.instance);
+        public static EntityReference<TntEntity> createTNT(LevelReference ref, double x, double y, double z, LivingEntityReference<?> ent, int fuse) {
+            TntEntity tnt = new TntEntity(ref.instance, x, y, z, ent.instance);
             tnt.setFuse(fuse);
             return new EntityReference<>(tnt);
         }
@@ -115,51 +114,51 @@ public class Statics {
 
     public static class Components {
         public static ComponentReference.Mutable literal(String str) {
-            return new ComponentReference.Mutable(Component.literal(str));
+            return new ComponentReference.Mutable(Text.literal(str));
         }
         public static ComponentReference.Mutable translatable(String str) {
-            return new ComponentReference.Mutable(Component.translatable(str));
+            return new ComponentReference.Mutable(Text.translatable(str));
         }
         public static ComponentReference.Mutable keybind(String str) {
-            return new ComponentReference.Mutable(Component.keybind(str));
+            return new ComponentReference.Mutable(Text.keybind(str));
         }
     }
 
     public enum ChatFormattings {
-        BLACK(ChatFormatting.BLACK),
-        DARK_BLUE(ChatFormatting.DARK_BLUE),
-        DARK_GREEN(ChatFormatting.DARK_GREEN),
-        DARK_AQUA(ChatFormatting.DARK_AQUA),
-        DARK_RED(ChatFormatting.DARK_RED),
-        DARK_PURPLE(ChatFormatting.DARK_PURPLE),
-        GOLD(ChatFormatting.GOLD),
-        GRAY(ChatFormatting.GRAY),
-        DARK_GRAY(ChatFormatting.DARK_GRAY),
-        BLUE(ChatFormatting.BLUE),
-        GREEN(ChatFormatting.GREEN),
-        AQUA(ChatFormatting.AQUA),
-        RED(ChatFormatting.RED),
-        LIGHT_PURPLE(ChatFormatting.LIGHT_PURPLE),
-        YELLOW(ChatFormatting.YELLOW),
-        WHITE(ChatFormatting.WHITE),
-        OBFUSCATED(ChatFormatting.OBFUSCATED),
-        BOLD(ChatFormatting.BOLD),
-        STRIKETHROUGH(ChatFormatting.STRIKETHROUGH),
-        UNDERLINE(ChatFormatting.UNDERLINE),
-        ITALIC(ChatFormatting.ITALIC),
-        RESET(ChatFormatting.RESET);
+        BLACK(Formatting.BLACK),
+        DARK_BLUE(Formatting.DARK_BLUE),
+        DARK_GREEN(Formatting.DARK_GREEN),
+        DARK_AQUA(Formatting.DARK_AQUA),
+        DARK_RED(Formatting.DARK_RED),
+        DARK_PURPLE(Formatting.DARK_PURPLE),
+        GOLD(Formatting.GOLD),
+        GRAY(Formatting.GRAY),
+        DARK_GRAY(Formatting.DARK_GRAY),
+        BLUE(Formatting.BLUE),
+        GREEN(Formatting.GREEN),
+        AQUA(Formatting.AQUA),
+        RED(Formatting.RED),
+        LIGHT_PURPLE(Formatting.LIGHT_PURPLE),
+        YELLOW(Formatting.YELLOW),
+        WHITE(Formatting.WHITE),
+        OBFUSCATED(Formatting.OBFUSCATED),
+        BOLD(Formatting.BOLD),
+        STRIKETHROUGH(Formatting.STRIKETHROUGH),
+        UNDERLINE(Formatting.UNDERLINE),
+        ITALIC(Formatting.ITALIC),
+        RESET(Formatting.RESET);
 
-        public final ChatFormatting instance;
-        private static final Map<ChatFormatting, ChatFormattings> map = new HashMap<>(){{
+        public final Formatting instance;
+        private static final Map<Formatting, ChatFormattings> map = new HashMap<>(){{
             for (ChatFormattings value : ChatFormattings.values()) {
                 put(value.instance, value);
             }}};
 
-        ChatFormattings(ChatFormatting instance) {
+        ChatFormattings(Formatting instance) {
             this.instance = instance;
         }
 
-        public static ChatFormattings get(ChatFormatting orig) {
+        public static ChatFormattings get(Formatting orig) {
             return map.get(orig);
         }
     }
@@ -232,67 +231,67 @@ public class Statics {
     }
 
     public enum InteractionHands {
-        MAIN_HAND(InteractionHand.MAIN_HAND),
-        OFF_HAND(InteractionHand.OFF_HAND);
+        MAIN_HAND(Hand.MAIN_HAND),
+        OFF_HAND(Hand.OFF_HAND);
 
-        public final InteractionHand instance;
-        private static final Map<InteractionHand, InteractionHands> map = new HashMap<>(){{
+        public final Hand instance;
+        private static final Map<Hand, InteractionHands> map = new HashMap<>(){{
             for (InteractionHands value : InteractionHands.values()) {
                 put(value.instance, value);
             }}};
 
-        InteractionHands(InteractionHand instance) {
+        InteractionHands(Hand instance) {
             this.instance = instance;
         }
 
-        public static InteractionHands get(InteractionHand orig) {
+        public static InteractionHands get(Hand orig) {
             return map.get(orig);
         }
     }
 
     public enum Rotations {
-        NONE(Rotation.NONE),
-        CLOCKWISE_90(Rotation.CLOCKWISE_90),
-        CLOCKWISE_180(Rotation.CLOCKWISE_180),
-        COUNTERCLOCKWISE_90(Rotation.COUNTERCLOCKWISE_90);
+        NONE(BlockRotation.NONE),
+        CLOCKWISE_90(BlockRotation.CLOCKWISE_90),
+        CLOCKWISE_180(BlockRotation.CLOCKWISE_180),
+        COUNTERCLOCKWISE_90(BlockRotation.COUNTERCLOCKWISE_90);
 
-        public final Rotation instance;
-        private static final Map<Rotation, Rotations> map = new HashMap<>(){{
+        public final BlockRotation instance;
+        private static final Map<BlockRotation, Rotations> map = new HashMap<>(){{
             for (Rotations value : Rotations.values()) {
                 put(value.instance, value);
             }}};
 
-        Rotations(Rotation instance) {
+        Rotations(BlockRotation instance) {
             this.instance = instance;
         }
 
-        public static Rotations get(Rotation orig) {
+        public static Rotations get(BlockRotation orig) {
             return map.get(orig);
         }
     }
 
     public enum UseAnims {
-        NONE(UseAnim.NONE),
-        EAT(UseAnim.EAT),
-        DRINK(UseAnim.DRINK),
-        BLOCK(UseAnim.BLOCK),
-        BOW(UseAnim.BOW),
-        SPEAR(UseAnim.SPEAR),
-        CROSSBOW(UseAnim.CROSSBOW),
-        SPYGLASS(UseAnim.SPYGLASS),
-        TOOT_HORN(UseAnim.TOOT_HORN);
+        NONE(UseAction.NONE),
+        EAT(UseAction.EAT),
+        DRINK(UseAction.DRINK),
+        BLOCK(UseAction.BLOCK),
+        BOW(UseAction.BOW),
+        SPEAR(UseAction.SPEAR),
+        CROSSBOW(UseAction.CROSSBOW),
+        SPYGLASS(UseAction.SPYGLASS),
+        TOOT_HORN(UseAction.TOOT_HORN);
 
-        public final UseAnim instance;
-        private static final Map<UseAnim, UseAnims> map = new HashMap<>(){{
+        public final UseAction instance;
+        private static final Map<UseAction, UseAnims> map = new HashMap<>(){{
             for (UseAnims value : UseAnims.values()) {
                 put(value.instance, value);
             }}};
 
-        UseAnims(UseAnim instance) {
+        UseAnims(UseAction instance) {
             this.instance = instance;
         }
 
-        public static UseAnims get(UseAnim orig) {
+        public static UseAnims get(UseAction orig) {
             return map.get(orig);
         }
     }
@@ -319,32 +318,32 @@ public class Statics {
     }
 
     public enum Poses {
-        STANDING(Pose.STANDING),
-        FALL_FLYING(Pose.FALL_FLYING),
-        SLEEPING(Pose.SLEEPING),
-        SWIMMING(Pose.SWIMMING),
-        SPIN_ATTACK(Pose.SPIN_ATTACK),
-        CROUCHING(Pose.CROUCHING),
-        LONG_JUMPING(Pose.LONG_JUMPING),
-        DYING(Pose.DYING),
-        CROAKING(Pose.CROAKING),
-        USING_TONGUE(Pose.USING_TONGUE),
-        ROARING(Pose.ROARING),
-        SNIFFING(Pose.SNIFFING),
-        EMERGING(Pose.EMERGING),
-        DIGGING(Pose.DIGGING);
+        STANDING(EntityPose.STANDING),
+        FALL_FLYING(EntityPose.FALL_FLYING),
+        SLEEPING(EntityPose.SLEEPING),
+        SWIMMING(EntityPose.SWIMMING),
+        SPIN_ATTACK(EntityPose.SPIN_ATTACK),
+        CROUCHING(EntityPose.CROUCHING),
+        LONG_JUMPING(EntityPose.LONG_JUMPING),
+        DYING(EntityPose.DYING),
+        CROAKING(EntityPose.CROAKING),
+        USING_TONGUE(EntityPose.USING_TONGUE),
+        ROARING(EntityPose.ROARING),
+        SNIFFING(EntityPose.SNIFFING),
+        EMERGING(EntityPose.EMERGING),
+        DIGGING(EntityPose.DIGGING);
 
-        public final Pose instance;
-        private static final Map<Pose, Poses> map = new HashMap<>(){{
+        public final EntityPose instance;
+        private static final Map<EntityPose, Poses> map = new HashMap<>(){{
             for (Poses value : Poses.values()) {
                 put(value.instance, value);
             }}};
 
-        Poses(Pose instance) {
+        Poses(EntityPose instance) {
             this.instance = instance;
         }
 
-        public static Poses get(Pose orig) {
+        public static Poses get(EntityPose orig) {
             return map.get(orig);
         }
     }

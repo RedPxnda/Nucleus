@@ -5,13 +5,13 @@ import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.core.Registry;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -78,10 +78,10 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, Long.class, Codec.LONG);
         addInherit(map, long.class, Codec.LONG);
         addInherit(map, String.class, Codec.STRING);
-        addInherit(map, ResourceLocation.class, ResourceLocation.CODEC);
+        addInherit(map, Identifier.class, Identifier.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        addInherit(map, ParticleOptions.class, ParticleTypes.CODEC);
-        addInherit(map, Component.class, ExtraCodecs.COMPONENT);
+        addInherit(map, ParticleEffect.class, ParticleTypes.TYPE_CODEC);
+        addInherit(map, Text.class, Codecs.TEXT);
         addInherit(map, Color.class, Color.CODEC);
         addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
     });
@@ -114,12 +114,12 @@ public class AutoCodec<C> extends MapCodec<C> {
 
     // adding registries into auto codec overrides
     public static void init() {
-        for (Field field : BuiltInRegistries.class.getDeclaredFields()) {
+        for (Field field : Registries.class.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
             if (field.getGenericType() instanceof ParameterizedType pt && pt.getActualTypeArguments()[0] instanceof Class<?> cls) {
                 try {
                     Registry<?> reg = (Registry<?>) field.get(null);
-                    inheritOverrides.putIfAbsent(cls, CodecGetter.ofSupplier(reg::byNameCodec));
+                    inheritOverrides.putIfAbsent(cls, CodecGetter.ofSupplier(reg::getCodec));
                 } catch (IllegalAccessException e) {
                     LOGGER.error("Failed to add '{}' from BuiltInRegistries as an inherit override.", field.getName());
                     throw new RuntimeException(e);

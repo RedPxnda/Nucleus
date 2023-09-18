@@ -8,8 +8,8 @@ import com.redpxnda.nucleus.registry.particles.ControllerParticle;
 import com.redpxnda.nucleus.registry.particles.DynamicPoseStackParticle;
 import com.redpxnda.nucleus.registry.particles.Trail;
 import com.redpxnda.nucleus.registry.particles.manager.PoseStackParticleManager;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.particle.ParticleEffect;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
@@ -46,7 +46,7 @@ public class ParticleShape {
     public AnimationFunction outerAnimationFunction = (ps, m, a) -> {};
     public AnimationFunction animationFunction = (ps, m, a) -> {};
     public LoopFunction loopFunction = c -> null;
-    public ParticleOptions particle;
+    public ParticleEffect particle;
 
     public Function<ControllerParticle, Spawner> spawner;
 
@@ -93,7 +93,7 @@ public class ParticleShape {
         children.add(shape);
     }
 
-    public void setParticle(ParticleOptions particle) {
+    public void setParticle(ParticleEffect particle) {
         this.particle = particle;
     }
 
@@ -202,7 +202,7 @@ public class ParticleShape {
         loopFunction = function;
     }
 
-    protected ControllerParticle create(ClientLevel level) {
+    protected ControllerParticle create(ClientWorld level) {
         ControllerParticle controller = (ControllerParticle) Rendering.createParticle(
                 level, NucleusRegistries.controllerParticle.get(),
                 x, y, z, 0, 0, 0);
@@ -223,7 +223,7 @@ public class ParticleShape {
     }
 
     protected void applyTo(ControllerParticle controller) {
-        ClientLevel level = controller.getLevel();
+        ClientWorld level = controller.getLevel();
         controller.children.clear();
         controller.setPos(x, y, z);
         spawner = cp -> (px, py, pz) -> {
@@ -374,11 +374,11 @@ public class ParticleShape {
             return newChild;
         };
         LoopFunction RESET = p -> {
-            p.remove();
+            p.markDead();
             return CLONE.loop(p);
         };
         LoopFunction DISC_RESET = p -> {
-            p.remove();
+            p.markDead();
             return DISC_CLONE.loop(p);
         };
 

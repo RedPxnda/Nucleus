@@ -22,10 +22,8 @@ import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
-import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.EntityEvent;
-import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkChannel;
@@ -33,14 +31,11 @@ import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -76,26 +71,26 @@ public class Nucleus {
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
         // temp test code
-        if (Platform.isDevelopmentEnvironment()) {
+        /*if (Platform.isDevelopmentEnvironment()) {
             InteractionEvent.RIGHT_CLICK_ITEM.register((p, hand) -> {
-                if (p instanceof ServerPlayer player) {
-                    if (player.getMainHandItem().is(Items.STICK) || player.getMainHandItem().is(Items.SADDLE)) {
-                        double amnt = player.getMainHandItem().is(Items.STICK) ? 5 : -5;
+                if (p instanceof ServerPlayerEntity player) {
+                    if (player.getMainHandStack().isOf(Items.STICK) || player.getMainHandStack().isOf(Items.SADDLE)) {
+                        double amnt = player.getMainHandStack().isOf(Items.STICK) ? 5 : -5;
                         DoublesCapability cap = DoublesCapability.getAllFor(player);
                         double val = cap.get("nucleus:test");
                         cap.set("nucleus:test", val + amnt);
                         cap.sendToClient(player);
-                    } else if (player.getMainHandItem().is(Items.ALLIUM)) {
+                    } else if (player.getMainHandStack().isOf(Items.ALLIUM)) {
                         ServerPoseCapability cap = ServerPoseCapability.getFor(player);
                         String animation = cap.getPose().equals("none") ? "nucleus:test" : "none";
-                        InteractionHand usedHand = !player.isShiftKeyDown() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-                        cap.set(animation, player.level().getGameTime(), usedHand);
+                        Hand usedHand = !player.isSneaking() ? Hand.MAIN_HAND : Hand.OFF_HAND;
+                        cap.set(animation, player.getWorld().getTime(), usedHand);
                         cap.sendToClient(player);
                     }
                 }
                 return CompoundEventResult.pass();
             });
-        }
+        }*/
     }
 
     private static void packets() {
@@ -111,9 +106,9 @@ public class Nucleus {
     }
     private static void capabilities() {
         EntityDataRegistry.register(loc("simple_doubles"), e -> true, DoublesCapability.class, DoublesCapability::new);
-        EntityDataRegistry.register(loc("pose"), e -> e instanceof Player && !e.level().isClientSide, ServerPoseCapability.class, ServerPoseCapability::new);
+        EntityDataRegistry.register(loc("pose"), e -> e instanceof PlayerEntity && !e.getWorld().isClient, ServerPoseCapability.class, ServerPoseCapability::new);
         EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
-                EntityDataRegistry.register(ClientPoseCapability.loc, e -> e instanceof Player && e.level().isClientSide, ClientPoseCapability.class, ClientPoseCapability::new)
+                EntityDataRegistry.register(ClientPoseCapability.loc, e -> e instanceof PlayerEntity && e.getWorld().isClient, ClientPoseCapability.class, ClientPoseCapability::new)
         );
 
         EntityEvent.ADD.register((entity, world) -> {
@@ -139,12 +134,12 @@ public class Nucleus {
         });
     }
 
-    public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<FriendlyByteBuf, T> decoder) {
+    public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<PacketByteBuf, T> decoder) {
         CHANNEL.register(cls, T::toBuffer, decoder, T::wrappedHandle);
     }
 
-    public static ResourceLocation loc(String str) {
-        return new ResourceLocation(MOD_ID, str);
+    public static Identifier loc(String str) {
+        return new Identifier(MOD_ID, str);
     }
 
     /*public static class TestEntityCap implements EntityCapability<CompoundTag> {
@@ -171,9 +166,9 @@ public class Nucleus {
     }*/
 
     private static void reloadListeners() {
-        ReloadListenerRegistry.register(PackType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces
-        ReloadListenerRegistry.register(PackType.SERVER_DATA, new CapabilityRegistryListener()); // works for nucleus and addon namespaces
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
+        ReloadListenerRegistry.register(ResourceType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces
+        ReloadListenerRegistry.register(ResourceType.SERVER_DATA, new CapabilityRegistryListener()); // works for nucleus and addon namespaces
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(ResourceType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
     }
 
     public static void addAddonNamespace(String namespace) {

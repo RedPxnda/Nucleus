@@ -6,12 +6,12 @@ import com.redpxnda.nucleus.registry.particles.*;
 import dev.architectury.registry.registries.Registrar;
 import dev.architectury.registry.registries.RegistrarManager;
 import dev.architectury.registry.registries.RegistrySupplier;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.item.Item;
+import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.ParticleType;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.registry.RegistryKeys;
 
 import java.util.function.Supplier;
 
@@ -21,16 +21,16 @@ import static com.redpxnda.nucleus.Nucleus.loc;
 public class NucleusRegistries {
     public static final Supplier<RegistrarManager> regs = Suppliers.memoize(() -> RegistrarManager.get(MOD_ID));
 
-    public static Registrar<RecipeSerializer<?>> RS = regs.get().get(Registries.RECIPE_SERIALIZER);
-    public static Registrar<ParticleType<?>> particles = regs.get().get(Registries.PARTICLE_TYPE);
-    public static Registrar<MobEffect> effects = regs.get().get(Registries.MOB_EFFECT);
-    public static Registrar<Item> items = regs.get().get(Registries.ITEM);
+    public static Registrar<RecipeSerializer<?>> RS = regs.get().get(RegistryKeys.RECIPE_SERIALIZER);
+    public static Registrar<ParticleType<?>> particles = regs.get().get(RegistryKeys.PARTICLE_TYPE);
+    public static Registrar<StatusEffect> effects = regs.get().get(RegistryKeys.STATUS_EFFECT);
+    public static Registrar<Item> items = regs.get().get(RegistryKeys.ITEM);
 
     public static RegistrySupplier<RecipeSerializer<?>> luaHandlingRecipe = RS.register(loc("lua_handling"), LuaHandlerRecipe.Serializer::new);
 
     public static RegistrySupplier<BasicParticleType<EmitterParticleOptions>> emittingParticle = particles.register(loc("emitter"), () -> new BasicParticleType<>(false, EmitterParticleOptions.codec));
     public static RegistrySupplier<BasicParticleType<MimicParticleOptions>> mimicParticle = particles.register(loc("mimic"), () -> new BasicParticleType<>(false, MimicParticleOptions.codec));
-    public static RegistrySupplier<SimpleParticleType> controllerParticle = particles.register(loc("controller"), () -> new SimpleParticleType(false));
+    public static RegistrySupplier<DefaultParticleType> controllerParticle = particles.register(loc("controller"), () -> new DefaultParticleType(false));
     public static RegistrySupplier<BasicParticleType<CubeParticleOptions>> cubeParticle = particles.register(loc("cube"), () -> new BasicParticleType<>(false, CubeParticleOptions.codec));
     public static RegistrySupplier<BasicParticleType<ChunkParticleOptions>> blockChunkParticle = particles.register(loc("block_chunk"), () -> new BasicParticleType<>(false, ChunkParticleOptions.codec));
 

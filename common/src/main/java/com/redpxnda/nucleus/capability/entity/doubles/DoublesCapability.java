@@ -1,18 +1,18 @@
 package com.redpxnda.nucleus.capability.entity.doubles;
 
-import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
 import com.redpxnda.nucleus.capability.entity.EntityDataManager;
+import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
 import com.redpxnda.nucleus.network.PlayerSendable;
 import com.redpxnda.nucleus.network.clientbound.DoublesCapabilitySyncPacket;
-import net.minecraft.Util;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
+public class DoublesCapability implements SyncedEntityCapability<NbtCompound> {
     public static final Map<String, Double> defaultValues = new HashMap<>();
 
     public final Map<String, Double> doubles = new HashMap<>();
@@ -28,16 +28,16 @@ public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
     }
 
     @Override
-    public CompoundTag toNbt() {
-        CompoundTag tag = new CompoundTag();
+    public NbtCompound toNbt() {
+        NbtCompound tag = new NbtCompound();
         doubles.forEach(tag::putDouble);
         return tag;
     }
 
     @Override
-    public void loadNbt(CompoundTag tag) {
+    public void loadNbt(NbtCompound tag) {
         doubles.clear();
-        tag.getAllKeys().forEach(key -> {
+        tag.getKeys().forEach(key -> {
             doubles.put(key, tag.getDouble(key));
         });
     }
@@ -62,7 +62,7 @@ public class DoublesCapability implements SyncedEntityCapability<CompoundTag> {
         update(loc);
     }
     public void update(String loc) {
-        modifications.put(loc, Util.getMillis());
+        modifications.put(loc, Util.getMeasuringTimeMs());
     }
     public @Nullable Long getModificationTime(String loc) {
         return modifications.get(loc);

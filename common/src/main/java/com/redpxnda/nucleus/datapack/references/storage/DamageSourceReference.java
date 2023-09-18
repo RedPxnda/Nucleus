@@ -2,8 +2,8 @@ package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.entity.EntityReference;
 import com.redpxnda.nucleus.datapack.references.entity.LivingEntityReference;
+import net.minecraft.entity.damage.DamageSource;
 import com.redpxnda.nucleus.datapack.references.Reference;
-import net.minecraft.world.damagesource.DamageSource;
 
 @SuppressWarnings("unused")
 public class DamageSourceReference extends Reference<DamageSource> {
@@ -59,27 +59,27 @@ public class DamageSourceReference extends Reference<DamageSource> {
 
     // Generated from DamageSource::getDirectEntity
     public EntityReference<?> getDirectEntity() {
-        return new EntityReference<>(instance.getDirectEntity());
+        return new EntityReference<>(instance.getSource());
     }
 
     // Generated from DamageSource::getEntity
     public EntityReference<?> getEntity() {
-        return new EntityReference<>(instance.getEntity());
+        return new EntityReference<>(instance.getAttacker());
     }
 
     // Generated from DamageSource::getSourcePosition
     public Vec3Reference getSourcePosition() {
-        return new Vec3Reference(instance.getSourcePosition());
+        return new Vec3Reference(instance.getPosition());
     }
 
     // Generated from DamageSource::getLocalizedDeathMessage
     public ComponentReference<?> getLocalizedDeathMessage(LivingEntityReference<?> param0) {
-        return new ComponentReference<>(instance.getLocalizedDeathMessage(param0.instance));
+        return new ComponentReference<>(instance.getDeathMessage(param0.instance));
     }
 
     // Generated from DamageSource::scalesWithDifficulty
     public boolean scalesWithDifficulty() {
-        return instance.scalesWithDifficulty();
+        return instance.isScaledWithDifficulty();
     }
 
 }

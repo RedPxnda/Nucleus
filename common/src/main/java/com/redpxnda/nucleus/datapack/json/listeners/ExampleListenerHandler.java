@@ -9,9 +9,8 @@ import com.redpxnda.nucleus.datapack.json.passive.ContextHolder;
 import com.redpxnda.nucleus.datapack.json.passive.RootContext;
 import com.redpxnda.nucleus.datapack.json.types.Evaluable;
 import com.redpxnda.nucleus.datapack.references.entity.PlayerReference;
-import net.minecraft.world.entity.player.Player;
-
 import java.util.HashMap;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class ExampleListenerHandler implements ContextHoldingHandler {
     private static final Codec<ExampleListenerHandler> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -19,7 +18,7 @@ public class ExampleListenerHandler implements ContextHoldingHandler {
     ).apply(instance, ExampleListenerHandler::new));
     public static final ContextBasedListener<ExampleListenerHandler> LISTENER = new ContextBasedListener<>("test", CODEC);
 
-    public static void callAll(Player player) {
+    public static void callAll(PlayerEntity player) {
         LISTENER.deserialized.forEach(handler -> handler.call(player));
     }
 
@@ -34,7 +33,7 @@ public class ExampleListenerHandler implements ContextHoldingHandler {
         this.context = holder;
     }
 
-    public void call(Player player) {
+    public void call(PlayerEntity player) {
         System.out.println("Being called!");
         EvaluationValue val = evaluable.evaluate(context.resolve(new RootContext(new HashMap<>(){{
             put("player", new PlayerReference(player));

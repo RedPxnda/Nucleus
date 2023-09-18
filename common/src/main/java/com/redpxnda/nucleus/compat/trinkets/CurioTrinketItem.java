@@ -1,10 +1,10 @@
 package com.redpxnda.nucleus.compat.trinkets;
 
 import com.redpxnda.nucleus.impl.TrinketItemCreator;
-import net.minecraft.world.item.Item;
+import net.minecraft.item.Item;
 
 public class CurioTrinketItem extends Item implements CurioTrinket {
-    public CurioTrinketItem(Properties properties) {
+    public CurioTrinketItem(Settings properties) {
         super(properties);
         TrinketItemCreator.registerCurioTrinket(this, this);
     }

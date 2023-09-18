@@ -3,11 +3,11 @@ package com.redpxnda.nucleus.datapack.lua;
 import com.mojang.datafixers.util.Pair;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.network.clientbound.SyncLuaFilePacket;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.SinglePreparationResourceReloader;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 
@@ -16,14 +16,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
-public abstract class LuaSyncedReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, byte[]>> {
-    public static final Map<String, Consumer<Map<ResourceLocation, LuaValue>>> clientHandlers = new HashMap<>();
+public abstract class LuaSyncedReloadListener extends SinglePreparationResourceReloader<Map<Identifier, byte[]>> {
+    public static final Map<String, Consumer<Map<Identifier, LuaValue>>> clientHandlers = new HashMap<>();
     public static final Map<String, Globals> clientGlobals = new HashMap<>();
 
     protected final Globals serverGlobals;
@@ -40,11 +39,11 @@ public abstract class LuaSyncedReloadListener extends SimplePreparableReloadList
     }
 
     @Override
-    protected Map<ResourceLocation, byte[]> prepare(ResourceManager rm, ProfilerFiller pf) {
-        Map<ResourceLocation, byte[]> rawData = new HashMap<>();
+    protected Map<Identifier, byte[]> prepare(ResourceManager rm, Profiler pf) {
+        Map<Identifier, byte[]> rawData = new HashMap<>();
 
-        for (Map.Entry<ResourceLocation, Resource> entry : rm.listResources(directory, path -> path.toString().endsWith(".lua")).entrySet()) {
-            try (InputStream stream = entry.getValue().open()) {
+        for (Map.Entry<Identifier, Resource> entry : rm.findResources(directory, path -> path.toString().endsWith(".lua")).entrySet()) {
+            try (InputStream stream = entry.getValue().getInputStream()) {
                 rawData.put(entry.getKey(), stream.readAllBytes());
             } catch (IOException e) {
                 LOGGER.error("Failed to load lua resource at {}", entry.getKey());
@@ -57,8 +56,8 @@ public abstract class LuaSyncedReloadListener extends SimplePreparableReloadList
 
 
     @Override
-    protected void apply(Map<ResourceLocation, byte[]> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-        Map<ResourceLocation, LuaValue> values = object.entrySet().stream().map(entry -> {
+    protected void apply(Map<Identifier, byte[]> object, ResourceManager resourceManager, Profiler profilerFiller) {
+        Map<Identifier, LuaValue> values = object.entrySet().stream().map(entry -> {
             try {
                 return Pair.of(entry.getKey(), serverGlobals.load(new String(entry.getValue(), StandardCharsets.UTF_8)));
             } catch (Exception e) {
@@ -72,6 +71,6 @@ public abstract class LuaSyncedReloadListener extends SimplePreparableReloadList
         new SyncLuaFilePacket(object, syncId).send(Nucleus.SERVER);
     }
 
-    protected abstract void handleForClient(Map<ResourceLocation, LuaValue> values);
-    protected abstract void handleForServer(Map<ResourceLocation, LuaValue> values);
+    protected abstract void handleForClient(Map<Identifier, LuaValue> values);
+    protected abstract void handleForServer(Map<Identifier, LuaValue> values);
 }

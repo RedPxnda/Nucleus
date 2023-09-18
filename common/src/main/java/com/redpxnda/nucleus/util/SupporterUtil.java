@@ -6,9 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.redpxnda.nucleus.Nucleus;
 import dev.architectury.event.events.common.PlayerEvent;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.entity.player.PlayerEntity;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -26,8 +25,8 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
 public class SupporterUtil {
     private static Map<UUID, Integer> supporters = new HashMap<>();
 
-    public static int getTier(Player player) {
-        return getTier(player.getUUID());
+    public static int getTier(PlayerEntity player) {
+        return getTier(player.getUuid());
     }
 
     public static int getTier(UUID uuid) {
@@ -63,7 +62,7 @@ public class SupporterUtil {
     public static void init() {
         PlayerEvent.PLAYER_JOIN.register(p -> {
             int t = getTier(p);
-            LOGGER.info("Saved supporter tier data for " + p.getScoreboardName() + "(UUID: " + p.getStringUUID() + "). Tier: " + t);
+            LOGGER.info("Saved supporter tier data for " + p.getEntityName() + "(UUID: " + p.getUuidAsString() + "). Tier: " + t);
         });
     }
 }

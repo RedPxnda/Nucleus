@@ -1,11 +1,11 @@
 package com.redpxnda.nucleus.math;
 
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ParticleShaper {
-    public static ParticleShaper sphere(ParticleOptions options, double radius, double inc) {
+    public static ParticleShaper sphere(ParticleEffect options, double radius, double inc) {
         return new ParticleShaper(
                 options,
                 (s, i) -> {
@@ -26,7 +26,7 @@ public class ParticleShaper {
                 }, 360, inc
         );
     }
-    public static ParticleShaper expandingSphere(ParticleOptions options, double radius, double inc, double speed) {
+    public static ParticleShaper expandingSphere(ParticleEffect options, double radius, double inc, double speed) {
         return new ParticleShaper(
                 options,
                 (s, i) -> {
@@ -39,7 +39,7 @@ public class ParticleShaper {
                 }, 360, inc
         );
     }
-    public static ParticleShaper circle(ParticleOptions options, double radius, double inc) {
+    public static ParticleShaper circle(ParticleEffect options, double radius, double inc) {
         return new ParticleShaper(
                 options,
                 (s, i) -> {
@@ -48,7 +48,7 @@ public class ParticleShaper {
                 }, 360, inc
         );
     }
-    public static ParticleShaper cylinder(ParticleOptions options, double radius, double inc, double startHeight, double maxHeight, double hInc) {
+    public static ParticleShaper cylinder(ParticleEffect options, double radius, double inc, double startHeight, double maxHeight, double hInc) {
         return new ParticleShaper(
                 options,
                 (s, i) -> {
@@ -61,7 +61,7 @@ public class ParticleShaper {
                 }, 360, inc
         );
     }
-    public static ParticleShaper expandingCircle(ParticleOptions options, double radius, double inc, double speed) {
+    public static ParticleShaper expandingCircle(ParticleEffect options, double radius, double inc, double speed) {
         return new ParticleShaper(
                 options,
                 (s, i) -> {
@@ -70,7 +70,7 @@ public class ParticleShaper {
                 }, 360, inc
         );
     }
-    public static ParticleShaper square(ParticleOptions options, double r, int max, int inc) {
+    public static ParticleShaper square(ParticleEffect options, double r, int max, int inc) {
         double[][] setup = new double[][]{
                 {0, 0, 0},
                 {r, 0, 0},
@@ -79,7 +79,7 @@ public class ParticleShaper {
         };
         return polygon(setup, options, r, max, inc);
     }
-    public static ParticleShaper expandingSquare(ParticleOptions options, double r, int max, int inc, double speed) {
+    public static ParticleShaper expandingSquare(ParticleEffect options, double r, int max, int inc, double speed) {
         double[][] setup = new double[][]{
                 {0, 0},
                 {r, 0},
@@ -88,31 +88,31 @@ public class ParticleShaper {
         };
         return expandingPolygon(setup, options, r, max, inc, speed);
     }
-    public static ParticleShaper bezier(double[][] controls, ParticleOptions options, double inc) {
+    public static ParticleShaper bezier(double[][] controls, ParticleEffect options, double inc) {
         return new ParticleShaper(options, (s, i) -> {
             double[] doubles = MathUtil.bezier(controls, i);
             s.spawn(doubles[0], doubles[1], doubles[2]);
         }, 1, inc);
     }
-    public static ParticleShaper polygon(double[][] shape, ParticleOptions options, double r, int max, int inc) {
+    public static ParticleShaper polygon(double[][] shape, ParticleEffect options, double r, int max, int inc) {
         return new ParticleShaper(options, (s, i) -> {
             double[] doubles = MathUtil.arrayLerp3(i.intValue(), max, shape);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2, doubles[2]-r/2);
         }, max, inc);
     }
-    public static ParticleShaper expandingPolygon(double[][] shape, ParticleOptions options, double r, int max, int inc, double speed) {
+    public static ParticleShaper expandingPolygon(double[][] shape, ParticleEffect options, double r, int max, int inc, double speed) {
         return new ParticleShaper(options, (s, i) -> {
             double[] doubles = MathUtil.arrayLerp3(i.intValue(), max, shape);
             s.spawn(doubles[0]-r/2, doubles[1]-r/2, doubles[2]-r/2, (doubles[0]-r/2)/r * speed, (doubles[1]-r/2)/r * speed, (doubles[2]-r/2)/r * speed);
         }, max, inc);
     }
-    public static ParticleShaper polygon(double[][] shape, ParticleOptions options, int max, int inc) {
+    public static ParticleShaper polygon(double[][] shape, ParticleEffect options, int max, int inc) {
         return new ParticleShaper(options, (s, i) -> {
             double[] doubles = MathUtil.arrayLerp3(i.intValue(), max, shape);
             s.spawn(doubles[0], doubles[1], doubles[2]);
         }, max, inc);
     }
-    public static ParticleShaper create(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
+    public static ParticleShaper create(ParticleEffect particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
         return new ParticleShaper(particle, func, max, min, inc);
     }
 
@@ -124,21 +124,21 @@ public class ParticleShaper {
     protected double z;
     protected Quaterniond transformation;
     protected Quaterniond inheritT = new Quaterniond();
-    protected Level level;
+    protected World level;
     protected ParticleSpawnMethod particleSpawner;
     protected final BiConsumer<ParticleShaper, Double> func;
-    protected final ParticleOptions particle;
+    protected final ParticleEffect particle;
     protected Cacher cacher;
     protected Function<Vector3d, Vector3d> motion = v -> new Vector3d(0, 0, 0);
 
-    public ParticleShaper(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
+    public ParticleShaper(ParticleEffect particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
         this.max = max;
         this.min = min;
         this.inc = inc;
         this.func = func;
         this.particle = particle;
     }
-    public ParticleShaper(ParticleOptions particle, BiConsumer<ParticleShaper, Double> func, double max, double inc) {
+    public ParticleShaper(ParticleEffect particle, BiConsumer<ParticleShaper, Double> func, double max, double inc) {
         this(particle, func, max, 0, inc);
     }
     public ParticleShaper(ParticleShaper o) {
@@ -157,7 +157,7 @@ public class ParticleShaper {
         return s;
     }
 
-    public ParticleOptions particle() {
+    public ParticleEffect particle() {
         return particle;
     }
 
@@ -218,27 +218,27 @@ public class ParticleShaper {
     }
 
     public ParticleShaper fromClient() {
-        this.particleSpawner = Level::addParticle;
+        this.particleSpawner = World::addParticle;
         return this;
     }
     public ParticleShaper fromServer() {
-        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> new ParticleCreationPacket(op, x, y, z, xs, ys, zs).send((ServerLevel) l);
+        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> new ParticleCreationPacket(op, x, y, z, xs, ys, zs).send((ServerWorld) l);
         return this;
     }
     public ParticleShaper fromServer(int count, double maxSpeed) {
-        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ((ServerLevel) l).sendParticles(op, x, y, z, count, xs, ys, zs, maxSpeed);
+        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ((ServerWorld) l).spawnParticles(op, x, y, z, count, xs, ys, zs, maxSpeed);
         return this;
     }
-    public ParticleShaper fromServer(ServerPlayer player) {
+    public ParticleShaper fromServer(ServerPlayerEntity player) {
         this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> new ParticleCreationPacket(op, x, y, z, xs, ys, zs).send(player);
         return this;
     }
-    public ParticleShaper fromServer(ServerPlayer player, int count, int maxSpeed, boolean overrideLimiter) {
-        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ((ServerLevel) l).sendParticles(player, op, overrideLimiter, x, y, z, count, xs, ys, zs, maxSpeed);
+    public ParticleShaper fromServer(ServerPlayerEntity player, int count, int maxSpeed, boolean overrideLimiter) {
+        this.particleSpawner = (l, op, x, y, z, xs, ys, zs) -> ((ServerWorld) l).spawnParticles(player, op, overrideLimiter, x, y, z, count, xs, ys, zs, maxSpeed);
         return this;
     }
 
-    public void runAt(Level level, double x, double y, double z) {
+    public void runAt(World level, double x, double y, double z) {
         this.level = level;
         this.x = x;
         this.y = y;
@@ -260,7 +260,7 @@ public class ParticleShaper {
 
     @FunctionalInterface
     public interface ParticleSpawnMethod {
-        void spawn(Level level, ParticleOptions options, double x, double y, double z, double xs, double ys, double zs);
+        void spawn(World level, ParticleEffect options, double x, double y, double z, double xs, double ys, double zs);
     }
 
     public interface Cacher {
@@ -277,13 +277,13 @@ public class ParticleShaper {
     }
 
     public static class Combo extends ParticleShaper {
-        public static Combo createCombo(ParticleOptions[] particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
+        public static Combo createCombo(ParticleEffect[] particle, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
             return new Combo(particle, func, max, min, inc);
         }
 
-        protected final ParticleOptions[] particles;
+        protected final ParticleEffect[] particles;
 
-        public Combo(ParticleOptions[] particles, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
+        public Combo(ParticleEffect[] particles, BiConsumer<ParticleShaper, Double> func, double max, double min, double inc) {
             super(ParticleTypes.ASH, func, max, min, inc);
             this.particles = particles;
         }
@@ -292,12 +292,12 @@ public class ParticleShaper {
             this(c.particles, c.func, c.max, c.min, c.inc);
             this.cacher = c.cacher;
         }
-        public Combo(ParticleOptions[] particles, ParticleShaper c) {
+        public Combo(ParticleEffect[] particles, ParticleShaper c) {
             this(particles, c.func, c.max, c.min, c.inc);
             this.cacher = c.cacher;
         }
 
-        public ParticleOptions[] getParticles() {
+        public ParticleEffect[] getParticles() {
             return particles;
         }
 
@@ -308,7 +308,7 @@ public class ParticleShaper {
                 vec = vec.rotate(transformation);
                 mot = mot.rotate(transformation);
             }
-            for (ParticleOptions p : particles) {
+            for (ParticleEffect p : particles) {
                 particleSpawner.spawn(level, p, vec.x+this.x, vec.y+this.y, vec.z+this.z, mot.x, mot.y, mot.z);
             }
         }

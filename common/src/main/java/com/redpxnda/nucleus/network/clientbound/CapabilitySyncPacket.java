@@ -6,12 +6,12 @@ import com.redpxnda.nucleus.network.ClientboundHandling;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.util.ByteBufUtil;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 
-public class CapabilitySyncPacket<T extends Tag, C extends SyncedEntityCapability<T>> implements SimplePacket {
+public class CapabilitySyncPacket<T extends NbtElement, C extends SyncedEntityCapability<T>> implements SimplePacket {
     public final int targetId;
     public final String capId;
     public final T capData;
@@ -22,21 +22,21 @@ public class CapabilitySyncPacket<T extends Tag, C extends SyncedEntityCapabilit
         capData = cap.toNbt();
     }
 
-    public CapabilitySyncPacket(FriendlyByteBuf buf) {
+    public CapabilitySyncPacket(PacketByteBuf buf) {
         targetId = buf.readInt();
-        capId = buf.readUtf();
+        capId = buf.readString();
         capData = (T) ByteBufUtil.readTag(buf);
     }
 
     @Override
-    public void toBuffer(FriendlyByteBuf buf) {
+    public void toBuffer(PacketByteBuf buf) {
         buf.writeInt(targetId);
-        buf.writeUtf(capId);
+        buf.writeString(capId);
         ByteBufUtil.writeTag(capData, buf);
     }
 
     @Override
     public void handle(NetworkManager.PacketContext context) {
-        ClientboundHandling.getAndSetClientEntityCap(targetId, new ResourceLocation(capId), capData);
+        ClientboundHandling.getAndSetClientEntityCap(targetId, new Identifier(capId), capData);
     }
 }

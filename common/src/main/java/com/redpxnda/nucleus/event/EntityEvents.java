@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.event;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface EntityEvents {
     PrioritizedEvent<TrackingChange> TRACKING_CHANGE = PrioritizedEvent.createLoop();
@@ -19,6 +19,6 @@ public interface EntityEvents {
          * @param entity the entity being tracked
          * @param player the player receiving the tracking updates
          */
-        void onTrackingUpdate(TrackingStage stage, Entity entity, ServerPlayer player);
+        void onTrackingUpdate(TrackingStage stage, Entity entity, ServerPlayerEntity player);
     }
 }

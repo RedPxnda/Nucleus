@@ -1,34 +1,34 @@
 package com.redpxnda.nucleus.registry.effect;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.util.math.MathHelper;
 
 public class TestEffect extends RenderingMobEffect {
     public TestEffect() {
-        super(MobEffectCategory.BENEFICIAL, 16284963);
+        super(StatusEffectCategory.BENEFICIAL, 16284963);
     }
 
     @Environment(EnvType.CLIENT)
     @Override
-    public boolean renderPre(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
+    public boolean renderPre(StatusEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, MatrixStack matrixStack, VertexConsumerProvider multiBufferSource, int packedLight) {
         float jumpAmount = 0.25f;
-        if (entity.level().getGameTime() % 20 == 0)
-            jumpAmount = Mth.lerp(partialTick, 0.25f, 1);
+        if (entity.getWorld().getTime() % 20 == 0)
+            jumpAmount = MathHelper.lerp(partialTick, 0.25f, 1);
         matrixStack.scale(jumpAmount, jumpAmount, jumpAmount);
         return false;
     }
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void renderPost(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
+    public void renderPost(StatusEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, MatrixStack matrixStack, VertexConsumerProvider multiBufferSource, int packedLight) {
         /*matrixStack.pushPose();
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(new ResourceLocation("nucleus", "item/blank"));
         matrixStack.translate(0, 1, 0);
@@ -43,7 +43,7 @@ public class TestEffect extends RenderingMobEffect {
 
     @Environment(EnvType.CLIENT)
     @Override
-    public boolean renderHud(MobEffectInstance instance, Minecraft minecraft, GuiGraphics graphics, float partialTick) {
+    public boolean renderHud(StatusEffectInstance instance, MinecraftClient minecraft, DrawContext graphics, float partialTick) {
         /*graphics.pose().pushPose();
         int i = graphics.guiWidth();
         int j = graphics.guiHeight();

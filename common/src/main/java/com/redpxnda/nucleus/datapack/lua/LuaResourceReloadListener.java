@@ -1,14 +1,12 @@
 package com.redpxnda.nucleus.datapack.lua;
 
-import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.SinglePreparationResourceReloader;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +15,7 @@ import java.util.Map;
 
 import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
-public abstract class LuaResourceReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, LuaValue>> {
+public abstract class LuaResourceReloadListener extends SinglePreparationResourceReloader<Map<Identifier, LuaValue>> {
     protected final Globals globals;
     protected final String directory;
 
@@ -27,11 +25,11 @@ public abstract class LuaResourceReloadListener extends SimplePreparableReloadLi
     }
 
     @Override
-    protected Map<ResourceLocation, LuaValue> prepare(ResourceManager rm, ProfilerFiller pf) {
-        Map<ResourceLocation, LuaValue> files = new HashMap<>();
+    protected Map<Identifier, LuaValue> prepare(ResourceManager rm, Profiler pf) {
+        Map<Identifier, LuaValue> files = new HashMap<>();
 
-        for (Map.Entry<ResourceLocation, Resource> entry : rm.listResources(directory, path -> path.toString().endsWith(".lua")).entrySet()) {
-            try (InputStream stream = entry.getValue().open()) {
+        for (Map.Entry<Identifier, Resource> entry : rm.findResources(directory, path -> path.toString().endsWith(".lua")).entrySet()) {
+            try (InputStream stream = entry.getValue().getInputStream()) {
                 files.put(entry.getKey(), globals.load(stream, "@" + entry.getKey().toString(), "bt", globals));
             } catch (IOException e) {
                 LOGGER.error("Failed to load lua resource at {}", entry.getKey());

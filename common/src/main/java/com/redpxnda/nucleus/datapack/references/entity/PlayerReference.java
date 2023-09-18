@@ -1,31 +1,31 @@
 package com.redpxnda.nucleus.datapack.references.entity;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
-import com.redpxnda.nucleus.datapack.references.item.InventoryReference;
-import com.redpxnda.nucleus.datapack.references.item.ItemCooldownsReference;
-import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
-import com.redpxnda.nucleus.datapack.references.storage.SlotAccessReference;
 import com.redpxnda.nucleus.datapack.references.Statics;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
 import com.redpxnda.nucleus.datapack.references.block.BlockStateReference;
+import com.redpxnda.nucleus.datapack.references.item.InventoryReference;
+import com.redpxnda.nucleus.datapack.references.item.ItemCooldownsReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.ComponentReference;
 import com.redpxnda.nucleus.datapack.references.storage.DamageSourceReference;
+import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
+import com.redpxnda.nucleus.datapack.references.storage.SlotAccessReference;
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
-public class PlayerReference extends LivingEntityReference<Player> {
+public class PlayerReference extends LivingEntityReference<PlayerEntity> {
     static { Reference.register(PlayerReference.class); }
 
-    public PlayerReference(Player instance) {
+    public PlayerReference(PlayerEntity instance) {
         super(instance);
     }
 
@@ -35,7 +35,7 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::getSlot
     public SlotAccessReference getSlot(int param0) {
-        return new SlotAccessReference(instance.getSlot(param0));
+        return new SlotAccessReference(instance.getStackReference(param0));
     }
 
     // Generated from Player::getDisplayName
@@ -45,37 +45,37 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::drop
     public EntityReference<ItemEntity> drop(ItemStackReference param0, boolean param1) {
-        return new EntityReference<>(instance.drop(param0.instance, param1));
+        return new EntityReference<>(instance.dropItem(param0.instance, param1));
     }
 
     // Generated from Player::drop
     public EntityReference<ItemEntity> drop(ItemStackReference param0, boolean param1, boolean param2) {
-        return new EntityReference<>(instance.drop(param0.instance, param1, param2));
+        return new EntityReference<>(instance.dropItem(param0.instance, param1, param2));
     }
 
     // Generated from Player::resetAttackStrengthTicker
     public void resetAttackStrengthTicker() {
-        instance.resetAttackStrengthTicker();
+        instance.resetLastAttackedTicks();
     }
 
     // Generated from Player::hasCorrectToolForDrops
     public boolean hasCorrectToolForDrops(BlockStateReference param0) {
-        return instance.hasCorrectToolForDrops(param0.instance);
+        return instance.canHarvest(param0.instance);
     }
 
     public void sendSystemMessage(ComponentReference<?> component, boolean bl) {
-        if (instance instanceof ServerPlayer player)
-            player.sendSystemMessage(component.instance, bl);
+        if (instance instanceof ServerPlayerEntity player)
+            player.sendMessageToClient(component.instance, bl);
     }
 
     public void sendSystemMessage(String str, boolean bl) {
-        if (instance instanceof ServerPlayer player)
-            player.sendSystemMessage(Component.literal(str), bl);
+        if (instance instanceof ServerPlayerEntity player)
+            player.sendMessageToClient(Text.literal(str), bl);
     }
 
     // Generated from Player::getDimensionChangingDelay
     public int getDimensionChangingDelay() {
-        return instance.getDimensionChangingDelay();
+        return instance.getDefaultPortalCooldown();
     }
 
     // Generated from Player::getShoulderEntityRight
@@ -90,7 +90,7 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::getAttackStrengthScale
     public float getAttackStrengthScale(float param0) {
-        return instance.getAttackStrengthScale(param0);
+        return instance.getAttackCooldownProgress(param0);
     }
 
     // Generated from Player::getAbsorptionAmount
@@ -100,18 +100,18 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::causeFoodExhaustion
     public void causeFoodExhaustion(float param0) {
-        instance.causeFoodExhaustion(param0);
+        instance.addExhaustion(param0);
     }
 
     // Generated from Player::displayClientMessage
     public void displayClientMessage(ComponentReference<?> param0, boolean param1) {
-        instance.displayClientMessage(param0.instance, param1);
+        instance.sendMessage(param0.instance, param1);
     }
 
     // Generated from Player::getLastDeathLocation
     // TODO (turn into gp)
     public Optional<BlockPosReference> getLastDeathLocation() {
-        return instance.getLastDeathLocation().map(gp -> new BlockPosReference(gp.pos()));
+        return instance.getLastDeathPos().map(gp -> new BlockPosReference(gp.getPos()));
     }
 
     // Generated from Player::setAbsorptionAmount
@@ -121,12 +121,12 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::getDestroySpeed
     public float getDestroySpeed(BlockStateReference param0) {
-        return instance.getDestroySpeed(param0.instance);
+        return instance.getBlockBreakingSpeed(param0.instance);
     }
 
     // Generated from Player::stopSleepInBed
     public void stopSleepInBed(boolean param0, boolean param1) {
-        instance.stopSleepInBed(param0, param1);
+        instance.wakeUp(param0, param1);
     }
 
     // Generated from Player::isSpectator
@@ -136,22 +136,22 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::closeContainer
     public void closeContainer() {
-        instance.closeContainer();
+        instance.closeHandledScreen();
     }
 
     // Generated from Player::awardStat
     public void awardStat(ResourceLocationReference param0, int param1) {
-        instance.awardStat(param0.instance, param1);
+        instance.increaseStat(param0.instance, param1);
     }
 
     // Generated from Player::awardStat
     public void awardStat(ResourceLocationReference param0) {
-        instance.awardStat(param0.instance);
+        instance.incrementStat(param0.instance);
     }
 
     // Generated from Player::getItemBySlot
     public ItemStackReference getItemBySlot(Statics.EquipmentSlots param0) {
-        return new ItemStackReference(instance.getItemBySlot(param0.instance));
+        return new ItemStackReference(instance.getEquippedStack(param0.instance));
     }
 
     // Generated from Player::isSwimming
@@ -161,17 +161,17 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::getPortalWaitTime
     public int getPortalWaitTime() {
-        return instance.getPortalWaitTime();
+        return instance.getMaxNetherPortalTime();
     }
 
     // Generated from Player::rideTick
     public void rideTick() {
-        instance.rideTick();
+        instance.tickRiding();
     }
 
     // Generated from Player::aiStep
     public void aiStep() {
-        instance.aiStep();
+        instance.tickMovement();
     }
 
     // Generated from Player::getScore
@@ -186,37 +186,37 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::die
     public void die(DamageSourceReference param0) {
-        instance.die(param0.instance);
+        instance.onDeath(param0.instance);
     }
 
     // Generated from Player::increaseScore
     public void increaseScore(int param0) {
-        instance.increaseScore(param0);
+        instance.addScore(param0);
     }
 
     // Generated from Player::mayBuild
     public boolean mayBuild() {
-        return instance.mayBuild();
+        return instance.canModifyBlocks();
     }
 
     // Generated from Player::giveExperienceLevels
     public void giveExperienceLevels(int param0) {
-        instance.giveExperienceLevels(param0);
+        instance.addExperienceLevels(param0);
     }
 
     // Generated from Player::tryToStartFallFlying
     public boolean tryToStartFallFlying() {
-        return instance.tryToStartFallFlying();
+        return instance.checkFallFlying();
     }
 
     // Generated from Player::giveExperiencePoints
     public void giveExperiencePoints(int param0) {
-        instance.giveExperiencePoints(param0);
+        instance.addExperience(param0);
     }
 
     // Generated from Player::getXpNeededForNextLevel
     public int getXpNeededForNextLevel() {
-        return instance.getXpNeededForNextLevel();
+        return instance.getNextLevelExperience();
     }
 
     // Generated from Player::setReducedDebugInfo
@@ -226,27 +226,27 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::getExperienceReward
     public int getExperienceReward() {
-        return instance.getExperienceReward();
+        return instance.getXpToDrop();
     }
 
     // Generated from Player::setEntityOnShoulder
     public boolean setEntityOnShoulder(CompoundTagReference param0) {
-        return instance.setEntityOnShoulder(param0.instance);
+        return instance.addShoulderEntity(param0.instance);
     }
 
     // Generated from Player::setRemainingFireTicks
     public void setRemainingFireTicks(int param0) {
-        instance.setRemainingFireTicks(param0);
+        instance.setFireTicks(param0);
     }
 
     // Generated from Player::getCurrentItemAttackStrengthDelay
     public float getCurrentItemAttackStrengthDelay() {
-        return instance.getCurrentItemAttackStrengthDelay();
+        return instance.getAttackCooldownProgressPerTick();
     }
 
     // Generated from Player::canUseGameMasterBlocks
     public boolean canUseGameMasterBlocks() {
-        return instance.canUseGameMasterBlocks();
+        return instance.isCreativeLevelTwoOp();
     }
 
     // Generated from Player::getSleepTimer
@@ -256,17 +256,17 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::jumpFromGround
     public void jumpFromGround() {
-        instance.jumpFromGround();
+        instance.jump();
     }
 
     // Generated from Player::awardRecipesByKey
     public void awardRecipes(ResourceLocationReference[] param0) {
-        instance.awardRecipesByKey(Arrays.stream(param0).map(ResourceLocationReference::instance).toArray(ResourceLocation[]::new));
+        instance.unlockRecipes(Arrays.stream(param0).map(ResourceLocationReference::instance).toArray(Identifier[]::new));
     }
 
     // Generated from Player::causeFallDamage
     public boolean causeFallDamage(float param0, float param1, DamageSourceReference param2) {
-        return instance.causeFallDamage(param0, param1, param2.instance);
+        return instance.handleFallDamage(param0, param1, param2.instance);
     }
 
     // Generated from Player::stopFallFlying
@@ -281,22 +281,22 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::isHurt
     public boolean isHurt() {
-        return instance.isHurt();
+        return instance.canFoodHeal();
     }
 
     // Generated from Player::mayUseItemAt
     public boolean mayUseItemAt(BlockPosReference param0, Statics.Directions param1, ItemStackReference param2) {
-        return instance.mayUseItemAt(param0.instance, param1.instance, param2.instance);
+        return instance.canPlaceOn(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from Player::canEat
     public boolean canEat(boolean param0) {
-        return instance.canEat(param0);
+        return instance.canConsume(param0);
     }
 
     // Generated from Player::getEnchantmentSeed
     public int getEnchantmentSeed() {
-        return instance.getEnchantmentSeed();
+        return instance.getEnchantmentTableSeed();
     }
 
     // Generated from Player::isCreative
@@ -306,7 +306,7 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::addItem
     public boolean addItem(ItemStackReference param0) {
-        return instance.addItem(param0.instance);
+        return instance.giveItemStack(param0.instance);
     }
 
     // Generated from Player::getLuck
@@ -316,7 +316,7 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::isScoping
     public boolean isScoping() {
-        return instance.isScoping();
+        return instance.isUsingSpyglass();
     }
 
     // Generated from Player::disableShield
@@ -326,12 +326,12 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::canHarmPlayer
     public boolean canHarmPlayer(PlayerReference param0) {
-        return instance.canHarmPlayer(param0.instance);
+        return instance.shouldDamagePlayer(param0.instance);
     }
 
     // Generated from Player::interactOn
     public void interactOn(EntityReference<?> param0, Statics.InteractionHands param1) {
-        instance.interactOn(param0.instance, param1.instance);
+        instance.interact(param0.instance, param1.instance);
     }
 
     // Generated from Player::attack
@@ -341,51 +341,51 @@ public class PlayerReference extends LivingEntityReference<Player> {
 
     // Generated from Player::removeVehicle
     public void removeVehicle() {
-        instance.removeVehicle();
+        instance.dismountVehicle();
     }
 
     // Generated from Player::getSpeed
     public float getSpeed() {
-        return instance.getSpeed();
+        return instance.getMovementSpeed();
     }
 
     // Generated from Player::sweepAttack
     public void sweepAttack() {
-        instance.sweepAttack();
+        instance.spawnSweepAttackParticles();
     }
 
     // Generated from Player::getCooldowns
     public ItemCooldownsReference getCooldowns() {
-        return new ItemCooldownsReference(instance.getCooldowns());
+        return new ItemCooldownsReference(instance.getItemCooldownManager());
     }
 
     // Generated from Player::magicCrit
     public void magicCrit(EntityReference<?> param0) {
-        instance.magicCrit(param0.instance);
+        instance.addEnchantedHitParticles(param0.instance);
     }
 
     // Generated from Player::isLocalPlayer
     public boolean isLocalPlayer() {
-        return instance.isLocalPlayer();
+        return instance.isMainPlayer();
     }
 
     // Generated from Player::crit
     public void crit(EntityReference<?> param0) {
-        instance.crit(param0.instance);
+        instance.addCritParticles(param0.instance);
     }
 
     // Generated from Player::hasContainerOpen
     public boolean hasContainerOpen() {
-        return instance.hasContainerOpen();
+        return instance.shouldCloseHandledScreenOnRespawn();
     }
 
     // Generated from Player::stopSleeping
     public void stopSleeping() {
-        instance.stopSleeping();
+        instance.wakeUp();
     }
 
     // Generated from Player::startSleepInBed
     public void startSleepInBed(BlockPosReference param0) {
-        instance.startSleepInBed(param0.instance);
+        instance.trySleep(param0.instance);
     }
 }

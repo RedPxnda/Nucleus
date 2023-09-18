@@ -3,14 +3,14 @@ package com.redpxnda.nucleus.datapack.references.effect;
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.registry.Registries;
 
 @SuppressWarnings("unused")
-public class MobEffectInstanceReference extends Reference<MobEffectInstance> {
+public class MobEffectInstanceReference extends Reference<StatusEffectInstance> {
     static { Reference.register(MobEffectInstanceReference.class); }
 
-    public MobEffectInstanceReference(MobEffectInstance instance) {
+    public MobEffectInstanceReference(StatusEffectInstance instance) {
         super(instance);
     }
 
@@ -31,12 +31,12 @@ public class MobEffectInstanceReference extends Reference<MobEffectInstance> {
 
     // Generated from MobEffectInstance::update
     public boolean update(MobEffectInstanceReference param0) {
-        return instance.update(param0.instance);
+        return instance.upgrade(param0.instance);
     }
 
     // Generated from MobEffectInstance::save
     public CompoundTagReference save(CompoundTagReference param0) {
-        return new CompoundTagReference(instance.save(param0.instance));
+        return new CompoundTagReference(instance.writeNbt(param0.instance));
     }
 
     // Generated from MobEffectInstance::getDuration
@@ -46,16 +46,16 @@ public class MobEffectInstanceReference extends Reference<MobEffectInstance> {
 
     // Generated from MobEffectInstance::showIcon
     public boolean showIcon() {
-        return instance.showIcon();
+        return instance.shouldShowIcon();
     }
 
     public ResourceLocationReference getEffect() {
-        return new ResourceLocationReference(BuiltInRegistries.MOB_EFFECT.getKey(instance.getEffect()));
+        return new ResourceLocationReference(Registries.STATUS_EFFECT.getId(instance.getEffectType()));
     }
 
     // Generated from MobEffectInstance::isVisible
     public boolean isVisible() {
-        return instance.isVisible();
+        return instance.shouldShowParticles();
     }
 
     // Generated from MobEffectInstance::getAmplifier
@@ -70,6 +70,6 @@ public class MobEffectInstanceReference extends Reference<MobEffectInstance> {
 
     // Generated from MobEffectInstance::getDescriptionId
     public String getDescriptionId() {
-        return instance.getDescriptionId();
+        return instance.getTranslationKey();
     }
 }

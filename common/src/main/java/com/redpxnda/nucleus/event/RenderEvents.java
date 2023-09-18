@@ -1,33 +1,33 @@
 package com.redpxnda.nucleus.event;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.redpxnda.nucleus.client.ArmRenderer;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Arm;
+import net.minecraft.util.Hand;
 
 @Environment(EnvType.CLIENT)
 public interface RenderEvents {
     PrioritizedEvent<EntityRender<LivingEntity, EntityModel<? extends LivingEntity>>> LIVING_ENTITY_RENDER = PrioritizedEvent.createEventResult();
     PrioritizedEvent<HudRenderPre> HUD_RENDER_PRE = PrioritizedEvent.createEventResult();
-    PrioritizedEvent<ChangeRenderedHands> CHANGE_RENDERED_HANDS = PrioritizedEvent.of(listeners -> (player, hands) -> {
+    /*PrioritizedEvent<ChangeRenderedHands> CHANGE_RENDERED_HANDS = PrioritizedEvent.of(listeners -> (player, hands) -> {
         for (ChangeRenderedHands listener : listeners.keySet()) {
             listener.evaluate(player, hands);
             if (hands.isForced()) break;
         }
-    });
+    });*/
     PrioritizedEvent<RenderArmWithItem> RENDER_ARM_WITH_ITEM = PrioritizedEvent.createEventResult();
     PrioritizedEvent<RenderItemHandLayer<LivingEntity, EntityModel<LivingEntity>>> ITEM_HAND_LAYER_RENDER = PrioritizedEvent.createEventResult();
 
@@ -38,7 +38,7 @@ public interface RenderEvents {
         PRE,
 
         /**
-         * PUSHED is called when the {@link PoseStack} is pushed. Use this to make modifications to the {@link PoseStack} provided.
+         * PUSHED is called when the {@link MatrixStack} is pushed. Use this to make modifications to the {@link MatrixStack} provided.
          */
         PUSHED,
 
@@ -63,7 +63,7 @@ public interface RenderEvents {
          * @param partialTick       how far the client is between 2 ticks- since you usually have more frames per second than there are ticks per second
          * @return an event result representing whether the rendering should proceed and finish rendering the entity
          */
-        EventResult render(EntityRenderStage stage, M model, T entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource bufferSource, int packedLight);
+        EventResult render(EntityRenderStage stage, M model, T entity, float entityYaw, float partialTick, MatrixStack matrixStack, VertexConsumerProvider bufferSource, int packedLight);
     }
 
     interface HudRenderPre {
@@ -71,7 +71,7 @@ public interface RenderEvents {
          * Fires before the player's hud is rendered
          * @return whether the hud should continue rendering
          */
-        EventResult render(Minecraft minecraft, GuiGraphics graphics, float partialTick);
+        EventResult render(MinecraftClient minecraft, DrawContext graphics, float partialTick);
     }
 
     /**
@@ -120,8 +120,8 @@ public interface RenderEvents {
          * @return an interrupting result if you want to cancel vanilla rendering (as well as
          * other listeners)
          */
-        EventResult render(ArmRenderStage stage, ArmRenderer armRenderer, AbstractClientPlayer player, PoseStack matrices,
-                           MultiBufferSource buffer, ItemStack stack, InteractionHand hand,
+        EventResult render(ArmRenderStage stage, ArmRenderer armRenderer, AbstractClientPlayerEntity player, MatrixStack matrices,
+                           VertexConsumerProvider buffer, ItemStack stack, Hand hand,
                            float partialTicks, float pitch, float swingProgress,
                            float equippedProgress, int combinedLight);
     }
@@ -131,8 +131,8 @@ public interface RenderEvents {
          * Fires when an entity's held item is rendered (in third person, not first person) (once for left, once for right)
          * @return event result representing whether vanilla rendering should continue or not
          */
-        EventResult render(M model, LivingEntity livingEntity, ItemStack stack, ItemDisplayContext displayContext,
-                           HumanoidArm arm, PoseStack matrices, MultiBufferSource buffer, int light);
+        EventResult render(M model, LivingEntity livingEntity, ItemStack stack, ModelTransformationMode displayContext,
+                           Arm arm, MatrixStack matrices, VertexConsumerProvider buffer, int light);
     }
 
     interface ChangeRenderedHands {
@@ -149,7 +149,7 @@ public interface RenderEvents {
          * @param player the player being checked
          * @param hands  the hands minecraft chose to render - use this object to make any modifications.
          */
-        void evaluate(LocalPlayer player, RenderedHands hands);
+        void evaluate(ClientPlayerEntity player, RenderedHands hands);
     }
     class RenderedHands {
         public static final RenderedHands BOTH = new RenderedHands(true, true);

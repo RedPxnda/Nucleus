@@ -1,11 +1,11 @@
 package com.redpxnda.nucleus.mixin;
 
 import com.redpxnda.nucleus.capability.entity.EntityCapability;
-import com.redpxnda.nucleus.capability.entity.EntityDataSaver;
 import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
+import com.redpxnda.nucleus.capability.entity.EntityDataSaver;
 import com.redpxnda.nucleus.resolving.wrappers.EntityWrapping;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,13 +25,13 @@ public class EntityMixin implements EntityWrapping, EntityDataSaver {
         return nucleus$caps;
     }
 
-    @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V"))
-    private void addCustomSaveData(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
+    @Inject(method = "writeNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
+    private void addCustomSaveData(NbtCompound tag, CallbackInfoReturnable<NbtCompound> cir) {
         nucleus$caps.forEach((id, cap) -> tag.put(id, cap.toNbt()));
     }
 
-    @Inject(method = "load", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V"))
-    private void nucleus$loadCapabilities(CompoundTag tag, CallbackInfo ci) {
+    @Inject(method = "readNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
+    private void nucleus$loadCapabilities(NbtCompound tag, CallbackInfo ci) {
         if ((Object) this instanceof Entity entity) {
             EntityDataRegistry.CAPABILITIES.forEach((cap, holder) -> {
                 if (holder.predicate().test(entity)) {

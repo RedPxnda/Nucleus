@@ -2,8 +2,8 @@ package com.redpxnda.nucleus.util;
 
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.ColorCodec;
-import net.minecraft.util.FastColor;
-import net.minecraft.util.Mth;
+import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
 
@@ -57,10 +57,10 @@ public class Color extends Vector4i {
     }
 
     public Color(int argb) {
-        x = FastColor.ARGB32.red(argb);
-        z = FastColor.ARGB32.blue(argb);
-        y = FastColor.ARGB32.green(argb);
-        w = FastColor.ARGB32.alpha(argb);
+        x = ColorHelper.Argb.getRed(argb);
+        z = ColorHelper.Argb.getBlue(argb);
+        y = ColorHelper.Argb.getGreen(argb);
+        w = ColorHelper.Argb.getAlpha(argb);
     }
 
     public Color(String hex) {
@@ -145,10 +145,10 @@ public class Color extends Vector4i {
     }
 
     public int argb() {
-        return FastColor.ARGB32.color(w, x, y, z);
+        return ColorHelper.Argb.getArgb(w, x, y, z);
     }
     public int abgr() {
-        return FastColor.ARGB32.color(w, z, y, x);
+        return ColorHelper.Argb.getArgb(w, z, y, x);
     }
 
     public String hex() {
@@ -165,16 +165,16 @@ public class Color extends Vector4i {
     }
 
     public void lerp(float delta, Color other) {
-        x = Mth.lerpInt(delta, x, other.x);
-        y = Mth.lerpInt(delta, y, other.y);
-        z = Mth.lerpInt(delta, z, other.z);
-        w = Mth.lerpInt(delta, w, other.w);
+        x = MathHelper.lerp(delta, x, other.x);
+        y = MathHelper.lerp(delta, y, other.y);
+        z = MathHelper.lerp(delta, z, other.z);
+        w = MathHelper.lerp(delta, w, other.w);
     }
     public void lerp(float delta, Color other, Color dest) {
-        dest.x = Mth.lerpInt(delta, x, other.x);
-        dest.y = Mth.lerpInt(delta, y, other.y);
-        dest.z = Mth.lerpInt(delta, z, other.z);
-        dest.w = Mth.lerpInt(delta, w, other.w);
+        dest.x = MathHelper.lerp(delta, x, other.x);
+        dest.y = MathHelper.lerp(delta, y, other.y);
+        dest.z = MathHelper.lerp(delta, z, other.z);
+        dest.w = MathHelper.lerp(delta, w, other.w);
     }
 
     @Override

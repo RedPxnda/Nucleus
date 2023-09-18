@@ -4,16 +4,16 @@ import com.redpxnda.nucleus.network.ClientboundHandling;
 import com.redpxnda.nucleus.pose.ClientPoseCapability;
 import com.redpxnda.nucleus.pose.ServerPoseCapability;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 
-public class PoseCapabilitySyncPacket extends CapabilitySyncPacket<CompoundTag, ServerPoseCapability> {
+public class PoseCapabilitySyncPacket extends CapabilitySyncPacket<NbtCompound, ServerPoseCapability> {
     public PoseCapabilitySyncPacket(Entity target, ServerPoseCapability cap) {
         super(target, cap);
     }
 
-    public PoseCapabilitySyncPacket(FriendlyByteBuf buf) {
+    public PoseCapabilitySyncPacket(PacketByteBuf buf) {
         super(buf);
     }
 

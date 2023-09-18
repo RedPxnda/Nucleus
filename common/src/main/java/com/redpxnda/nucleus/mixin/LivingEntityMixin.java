@@ -4,7 +4,7 @@ import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.resolving.wrappers.LivingEntityWrapping;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin implements LivingEntityWrapping {
     @Inject(
-            method = "jumpFromGround",
+            method = "jump",
             at = @At("HEAD"),
             cancellable = true)
     private void nucleus$entityJumpEvent(CallbackInfo ci) {
@@ -24,7 +24,7 @@ public class LivingEntityMixin implements LivingEntityWrapping {
     }
 
     @Inject(
-            method = "getJumpPower",
+            method = "getJumpVelocity",
             at = @At("HEAD"),
             cancellable = true)
     private void nucleus$entityJumpPowerEvent(CallbackInfoReturnable<Float> cir) {

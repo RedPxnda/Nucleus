@@ -1,27 +1,20 @@
 package com.redpxnda.nucleus.registry.particles;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.redpxnda.nucleus.registry.particles.morphing.ParticleShape;
 import com.redpxnda.nucleus.util.LinkedArrayList;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.util.Mth;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ControllerParticle extends DynamicPoseStackParticle {
     public int spawnDelay = 0;
@@ -32,7 +25,7 @@ public class ControllerParticle extends DynamicPoseStackParticle {
     public int loopTime = -1;
     public ParticleShape shape;
 
-    protected ControllerParticle(PoseStack poseStack, RenderType renderType, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {
+    protected ControllerParticle(MatrixStack poseStack, RenderLayer renderType, ClientWorld clientLevel, double x, double y, double z, double dx, double dy, double dz) {
         super(poseStack, renderType, clientLevel, x, y, z, dx, dy, dz);
     }
 
@@ -58,30 +51,30 @@ public class ControllerParticle extends DynamicPoseStackParticle {
     public void render(VertexConsumer vc, float x, float y, float z, Camera camera, float pt) {
         if (poseStack == null) return;
         renderBeforePush(vc, poseStack, x, y, z, camera, pt);
-        poseStack.pushPose();
+        poseStack.push();
         render(vc, poseStack, x, y, z, camera, pt);
-        poseStack.popPose();
+        poseStack.pop();
         renderAfterPop(vc, poseStack, x, y, z, camera, pt);
     }
 
     @Override
-    public void render(VertexConsumer vertexConsumer, PoseStack poseStack, float x, float y, float z, Camera camera, float pt) {
+    public void render(VertexConsumer vertexConsumer, MatrixStack poseStack, float x, float y, float z, Camera camera, float pt) {
         if (spawnDelay > 0) return;
         poseStack.translate(x, y, z);
-        poseStack.mulPoseMatrix(oldMatrix.lerp(newMatrix, pt));
+        poseStack.multiplyPositionMatrix(oldMatrix.lerp(newMatrix, pt));
         children.forEach(c -> {
             if (c.isAlive()) {
-                float cx = (float) (Mth.lerp(pt, c.getXO(), c.getX()));
-                float cy = (float) (Mth.lerp(pt, c.getYO(), c.getY()));
-                float cz = (float) (Mth.lerp(pt, c.getZO(), c.getZ()));
-                poseStack.pushPose();
+                float cx = (float) (MathHelper.lerp(pt, c.getXO(), c.getX()));
+                float cy = (float) (MathHelper.lerp(pt, c.getYO(), c.getY()));
+                float cz = (float) (MathHelper.lerp(pt, c.getZO(), c.getZ()));
+                poseStack.push();
                 if (c.disconnected) {
                     poseStack.translate(-x, -y, -z);
                     poseStack.translate(c.discX, c.discY, c.discZ);
                 }
                 c.renderTrail(poseStack, pt);
                 c.render(vertexConsumer, cx, cy, cz, camera, pt);
-                poseStack.popPose();
+                poseStack.pop();
             }
         });
     }
@@ -134,17 +127,17 @@ public class ControllerParticle extends DynamicPoseStackParticle {
     }
 
     @Override
-    public void remove() {
-        super.remove();
-        children.forEach(child -> child.remove());
+    public void markDead() {
+        super.markDead();
+        children.forEach(child -> child.markDead());
     }
 
-    public static class Provider implements ParticleProvider<SimpleParticleType> {
+    public static class Provider implements ParticleFactory<DefaultParticleType> {
 
         @Nullable
         @Override
-        public Particle createParticle(SimpleParticleType particleOptions, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-            return new ControllerParticle(new PoseStack(), RenderType.translucent(), clientLevel, d, e, f, g, h, i);
+        public Particle createParticle(DefaultParticleType particleOptions, ClientWorld clientLevel, double d, double e, double f, double g, double h, double i) {
+            return new ControllerParticle(new MatrixStack(), RenderLayer.getTranslucent(), clientLevel, d, e, f, g, h, i);
         }
     }
 }

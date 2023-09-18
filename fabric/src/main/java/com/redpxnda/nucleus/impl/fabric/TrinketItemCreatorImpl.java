@@ -2,7 +2,6 @@ package com.redpxnda.nucleus.impl.fabric;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.redpxnda.nucleus.compat.trinkets.CurioTrinket;
 import com.redpxnda.nucleus.compat.trinkets.CurioTrinketRenderer;
 import dev.emi.trinkets.api.SlotReference;
@@ -13,14 +12,14 @@ import dev.emi.trinkets.api.client.TrinketRenderer;
 import dev.emi.trinkets.api.client.TrinketRendererRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import java.util.UUID;
 
 public class TrinketItemCreatorImpl {
@@ -52,8 +51,8 @@ public class TrinketItemCreatorImpl {
             }
 
             @Override
-            public Multimap<Attribute, AttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, UUID uuid) {
-                Multimap<Attribute, AttributeModifier> map = trinket.useNbtAttributeBehavior(stack, entity, slot.index(), uuid) ?
+            public Multimap<EntityAttribute, EntityAttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, UUID uuid) {
+                Multimap<EntityAttribute, EntityAttributeModifier> map = trinket.useNbtAttributeBehavior(stack, entity, slot.index(), uuid) ?
                         Trinket.super.getModifiers(stack, slot, entity, uuid) :
                         HashMultimap.create();
                 map.putAll(trinket.getAttributeModifiers(stack, entity, slot.index(), uuid));
@@ -83,7 +82,7 @@ public class TrinketItemCreatorImpl {
     private record CustomTrinketRenderer(CurioTrinketRenderer delegate) implements TrinketRenderer {
         @Override
         public void render(ItemStack itemStack, SlotReference slotReference, EntityModel<? extends LivingEntity> entityModel,
-                           PoseStack poseStack, MultiBufferSource multiBufferSource, int light,
+                           MatrixStack poseStack, VertexConsumerProvider multiBufferSource, int light,
                            LivingEntity livingEntity, float limbAngle, float limbDistance,
                            float tickDelta, float animationProgress, float headYaw,
                            float headPitch) {

@@ -1,10 +1,10 @@
 package com.redpxnda.nucleus.resolving.wrappers;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -17,7 +17,7 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = "can_breathe_underwater")
     default boolean nucleusWrapper$canBreatheUnderwater() {
-        return getAsLivingEntity(this).canBreatheUnderwater();
+        return getAsLivingEntity(this).canBreatheInWater();
     }
 
     /**
@@ -30,7 +30,7 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = "scale")
     default float nucleusWrapper$getScale() {
-        return getAsLivingEntity(this).getScale();
+        return getAsLivingEntity(this).getScaleFactor();
     }
 
     /**
@@ -38,18 +38,18 @@ public interface LivingEntityWrapping {
      */
     @WrapperMethod(alias = "should_drop_experience")
     default boolean nucleusWrapper$shouldDropExperience() {
-        return getAsLivingEntity(this).shouldDropExperience();
+        return getAsLivingEntity(this).shouldDropXp();
     }
 
     @WrapperMethod(alias = "experience_reward")
     default int nucleusWrapper$getExperienceReward() {
-        return getAsLivingEntity(this).getExperienceReward();
+        return getAsLivingEntity(this).getXpToDrop();
     }
 
     @Nullable
     @WrapperMethod(alias = "last_hurt_by_mob")
     default LivingEntity nucleusWrapper$getLastHurtByMob() {
-        return getAsLivingEntity(this).getLastHurtByMob();
+        return getAsLivingEntity(this).getAttacker();
     }
 
     @WrapperMethod(alias = "last_attacker")
@@ -59,38 +59,38 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = "last_hurt_by_mob_timestamp")
     default int nucleusWrapper$getLastHurtByMobTimestamp() {
-        return getAsLivingEntity(this).getLastHurtByMobTimestamp();
+        return getAsLivingEntity(this).getLastAttackedTime();
     }
 
     @Nullable
     @WrapperMethod(alias = "last_hurt_mob")
     default LivingEntity nucleusWrapper$getLastHurtMob() {
-        return getAsLivingEntity(this).getLastHurtMob();
+        return getAsLivingEntity(this).getAttacking();
     }
 
     @WrapperMethod(alias = "last_hurt_mob_timestamp")
     default int nucleusWrapper$getLastHurtMobTimestamp() {
-        return getAsLivingEntity(this).getLastHurtMobTimestamp();
+        return getAsLivingEntity(this).getLastAttackTime();
     }
 
     @WrapperMethod(alias = "no_action_time")
     default int nucleusWrapper$getNoActionTime() {
-        return getAsLivingEntity(this).getNoActionTime();
+        return getAsLivingEntity(this).getDespawnCounter();
     }
 
     @WrapperMethod(alias = "can_be_seen_as_enemy")
     default boolean nucleusWrapper$canBeSeenAsEnemy() {
-        return getAsLivingEntity(this).canBeSeenAsEnemy();
+        return getAsLivingEntity(this).canTakeDamage();
     }
 
     @WrapperMethod(alias = "can_be_seen_by_anyone")
     default boolean nucleusWrapper$canBeSeenByAnyone() {
-        return getAsLivingEntity(this).canBeSeenByAnyone();
+        return getAsLivingEntity(this).isPartOfGame();
     }
 
     @WrapperMethod(alias = "active_effects") // todo effects
-    default Collection<MobEffectInstance> nucleusWrapper$getActiveEffects() {
-        return getAsLivingEntity(this).getActiveEffects();
+    default Collection<StatusEffectInstance> nucleusWrapper$getActiveEffects() {
+        return getAsLivingEntity(this).getStatusEffects();
     }
 
     /**
@@ -98,7 +98,7 @@ public interface LivingEntityWrapping {
      */
     @WrapperMethod(alias = { "is_inverted_heal_and_harm", "is_effectively_undead" })
     default boolean nucleusWrapper$isInvertedHealAndHarm() {
-        return getAsLivingEntity(this).isInvertedHealAndHarm();
+        return getAsLivingEntity(this).isUndead();
     }
 
     @WrapperMethod(alias = "health")
@@ -108,12 +108,12 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = "is_dead_or_dying")
     default boolean nucleusWrapper$isDeadOrDying() {
-        return getAsLivingEntity(this).isDeadOrDying();
+        return getAsLivingEntity(this).isDead();
     }
 
     @WrapperMethod(alias = { "hurt_dir", "damage_tilt_yaw" }) // yarn is cool and calls it something sensible: damage_tilt_yaw
     default float nucleusWrapper$getHurtDir() {
-        return getAsLivingEntity(this).getHurtDir();
+        return getAsLivingEntity(this).getDamageTiltYaw();
     }
 
     @WrapperMethod(alias = "is_alive")
@@ -126,22 +126,22 @@ public interface LivingEntityWrapping {
      */
     @WrapperMethod(alias = "armor")
     default int nucleusWrapper$getArmorValue() {
-        return getAsLivingEntity(this).getArmorValue();
+        return getAsLivingEntity(this).getArmor();
     }
 
     @WrapperMethod(alias = "mainhand_item")
     default ItemStack nucleusWrapper$getMainHandItem() {
-        return getAsLivingEntity(this).getMainHandItem();
+        return getAsLivingEntity(this).getMainHandStack();
     }
 
     @WrapperMethod(alias = "offhand_item")
     default ItemStack nucleusWrapper$getOffhandItem() {
-        return getAsLivingEntity(this).getOffhandItem();
+        return getAsLivingEntity(this).getOffHandStack();
     }
 
     @WrapperMethod(alias = "armor_cover_percentage")
     default float nucleusWrapper$getArmorCoverPercentage() {
-        return getAsLivingEntity(this).getArmorCoverPercentage();
+        return getAsLivingEntity(this).getArmorVisibility();
     }
 
     /**
@@ -149,17 +149,17 @@ public interface LivingEntityWrapping {
      */
     @WrapperMethod(alias = "speed")
     default float nucleusWrapper$getSpeed() {
-        return getAsLivingEntity(this).getSpeed();
+        return getAsLivingEntity(this).getMovementSpeed();
     }
 
     @WrapperMethod(alias = "is_sensitive_to_water")
     default boolean nucleusWrapper$isSensitiveToWater() {
-        return getAsLivingEntity(this).isSensitiveToWater();
+        return getAsLivingEntity(this).hurtByWater();
     }
 
     @WrapperMethod(alias = "is_auto_spin_attack")
     default boolean nucleusWrapper$isAutoSpinAttack() {
-        return getAsLivingEntity(this).isAutoSpinAttack();
+        return getAsLivingEntity(this).isUsingRiptide();
     }
 
     @WrapperMethod(alias = "is_pushable")
@@ -182,17 +182,17 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = { "use_item", "active_item" })
     default ItemStack nucleusWrapper$getUseItem() {
-        return getAsLivingEntity(this).getUseItem();
+        return getAsLivingEntity(this).getActiveItem();
     }
 
     @WrapperMethod(alias = "use_item_remaining_ticks")
     default int nucleusWrapper$getUseItemRemainingTicks() {
-        return getAsLivingEntity(this).getUseItemRemainingTicks();
+        return getAsLivingEntity(this).getItemUseTimeLeft();
     }
 
     @WrapperMethod(alias = "ticks_using_item")
     default int nucleusWrapper$getTicksUsingItem() {
-        return getAsLivingEntity(this).getTicksUsingItem();
+        return getAsLivingEntity(this).getItemUseTime();
     }
 
     @WrapperMethod(alias = "is_blocking")
@@ -207,7 +207,7 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = "fall_flying_ticks")
     default int nucleusWrapper$getFallFlyingTicks() {
-        return getAsLivingEntity(this).getFallFlyingTicks();
+        return getAsLivingEntity(this).getRoll();
     }
 
     /**
@@ -215,17 +215,17 @@ public interface LivingEntityWrapping {
      */
     @WrapperMethod(alias = "is_affected_by_potions")
     default boolean nucleusWrapper$isAffectedByPotions() {
-        return getAsLivingEntity(this).isAffectedByPotions();
+        return getAsLivingEntity(this).isAffectedBySplashPotions();
     }
 
     @WrapperMethod(alias = "can_change_dimensions")
     default boolean nucleusWrapper$canChangeDimensions() {
-        return getAsLivingEntity(this).canChangeDimensions();
+        return getAsLivingEntity(this).canUsePortals();
     }
 
     @WrapperMethod(alias = "sleeping_pos")
     default BlockPos nucleusWrapper$getSleepingPos() {
-        return getAsLivingEntity(this).getSleepingPos().orElse(null);
+        return getAsLivingEntity(this).getSleepingPosition().orElse(null);
     }
 
     /**
@@ -242,12 +242,12 @@ public interface LivingEntityWrapping {
     @Nullable
     @WrapperMethod(alias = "bed_orientation")
     default Direction nucleusWrapper$getBedOrientation() {
-        return getAsLivingEntity(this).getBedOrientation();
+        return getAsLivingEntity(this).getSleepingDirection();
     }
 
     @WrapperMethod(alias = "is_in_wall")
     default boolean nucleusWrapper$isInWall() {
-        return getAsLivingEntity(this).isInWall();
+        return getAsLivingEntity(this).isInsideWall();
     }
 
     @WrapperMethod(alias = "can_freeze")
@@ -257,16 +257,16 @@ public interface LivingEntityWrapping {
 
     @WrapperMethod(alias = { "is_currently_glowing", "is_glowing" })
     default boolean nucleusWrapper$isCurrentlyGlowing() {
-        return getAsLivingEntity(this).isCurrentlyGlowing();
+        return getAsLivingEntity(this).isGlowing();
     }
 
     @WrapperMethod(alias = "can_disable_shield")
     default boolean nucleusWrapper$canDisableShield() {
-        return getAsLivingEntity(this).canDisableShield();
+        return getAsLivingEntity(this).disablesShield();
     }
 
     @WrapperMethod(alias = "max_up_step")
     default float nucleusWrapper$maxUpStep() {
-        return getAsLivingEntity(this).maxUpStep();
+        return getAsLivingEntity(this).getStepHeight();
     }
 }

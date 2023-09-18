@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.datapack.references.tag;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtList;
 
 @SuppressWarnings("unused")
-public class ListTagReference extends TagReference<ListTag> {
+public class ListTagReference extends TagReference<NbtList> {
     static { Reference.register(ListTagReference.class); }
 
-    public ListTagReference(ListTag instance) {
+    public ListTagReference(NbtList instance) {
         super(instance);
     }
 
@@ -78,7 +78,7 @@ public class ListTagReference extends TagReference<ListTag> {
 
     // Generated from ListTag::getId
     public byte getId() {
-        return instance.getId();
+        return instance.getType();
     }
 
     // Generated from ListTag::copy
@@ -88,7 +88,7 @@ public class ListTagReference extends TagReference<ListTag> {
 
     // Generated from ListTag::getElementType
     public byte getElementType() {
-        return instance.getElementType();
+        return instance.getHeldType();
     }
 
     // Generated from ListTag::getString
@@ -108,12 +108,12 @@ public class ListTagReference extends TagReference<ListTag> {
 
     // Generated from ListTag::setTag
     public boolean setTag(int param0, TagReference<?> param1) {
-        return instance.setTag(param0, param1.instance);
+        return instance.setElement(param0, param1.instance);
     }
 
     // Generated from ListTag::addTag
     public boolean addTag(int param0, TagReference<?> param1) {
-        return instance.addTag(param0, param1.instance);
+        return instance.addElement(param0, param1.instance);
     }
 
     // Generated from ListTag::getIntArray

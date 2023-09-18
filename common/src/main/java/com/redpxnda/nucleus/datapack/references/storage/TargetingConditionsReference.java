@@ -2,13 +2,13 @@ package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.entity.LivingEntityReference;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.entity.ai.TargetPredicate;
 
 @SuppressWarnings("unused")
-public class TargetingConditionsReference extends Reference<TargetingConditions> {
+public class TargetingConditionsReference extends Reference<TargetPredicate> {
     static { Reference.register(TargetingConditionsReference.class); }
 
-    public TargetingConditionsReference(TargetingConditions instance) {
+    public TargetingConditionsReference(TargetPredicate instance) {
         super(instance);
     }
 
@@ -25,19 +25,19 @@ public class TargetingConditionsReference extends Reference<TargetingConditions>
 
     // Generated from TargetingConditions::range
     public TargetingConditionsReference range(double param0) {
-        instance.range(param0);
+        instance.setBaseMaxDistance(param0);
         return this;
     }
 
     // Generated from TargetingConditions::ignoreInvisibilityTesting
     public TargetingConditionsReference ignoreInvisibilityTesting() {
-        instance.ignoreInvisibilityTesting();
+        instance.ignoreDistanceScalingFactor();
         return this;
     }
 
     // Generated from TargetingConditions::ignoreLineOfSight
     public TargetingConditionsReference ignoreLineOfSight() {
-        instance.ignoreLineOfSight();
+        instance.ignoreVisibility();
         return this;
     }
 }

@@ -3,11 +3,10 @@ package com.redpxnda.nucleus.util;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.internal.ObjectConstructor;
 import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.registry.Registries;
 import org.apache.commons.lang3.ArrayUtils;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
@@ -47,8 +46,8 @@ public class MiscUtil {
         return r -> original.test(mapper.apply(r));
     }
 
-    public static MobEffect getMobEffect(ResourceLocationReference ref) {
-        return BuiltInRegistries.MOB_EFFECT.getOptional(ref.instance).orElse(MobEffects.LUCK);
+    public static StatusEffect getMobEffect(ResourceLocationReference ref) {
+        return Registries.STATUS_EFFECT.getOrEmpty(ref.instance).orElse(StatusEffects.LUCK);
     }
 
     public static <T> T initialize(T obj, Consumer<T> setup) {

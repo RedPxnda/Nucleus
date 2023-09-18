@@ -2,12 +2,12 @@ package com.redpxnda.nucleus.util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.JsonHelper;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class JsonUtil extends GsonHelper {
+public class JsonUtil extends JsonHelper {
     public static void runIfPresent(JsonObject object, String key, Consumer<JsonElement> ifPresent) {
         JsonElement element = object.get(key);
         if (element != null)

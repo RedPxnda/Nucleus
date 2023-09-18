@@ -1,17 +1,16 @@
 package com.redpxnda.nucleus.datapack.references.tag;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
-import net.minecraft.nbt.CompoundTag;
-
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.nbt.NbtCompound;
 
 @SuppressWarnings("unused")
-public class CompoundTagReference extends TagReference<CompoundTag> {
+public class CompoundTagReference extends TagReference<NbtCompound> {
     static { Reference.register(CompoundTagReference.class); }
 
-    public CompoundTagReference(CompoundTag instance) {
+    public CompoundTagReference(NbtCompound instance) {
         super(instance);
     }
 
@@ -117,7 +116,7 @@ public class CompoundTagReference extends TagReference<CompoundTag> {
 
     // Generated from CompoundTag::size
     public int size() {
-        return instance.size();
+        return instance.getSize();
     }
 
     // Generated from CompoundTag::contains
@@ -132,13 +131,13 @@ public class CompoundTagReference extends TagReference<CompoundTag> {
 
     // Generated from CompoundTag::merge
     public CompoundTagReference merge(CompoundTagReference param0) {
-        instance.merge(param0.instance);
+        instance.copyFrom(param0.instance);
         return this;
     }
 
     // Generated from CompoundTag::getId
     public byte getId() {
-        return instance.getId();
+        return instance.getType();
     }
 
     // Generated from CompoundTag::copy
@@ -163,7 +162,7 @@ public class CompoundTagReference extends TagReference<CompoundTag> {
 
     // Generated from CompoundTag::putUUID
     public void putUUID(String param0, UUID param1) {
-        instance.putUUID(param0, param1);
+        instance.putUuid(param0, param1);
     }
 
     // Generated from CompoundTag::putLongArray
@@ -178,17 +177,17 @@ public class CompoundTagReference extends TagReference<CompoundTag> {
 
     // Generated from CompoundTag::getAllKeys
     public Set<String> getAllKeys() {
-        return instance.getAllKeys();
+        return instance.getKeys();
     }
 
     // Generated from CompoundTag::hasUUID
     public boolean hasUUID(String param0) {
-        return instance.hasUUID(param0);
+        return instance.containsUuid(param0);
     }
 
     // Generated from CompoundTag::getUUID
     public UUID getUUID(String param0) {
-        return instance.getUUID(param0);
+        return instance.getUuid(param0);
     }
 
     // Generated from CompoundTag::putString
@@ -208,7 +207,7 @@ public class CompoundTagReference extends TagReference<CompoundTag> {
 
     // Generated from CompoundTag::getTagType
     public byte getTagType(String param0) {
-        return instance.getTagType(param0);
+        return instance.getType(param0);
     }
 
     // Generated from CompoundTag::getIntArray

@@ -1,18 +1,18 @@
 package com.redpxnda.nucleus.resolving.wrappers;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public interface LevelWrapping {
-    static Level getAsLevel(LevelWrapping wrapping) {
-        return (Level) wrapping;
+public interface WorldWrapping {
+    static World getAsLevel(WorldWrapping wrapping) {
+        return (World) wrapping;
     }
     
     @WrapperMethod(alias = "is_client_side")
     default boolean nucleusWrapper$isClientSide() {
-        return getAsLevel(this).isClientSide();
+        return getAsLevel(this).isClient();
     }
 
     @Nullable
@@ -36,12 +36,12 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = "shared_spawn_pos")
     default BlockPos nucleusWrapper$getSharedSpawnPos() {
-        return getAsLevel(this).getSharedSpawnPos();
+        return getAsLevel(this).getSpawnPos();
     }
 
     @WrapperMethod(alias = "shared_spawn_angle")
     default float nucleusWrapper$getSharedSpawnAngle() {
-        return getAsLevel(this).getSharedSpawnAngle();
+        return getAsLevel(this).getSpawnAngle();
     }
 
     @WrapperMethod(alias = "sea_level")
@@ -51,12 +51,12 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = "game_time")
     default long nucleusWrapper$getGameTime() {
-        return getAsLevel(this).getGameTime();
+        return getAsLevel(this).getTime();
     }
 
     @WrapperMethod(alias = "day_time")
     default long nucleusWrapper$getDayTime() {
-        return getAsLevel(this).getDayTime();
+        return getAsLevel(this).getTimeOfDay();
     }
 
     /**
@@ -77,7 +77,7 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = "sky_darken")
     default int nucleusWrapper$getSkyDarken() {
-        return getAsLevel(this).getSkyDarken();
+        return getAsLevel(this).getAmbientDarkness();
     }
 
     @WrapperMethod(alias = "difficulty")
@@ -87,7 +87,7 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = { "difficulty_string", "difficulty_str" })
     default String nucleusWrapper$getDifficultyString() {
-        return getAsLevel(this).getDifficulty().getKey();
+        return getAsLevel(this).getDifficulty().getName();
     }
 
     @WrapperMethod(alias = "max_light_level")
@@ -97,7 +97,7 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = "moon_brightness")
     default float nucleusWrapper$getMoonBrightness() {
-        return getAsLevel(this).getMoonBrightness();
+        return getAsLevel(this).getMoonSize();
     }
 
     @WrapperMethod(alias = "moon_phase")
@@ -107,7 +107,7 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = "min_build_height")
     default int nucleusWrapper$getMinBuildHeight() {
-        return getAsLevel(this).getMinBuildHeight();
+        return getAsLevel(this).getBottomY();
     }
 
     @WrapperMethod(alias = "height")
@@ -117,6 +117,6 @@ public interface LevelWrapping {
 
     @WrapperMethod(alias = "max_build_height")
     default int nucleusWrapper$getMaxBuildHeight() {
-        return getAsLevel(this).getMaxBuildHeight();
+        return getAsLevel(this).getTopY();
     }
 }

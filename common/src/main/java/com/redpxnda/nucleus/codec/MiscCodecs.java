@@ -6,7 +6,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -73,7 +73,7 @@ public class MiscCodecs {
     }
 
     public static <T extends Consumer<JsonElement>> Codec<ConsumerHolder<T>> consumerMapCodec(String typeKey, Map<String, T> map) {
-        return ExtraCodecs.JSON.comapFlatMap(json -> {
+        return Codecs.JSON_ELEMENT.comapFlatMap(json -> {
             if (json instanceof JsonPrimitive prim) {
                 String name = prim.getAsString();
                 return DataResult.success(new ConsumerHolder<>(map.get(name), null, name));
@@ -89,7 +89,7 @@ public class MiscCodecs {
     public record ConsumerHolder<T extends Consumer<JsonElement>>(T consumer, @Nullable JsonElement element, String name) {}
 
     public static <A, T extends Function<JsonElement, A>> Codec<FunctionHolder<A, T>> functionMapCodec(String typeKey, Map<String, T> map) {
-        return ExtraCodecs.JSON.comapFlatMap(json -> {
+        return Codecs.JSON_ELEMENT.comapFlatMap(json -> {
             if (json instanceof JsonPrimitive prim) {
                 String name = prim.getAsString();
                 return DataResult.success(new FunctionHolder<>(map.get(name), null, name));

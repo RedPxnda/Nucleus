@@ -1,22 +1,22 @@
 package com.redpxnda.nucleus.registry.effect;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
-import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.AttributeContainer;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
+import net.minecraft.network.packet.s2c.play.RemoveEntityStatusEffectS2CPacket;
+import net.minecraft.server.world.ServerWorld;
 
-public abstract class RenderingMobEffect extends MobEffect {
-    protected RenderingMobEffect(MobEffectCategory mobEffectCategory, int color) {
+public abstract class RenderingMobEffect extends StatusEffect {
+    protected RenderingMobEffect(StatusEffectCategory mobEffectCategory, int color) {
         super(mobEffectCategory, color);
     }
 
@@ -24,27 +24,27 @@ public abstract class RenderingMobEffect extends MobEffect {
      * @return true if further entity rendering should be interrupted
      */
     @Environment(EnvType.CLIENT)
-    public boolean renderPre(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {
+    public boolean renderPre(StatusEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, MatrixStack matrixStack, VertexConsumerProvider multiBufferSource, int packedLight) {
         return false;
     }
 
     @Environment(EnvType.CLIENT)
-    public void renderPost(MobEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, PoseStack matrixStack, MultiBufferSource multiBufferSource, int packedLight) {}
+    public void renderPost(StatusEffectInstance instance, LivingEntity entity, float entityYaw, float partialTick, MatrixStack matrixStack, VertexConsumerProvider multiBufferSource, int packedLight) {}
 
     /**
      * @return true if further hud rendering should be interrupted
      */
     @Environment(EnvType.CLIENT)
-    public boolean renderHud(MobEffectInstance instance, Minecraft minecraft, GuiGraphics graphics, float partialTick) {
+    public boolean renderHud(StatusEffectInstance instance, MinecraftClient minecraft, DrawContext graphics, float partialTick) {
         return false;
     }
 
     @Override
-    public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int i) {
-        super.removeAttributeModifiers(entity, attributeMap, i);
-        if (entity.level() instanceof ServerLevel level) {
+    public void onRemoved(LivingEntity entity, AttributeContainer attributeMap, int i) {
+        super.onRemoved(entity, attributeMap, i);
+        if (entity.getWorld() instanceof ServerWorld level) {
             level.getPlayers(player -> true).forEach(player -> {
-                player.connection.send(new ClientboundRemoveMobEffectPacket(entity.getId(), this));
+                player.networkHandler.sendPacket(new RemoveEntityStatusEffectS2CPacket(entity.getId(), this));
             });
         }
     }
@@ -53,15 +53,15 @@ public abstract class RenderingMobEffect extends MobEffect {
      * Make sure to enable ticking for your effect in order for updates to work
      */
     @Override
-    public void applyEffectTick(LivingEntity entity, int i) {
-        super.applyEffectTick(entity, i);
+    public void applyUpdateEffect(LivingEntity entity, int i) {
+        super.applyUpdateEffect(entity, i);
         if (tickUpdateInterval() < 1) return;
-        if (entity.level() instanceof ServerLevel level && level.getGameTime() % tickUpdateInterval() == 0) {
-            MobEffectInstance instance = entity.getEffect(this);
+        if (entity.getWorld() instanceof ServerWorld level && level.getTime() % tickUpdateInterval() == 0) {
+            StatusEffectInstance instance = entity.getStatusEffect(this);
             if (instance == null) return;
 
-            level.getPlayers(player -> player.position().distanceTo(entity.position()) < maxTickUpdateDistance()).forEach(player -> {
-                player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance));
+            level.getPlayers(player -> player.getPos().distanceTo(entity.getPos()) < maxTickUpdateDistance()).forEach(player -> {
+                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(entity.getId(), instance));
             });
         }
     }
@@ -83,14 +83,14 @@ public abstract class RenderingMobEffect extends MobEffect {
     }
 
     @Override
-    public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int i) {
-        super.addAttributeModifiers(entity, attributeMap, i);
-        if (entity.level() instanceof ServerLevel level) {
-            MobEffectInstance instance = entity.getEffect(this);
+    public void onApplied(LivingEntity entity, AttributeContainer attributeMap, int i) {
+        super.onApplied(entity, attributeMap, i);
+        if (entity.getWorld() instanceof ServerWorld level) {
+            StatusEffectInstance instance = entity.getStatusEffect(this);
             if (instance == null) return;
 
             level.getPlayers(player -> true).forEach(player -> {
-                player.connection.send(new ClientboundUpdateMobEffectPacket(entity.getId(), instance));
+                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(entity.getId(), instance));
             });
         }
     }

@@ -6,14 +6,14 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 import java.util.function.Supplier;
 
 import static com.redpxnda.nucleus.Nucleus.loc;
 
 public class DoubleSupplier {
-    public static final BiMap<ResourceLocation, Type<?>> suppliers = HashBiMap.create();
+    public static final BiMap<Identifier, Type<?>> suppliers = HashBiMap.create();
     public static final Codec<Instance> DISPATCH = Type.CODEC.dispatch("type", Instance::type, Type::codec);
     public static final Codec<Instance> CODEC = Codec.either(
             Codec.DOUBLE,
@@ -30,7 +30,7 @@ public class DoubleSupplier {
        else
            return DataResult.error(() -> "Failed to convert Supplier to DoubleSupplier Instance.");
     });
-    public static <T extends Instance> Type<T> register(ResourceLocation location, Type<T> type) {
+    public static <T extends Instance> Type<T> register(Identifier location, Type<T> type) {
         suppliers.put(location, type);
         return type;
     }
@@ -74,7 +74,7 @@ public class DoubleSupplier {
         Type<?> type();
     }
     public interface Type<T extends Instance> {
-        Codec<Type<?>> CODEC = ResourceLocation.CODEC.xmap(suppliers::get, suppliers.inverse()::get);
+        Codec<Type<?>> CODEC = Identifier.CODEC.xmap(suppliers::get, suppliers.inverse()::get);
 
         Codec<T> codec();
     }

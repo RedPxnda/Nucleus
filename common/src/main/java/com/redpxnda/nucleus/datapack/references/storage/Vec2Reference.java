@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
-import net.minecraft.world.phys.Vec2;
+import net.minecraft.util.math.Vec2f;
 
 @SuppressWarnings("unused")
-public class Vec2Reference extends Reference<Vec2> {
+public class Vec2Reference extends Reference<Vec2f> {
     static { Reference.register(Vec2Reference.class); }
 
-    public Vec2Reference(Vec2 instance) {
+    public Vec2Reference(Vec2f instance) {
         super(instance);
     }
 
@@ -35,7 +35,7 @@ public class Vec2Reference extends Reference<Vec2> {
 
     // Generated from Vec2::scale
     public Vec2Reference scale(float param0) {
-        instance.scale(param0);
+        instance.multiply(param0);
         return this;
     }
 
@@ -46,19 +46,19 @@ public class Vec2Reference extends Reference<Vec2> {
 
     // Generated from Vec2::normalized
     public Vec2Reference normalized() {
-        instance.normalized();
+        instance.normalize();
         return this;
     }
 
     // Generated from Vec2::negated
     public Vec2Reference negated() {
-        instance.negated();
+        instance.negate();
         return this;
     }
 
     // Generated from Vec2::distanceToSqr
     public float distanceToSqr(Vec2Reference param0) {
-        return instance.distanceToSqr(param0.instance);
+        return instance.distanceSquared(param0.instance);
     }
 
     // Generated from Vec2::lengthSquared

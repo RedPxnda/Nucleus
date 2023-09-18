@@ -5,7 +5,7 @@ import com.redpxnda.nucleus.impl.forge.ShaderRegistryImpl;
 import com.redpxnda.nucleus.impl.forge.TrinketItemCreatorImpl;
 import dev.architectury.platform.Platform;
 import dev.architectury.platform.forge.EventBuses;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.common.MinecraftForge;

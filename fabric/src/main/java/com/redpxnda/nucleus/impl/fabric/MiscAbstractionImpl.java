@@ -1,17 +1,17 @@
 package com.redpxnda.nucleus.impl.fabric;
 
-import com.redpxnda.nucleus.fabric.mixin.ParticleEngineAccessor;
+import com.redpxnda.nucleus.fabric.mixin.ParticleManagerAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.particle.ParticleType;
+import net.minecraft.registry.Registries;
 
 public class MiscAbstractionImpl {
     @Environment(EnvType.CLIENT)
-    public static ParticleProvider<?> getProviderFromType(ParticleType<?> type) {
-        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
-                .get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+    public static ParticleFactory<?> getProviderFromType(ParticleType<?> type) {
+        return ((ParticleManagerAccessor) MinecraftClient.getInstance().particleManager).getFactories()
+                .get(Registries.PARTICLE_TYPE.getRawId(type));
     }
 }

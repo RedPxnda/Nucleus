@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.datapack.constants;
 
 import com.redpxnda.nucleus.datapack.references.Statics;
 import com.redpxnda.nucleus.util.LuaUtil;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Identifier;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -48,12 +48,12 @@ public interface ConstantsAccess {
             });
         }
         public Object get(String loc) {
-            return Constants.get(new ResourceLocation(loc));
+            return Constants.get(new Identifier(loc));
         }
     };
     ConstantsAccess writeOnly = new ConstantsAccess() {
         public void set(String loc, Object obj) {
-            Constants.set(new ResourceLocation(loc), obj);
+            Constants.set(new Identifier(loc), obj);
         }
     };
     ConstantsAccess readAndWrite = new ConstantsAccess() {
@@ -66,10 +66,10 @@ public interface ConstantsAccess {
             });
         }
         public Object get(String loc) {
-            return Constants.get(new ResourceLocation(loc));
+            return Constants.get(new Identifier(loc));
         }
         public void set(String loc, Object obj) {
-            Constants.set(new ResourceLocation(loc), obj);
+            Constants.set(new Identifier(loc), obj);
         }
     };
     static ConstantsAccess modSpecificReadOnly(String modId) {

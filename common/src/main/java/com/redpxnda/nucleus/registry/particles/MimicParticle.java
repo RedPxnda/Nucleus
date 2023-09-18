@@ -1,28 +1,28 @@
 package com.redpxnda.nucleus.registry.particles;
 
 import com.redpxnda.nucleus.codec.ValueAssigner;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public class MimicParticle extends DynamicTextureSheetParticle implements MimicParticleOptions.Manager {
-    public ResourceLocation texture;
+    public Identifier texture;
     public final ValueAssigner<MimicParticleOptions.Manager> tick;
 
     public MimicParticle(
             ValueAssigner<MimicParticleOptions.Manager> setup, ValueAssigner<MimicParticleOptions.Manager> tick,
-            ClientLevel clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed
+            ClientWorld clientLevel, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed
     ) {
-        super(null, RenderType.cutout(), clientLevel, x, y, z, xSpeed, ySpeed, zSpeed);
+        super(null, RenderLayer.getCutout(), clientLevel, x, y, z, xSpeed, ySpeed, zSpeed);
         setup.assignTo(this);
         this.tick = tick;
 
-        this.sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
+        this.sprite = MinecraftClient.getInstance().getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(texture);
     }
 
     @Override
@@ -32,19 +32,19 @@ public class MimicParticle extends DynamicTextureSheetParticle implements MimicP
     }
 
     @Override
-    public ResourceLocation getTexture() {
+    public Identifier getTexture() {
         return texture;
     }
 
     @Override
-    public void setTexture(ResourceLocation rl) {
+    public void setTexture(Identifier rl) {
         texture = rl;
     }
 
-    public static class Provider implements ParticleProvider<MimicParticleOptions> {
+    public static class Provider implements ParticleFactory<MimicParticleOptions> {
         @Nullable
         @Override
-        public Particle createParticle(MimicParticleOptions o, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
+        public Particle createParticle(MimicParticleOptions o, ClientWorld clientLevel, double d, double e, double f, double g, double h, double i) {
             return new MimicParticle(o.setup, o.tick, clientLevel, d, e, f, g, h, i);
         }
     }

@@ -3,15 +3,14 @@ package com.redpxnda.nucleus.datapack.references.storage;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.Statics;
-import net.minecraft.world.phys.AABB;
-
 import java.util.Optional;
+import net.minecraft.util.math.Box;
 
 @SuppressWarnings("unused")
-public class AABBReference extends Reference<AABB> {
+public class AABBReference extends Reference<Box> {
     static { Reference.register(AABBReference.class); }
 
-    public AABBReference(AABB instance) {
+    public AABBReference(Box instance) {
         super(instance);
     }
 
@@ -27,22 +26,22 @@ public class AABBReference extends Reference<AABB> {
 
     // Generated from AABB::min
     public double min(Statics.Axes param0) {
-        return instance.min(param0.instance);
+        return instance.getMin(param0.instance);
     }
 
     // Generated from AABB::max
     public double max(Statics.Axes param0) {
-        return instance.max(param0.instance);
+        return instance.getMax(param0.instance);
     }
 
     // Generated from AABB::inflate
     public AABBReference inflate(double param0) {
-        return new AABBReference(instance.inflate(param0));
+        return new AABBReference(instance.expand(param0));
     }
 
     // Generated from AABB::inflate
     public AABBReference inflate(double param0, double param1, double param2) {
-        return new AABBReference(instance.inflate(param0, param1, param2));
+        return new AABBReference(instance.expand(param0, param1, param2));
     }
 
     // Generated from AABB::contains
@@ -57,27 +56,27 @@ public class AABBReference extends Reference<AABB> {
 
     // Generated from AABB::getSize
     public double getSize() {
-        return instance.getSize();
+        return instance.getAverageSideLength();
     }
 
     // Generated from AABB::move
     public AABBReference move(double param0, double param1, double param2) {
-        return new AABBReference(instance.move(param0, param1, param2));
+        return new AABBReference(instance.offset(param0, param1, param2));
     }
 
     // Generated from AABB::move
     public AABBReference move(BlockPosReference param0) {
-        return new AABBReference(instance.move(param0.instance));
+        return new AABBReference(instance.offset(param0.instance));
     }
 
     // Generated from AABB::move
     public AABBReference move(Vec3Reference param0) {
-        return new AABBReference(instance.move(param0.instance));
+        return new AABBReference(instance.offset(param0.instance));
     }
 
     // Generated from AABB::hasNaN
     public boolean hasNaN() {
-        return instance.hasNaN();
+        return instance.isNaN();
     }
 
     // Generated from AABB::getCenter
@@ -87,12 +86,12 @@ public class AABBReference extends Reference<AABB> {
 
     // Generated from AABB::deflate
     public AABBReference deflate(double param0, double param1, double param2) {
-        return new AABBReference(instance.deflate(param0, param1, param2));
+        return new AABBReference(instance.contract(param0, param1, param2));
     }
 
     // Generated from AABB::deflate
     public AABBReference deflate(double param0) {
-        return new AABBReference(instance.deflate(param0));
+        return new AABBReference(instance.contract(param0));
     }
 
     // Generated from AABB::intersects
@@ -112,76 +111,76 @@ public class AABBReference extends Reference<AABB> {
 
     // Generated from AABB::getYsize
     public double getYsize() {
-        return instance.getYsize();
+        return instance.getYLength();
     }
 
     // Generated from AABB::minmax
     public AABBReference minmax(AABBReference param0) {
-        return new AABBReference(instance.minmax(param0.instance));
+        return new AABBReference(instance.union(param0.instance));
     }
 
     // Generated from AABB::getZsize
     public double getZsize() {
-        return instance.getZsize();
+        return instance.getZLength();
     }
 
     // Generated from AABB::setMaxY
     public AABBReference setMaxY(double param0) {
-        return new AABBReference(instance.setMaxY(param0));
+        return new AABBReference(instance.withMaxY(param0));
     }
 
     // Generated from AABB::setMinY
     public AABBReference setMinY(double param0) {
-        return new AABBReference(instance.setMinY(param0));
+        return new AABBReference(instance.withMinY(param0));
     }
 
     // Generated from AABB::clip
     public Optional<Vec3Reference> clip(Vec3Reference param0, Vec3Reference param1) {
-        return instance.clip(param0.instance, param1.instance).map(Vec3Reference::new);
+        return instance.raycast(param0.instance, param1.instance).map(Vec3Reference::new);
     }
 
     // Generated from AABB::setMaxZ
     public AABBReference setMaxZ(double param0) {
-        return new AABBReference(instance.setMaxZ(param0));
+        return new AABBReference(instance.withMaxZ(param0));
     }
 
     // Generated from AABB::setMinX
     public AABBReference setMinX(double param0) {
-        return new AABBReference(instance.setMinX(param0));
+        return new AABBReference(instance.withMinX(param0));
     }
 
     // Generated from AABB::contract
     public AABBReference contract(double param0, double param1, double param2) {
-        return new AABBReference(instance.contract(param0, param1, param2));
+        return new AABBReference(instance.shrink(param0, param1, param2));
     }
 
     // Generated from AABB::expandTowards
     public AABBReference expandTowards(Vec3Reference param0) {
-        return new AABBReference(instance.expandTowards(param0.instance));
+        return new AABBReference(instance.stretch(param0.instance));
     }
 
     // Generated from AABB::expandTowards
     public AABBReference expandTowards(double param0, double param1, double param2) {
-        return new AABBReference(instance.expandTowards(param0, param1, param2));
+        return new AABBReference(instance.stretch(param0, param1, param2));
     }
 
     // Generated from AABB::intersect
     public AABBReference intersect(AABBReference param0) {
-        return new AABBReference(instance.intersect(param0.instance));
+        return new AABBReference(instance.intersection(param0.instance));
     }
 
     // Generated from AABB::setMinZ
     public AABBReference setMinZ(double param0) {
-        return new AABBReference(instance.setMinZ(param0));
+        return new AABBReference(instance.withMinZ(param0));
     }
 
     // Generated from AABB::setMaxX
     public AABBReference setMaxX(double param0) {
-        return new AABBReference(instance.setMaxX(param0));
+        return new AABBReference(instance.withMaxX(param0));
     }
 
     // Generated from AABB::getXsize
     public double getXsize() {
-        return instance.getXsize();
+        return instance.getXLength();
     }
 }

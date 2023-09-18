@@ -4,23 +4,23 @@ import com.redpxnda.nucleus.capability.entity.EntityCapability;
 import com.redpxnda.nucleus.capability.entity.doubles.DoublesCapability;
 import com.redpxnda.nucleus.network.ClientboundHandling;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 
-public class DoublesCapabilitySyncPacket extends CapabilitySyncPacket<CompoundTag, DoublesCapability> {
+public class DoublesCapabilitySyncPacket extends CapabilitySyncPacket<NbtCompound, DoublesCapability> {
     public DoublesCapabilitySyncPacket(Entity target, DoublesCapability cap) {
         super(target, cap);
     }
 
-    public DoublesCapabilitySyncPacket(FriendlyByteBuf buf) {
+    public DoublesCapabilitySyncPacket(PacketByteBuf buf) {
         super(buf);
     }
 
     @Override
     public void handle(NetworkManager.PacketContext context) {
-        EntityCapability<CompoundTag> raw = ClientboundHandling.getEntityCap(targetId, new ResourceLocation(capId));
+        EntityCapability<NbtCompound> raw = ClientboundHandling.getEntityCap(targetId, new Identifier(capId));
         if (raw instanceof DoublesCapability cap) {
             ClientboundHandling.handleClientDoublesCapabilityAdjustment(cap, capData);
         }

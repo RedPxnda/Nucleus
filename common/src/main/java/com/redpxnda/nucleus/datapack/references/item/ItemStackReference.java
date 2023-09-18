@@ -12,12 +12,12 @@ import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReferenc
 import com.redpxnda.nucleus.datapack.references.tag.CompoundTagReference;
 import com.redpxnda.nucleus.datapack.references.tag.ListTagReference;
 import com.redpxnda.nucleus.datapack.references.tag.TagReference;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.decoration.ItemFrame;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 
 @SuppressWarnings("unused")
 public class ItemStackReference extends Reference<ItemStack> {
@@ -44,7 +44,7 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::save
     public CompoundTagReference save(CompoundTagReference param0) {
-        return new CompoundTagReference(instance.save(param0.instance));
+        return new CompoundTagReference(instance.writeNbt(param0.instance));
     }
 
     // Generated from ItemStack::copy
@@ -59,12 +59,12 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::is
     public boolean is(ItemReference<?> param0) {
-        return instance.is(param0.instance);
+        return instance.isOf(param0.instance);
     }
 
     // Generated from ItemStack::grow
     public void grow(int param0) {
-        instance.grow(param0);
+        instance.increment(param0);
     }
 
     // Generated from ItemStack::getCount
@@ -79,7 +79,7 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::getTag
     public CompoundTagReference getTag() {
-        return new CompoundTagReference(instance.getTag());
+        return new CompoundTagReference(instance.getNbt());
     }
 
     // Generated from ItemStack::use
@@ -89,47 +89,47 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::getDisplayName
     public ComponentReference<?> getDisplayName() {
-        return new ComponentReference<>(instance.getDisplayName());
+        return new ComponentReference<>(instance.toHoverableText());
     }
 
     // Generated from ItemStack::setTag
     public void setTag(CompoundTagReference param0) {
-        instance.setTag(param0.instance);
+        instance.setNbt(param0.instance);
     }
 
     // Generated from ItemStack::getDamageValue
     public int getDamageValue() {
-        return instance.getDamageValue();
+        return instance.getDamage();
     }
 
     // Generated from ItemStack::setDamageValue
     public void setDamageValue(int param0) {
-        instance.setDamageValue(param0);
+        instance.setDamage(param0);
     }
 
     // Generated from ItemStack::isCorrectToolForDrops
     public boolean isCorrectToolForDrops(BlockStateReference param0) {
-        return instance.isCorrectToolForDrops(param0.instance);
+        return instance.isSuitableFor(param0.instance);
     }
 
     // Generated from ItemStack::interactLivingEntity
     public void interactLivingEntity(PlayerReference param0, LivingEntityReference<?> param1, Statics.InteractionHands param2) {
-        instance.interactLivingEntity(param0.instance, param1.instance, param2.instance);
+        instance.useOnEntity(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from ItemStack::isDamageableItem
     public boolean isDamageableItem() {
-        return instance.isDamageableItem();
+        return instance.isDamageable();
     }
 
     // Generated from ItemStack::getDestroySpeed
     public float getDestroySpeed(BlockStateReference param0) {
-        return instance.getDestroySpeed(param0.instance);
+        return instance.getMiningSpeedMultiplier(param0.instance);
     }
 
     // Generated from ItemStack::getMaxStackSize
     public int getMaxStackSize() {
-        return instance.getMaxStackSize();
+        return instance.getMaxCount();
     }
 
     // Generated from ItemStack::isStackable
@@ -144,7 +144,7 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::shrink
     public void shrink(int param0) {
-        instance.shrink(param0);
+        instance.decrement(param0);
     }
 
     // Generated from ItemStack::isDamaged
@@ -159,67 +159,67 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::getOrCreateTag
     public CompoundTagReference getOrCreateTag() {
-        return new CompoundTagReference(instance.getOrCreateTag());
+        return new CompoundTagReference(instance.getOrCreateNbt());
     }
 
     // Generated from ItemStack::sameItem
     public boolean sameItem(ItemStackReference param0) {
-        return ItemStack.isSameItem(this.instance, param0.instance);
+        return ItemStack.areItemsEqual(this.instance, param0.instance);
     }
 
     // Generated from ItemStack::setPopTime
     public void setPopTime(int param0) {
-        instance.setPopTime(param0);
+        instance.setBobbingAnimationTime(param0);
     }
 
     // Generated from ItemStack::getDescriptionId
     public String getDescriptionId() {
-        return instance.getDescriptionId();
+        return instance.getTranslationKey();
     }
 
     // Generated from ItemStack::getUseDuration
     public int getUseDuration() {
-        return instance.getUseDuration();
+        return instance.getMaxUseTime();
     }
 
     // Generated from ItemStack::getUseAnimation
     public Statics.UseAnims getUseAnimation() {
-        return Statics.UseAnims.get(instance.getUseAnimation());
+        return Statics.UseAnims.get(instance.getUseAction());
     }
 
     // Generated from ItemStack::getPopTime
     public int getPopTime() {
-        return instance.getPopTime();
+        return instance.getBobbingAnimationTime();
     }
 
     // Generated from ItemStack::mineBlock
     public void mineBlock(LevelReference param0, BlockStateReference param1, BlockPosReference param2, PlayerReference param3) {
-        instance.mineBlock(param0.instance, param1.instance, param2.instance, param3.instance);
+        instance.postMine(param0.instance, param1.instance, param2.instance, param3.instance);
     }
 
     // Generated from ItemStack::releaseUsing
     public void releaseUsing(LevelReference param0, LivingEntityReference<?> param1, int param2) {
-        instance.releaseUsing(param0.instance, param1.instance, param2);
+        instance.onStoppedUsing(param0.instance, param1.instance, param2);
     }
 
     // Generated from ItemStack::hurtEnemy
     public void hurtEnemy(LivingEntityReference<?> param0, PlayerReference param1) {
-        instance.hurtEnemy(param0.instance, param1.instance);
+        instance.postHit(param0.instance, param1.instance);
     }
 
     // Generated from ItemStack::getOrCreateTagElement
     public CompoundTagReference getOrCreateTagElement(String param0) {
-        return new CompoundTagReference(instance.getOrCreateTagElement(param0));
+        return new CompoundTagReference(instance.getOrCreateSubNbt(param0));
     }
 
     // Generated from ItemStack::getAttributeModifiers
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(Statics.EquipmentSlots param0) {
+    public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(Statics.EquipmentSlots param0) {
         return instance.getAttributeModifiers(param0.instance);
     }
 
     // Generated from ItemStack::hasFoil
     public boolean hasFoil() {
-        return instance.hasFoil();
+        return instance.hasGlint();
     }
 
     // Generated from ItemStack::isEnchantable
@@ -229,32 +229,32 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::hasCustomHoverName
     public boolean hasCustomHoverName() {
-        return instance.hasCustomHoverName();
+        return instance.hasCustomName();
     }
 
     // Generated from ItemStack::hasTag
     public boolean hasTag() {
-        return instance.hasTag();
+        return instance.hasNbt();
     }
 
     // Generated from ItemStack::removeTagKey
     public void removeTagKey(String param0) {
-        instance.removeTagKey(param0);
+        instance.removeSubNbt(param0);
     }
 
     // Generated from ItemStack::resetHoverName
     public void resetHoverName() {
-        instance.resetHoverName();
+        instance.removeCustomName();
     }
 
     // Generated from ItemStack::getEnchantmentTags
     public ListTagReference getEnchantmentTags() {
-        return new ListTagReference(instance.getEnchantmentTags());
+        return new ListTagReference(instance.getEnchantments());
     }
 
     // Generated from ItemStack::getTagElement
     public CompoundTagReference getTagElement(String param0) {
-        return new CompoundTagReference(instance.getTagElement(param0));
+        return new CompoundTagReference(instance.getSubNbt(param0));
     }
 
     // Generated from ItemStack::getRarity
@@ -264,7 +264,7 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::addTagElement
     public void addTagElement(String param0, TagReference<?> param1) {
-        instance.addTagElement(param0, param1.instance);
+        instance.setSubNbt(param0, param1.instance);
     }
 
 //    // Generated from ItemStack::addAttributeModifier
@@ -278,14 +278,14 @@ public class ItemStackReference extends Reference<ItemStack> {
 //    }
 
     public void enchant(ResourceLocationReference enchantmentLoc, int param1) {
-        Enchantment enchantment = BuiltInRegistries.ENCHANTMENT.get(enchantmentLoc.instance);
+        Enchantment enchantment = Registries.ENCHANTMENT.get(enchantmentLoc.instance);
         if (enchantment != null)
-            instance.enchant(enchantment, param1);
+            instance.addEnchantment(enchantment, param1);
     }
 
     // Generated from ItemStack::isFramed
     public boolean isFramed() {
-        return instance.isFramed();
+        return instance.isInFrame();
     }
 
     // Generated from ItemStack::setRepairCost
@@ -295,21 +295,21 @@ public class ItemStackReference extends Reference<ItemStack> {
 
     // Generated from ItemStack::getBaseRepairCost
     public int getBaseRepairCost() {
-        return instance.getBaseRepairCost();
+        return instance.getRepairCost();
     }
 
     // Generated from ItemStack::getFrame
-    public EntityReference<ItemFrame> getFrame() {
+    public EntityReference<ItemFrameEntity> getFrame() {
         return new EntityReference<>(instance.getFrame());
     }
 
     // Generated from ItemStack::isEnchanted
     public boolean isEnchanted() {
-        return instance.isEnchanted();
+        return instance.hasEnchantments();
     }
 
     // Generated from ItemStack::isEdible
     public boolean isEdible() {
-        return instance.isEdible();
+        return instance.isFood();
     }
 }

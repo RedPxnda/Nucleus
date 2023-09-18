@@ -2,15 +2,15 @@ package com.redpxnda.nucleus.resolving.wrappers;
 
 import com.google.gson.*;
 import com.redpxnda.nucleus.Nucleus;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -168,17 +168,17 @@ public class Wrappers {
 
         register(Entity.class, createAutoFor(Entity.class, "nucleusWrapper$"));
         register(BlockPos.class, createAutoFor(BlockPos.class, "nucleusWrapper$"));
-        register(AABB.class, createAutoFor(AABB.class, "nucleusWrapper$"));
-        register(Level.class, createAutoFor(Level.class, "nucleusWrapper$"));
+        register(Box.class, createAutoFor(Box.class, "nucleusWrapper$"));
+        register(World.class, createAutoFor(World.class, "nucleusWrapper$"));
         register(MinecraftServer.class, createAutoFor(MinecraftServer.class, "nucleusWrapper$"));
         register(LivingEntity.class, createAutoFor(LivingEntity.class, "nucleusWrapper$"));
-        register(Vec3.class, (instance, key) -> switch (key) {
+        register(Vec3d.class, (instance, key) -> switch (key) {
             case "x" -> instance.x;
             case "y" -> instance.y;
             case "z" -> instance.z;
             default -> null;
         });
-        register(Vec2.class, (instance, key) -> switch (key) {
+        register(Vec2f.class, (instance, key) -> switch (key) {
             case "x" -> instance.x;
             case "y" -> instance.y;
             default -> null;

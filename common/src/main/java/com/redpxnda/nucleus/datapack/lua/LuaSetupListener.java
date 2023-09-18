@@ -2,9 +2,9 @@ package com.redpxnda.nucleus.datapack.lua;
 
 import com.redpxnda.nucleus.datapack.constants.ConstantsAccess;
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
@@ -15,19 +15,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LuaSetupListener extends LuaResourceReloadListener {
-    private static final Map<ResourceLocation, LuaFunction> CRAFTING_HANDLERS = new HashMap<>();
+    private static final Map<Identifier, LuaFunction> CRAFTING_HANDLERS = new HashMap<>();
     private static final Globals globals = ConstantsAccess.completeSetup(ConstantsAccess.readOnly, MiscUtil.initialize(JsePlatform.standardGlobals(), g -> {
         g.set("setup", CoerceJavaToLua.coerce(LuaSetupListener.class));
     }));
 
     public static void registerCraftingHandler(String loc, LuaFunction func) {
-        CRAFTING_HANDLERS.put(new ResourceLocation(loc), func);
+        CRAFTING_HANDLERS.put(new Identifier(loc), func);
     }
-    public static LuaFunction getCraftingHandler(ResourceLocation loc) {
+    public static LuaFunction getCraftingHandler(Identifier loc) {
         return CRAFTING_HANDLERS.get(loc);
     }
     public static LuaFunction getCraftingHandler(String loc) {
-        return CRAFTING_HANDLERS.get(new ResourceLocation(loc));
+        return CRAFTING_HANDLERS.get(new Identifier(loc));
     }
 
     public LuaSetupListener() {
@@ -35,7 +35,7 @@ public class LuaSetupListener extends LuaResourceReloadListener {
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, LuaValue> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+    protected void apply(Map<Identifier, LuaValue> object, ResourceManager resourceManager, Profiler profilerFiller) {
         object.forEach((rl, v) -> {
             v.call();
         });

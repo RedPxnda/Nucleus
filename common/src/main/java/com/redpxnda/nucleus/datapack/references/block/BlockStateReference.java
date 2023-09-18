@@ -4,8 +4,7 @@ import com.redpxnda.nucleus.datapack.references.*;
 import com.redpxnda.nucleus.datapack.references.entity.EntityReference;
 import com.redpxnda.nucleus.datapack.references.entity.PlayerReference;
 import com.redpxnda.nucleus.datapack.references.storage.Vec3Reference;
-import net.minecraft.core.Registry;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
 
 @SuppressWarnings("unused")
 public class BlockStateReference extends Reference<BlockState> {
@@ -17,7 +16,7 @@ public class BlockStateReference extends Reference<BlockState> {
 
     // Generated from BlockStateBase::is
     public boolean is(BlockReference<?> param0) {
-        return instance.is(param0.instance);
+        return instance.isOf(param0.instance);
     }
 
 //    // Generated from BlockStateBase::is
@@ -27,7 +26,7 @@ public class BlockStateReference extends Reference<BlockState> {
 
     // Generated from BlockStateBase::getOffset
     public Vec3Reference getOffset(LevelReference param0, BlockPosReference param1) {
-        return new Vec3Reference(instance.getOffset(param0.instance, param1.instance));
+        return new Vec3Reference(instance.getModelOffset(param0.instance, param1.instance));
     }
 
     // Generated from BlockStateBase::rotate
@@ -42,57 +41,57 @@ public class BlockStateReference extends Reference<BlockState> {
 
     // Generated from BlockStateBase::getSeed
     public long getSeed(BlockPosReference param0) {
-        return instance.getSeed(param0.instance);
+        return instance.getRenderingSeed(param0.instance);
     }
 
     // Generated from BlockStateBase::hasAnalogOutputSignal
     public boolean hasAnalogOutputSignal() {
-        return instance.hasAnalogOutputSignal();
+        return instance.hasComparatorOutput();
     }
 
     // Generated from BlockStateBase::isRedstoneConductor
     public boolean isRedstoneConductor(LevelReference param0, BlockPosReference param1) {
-        return instance.isRedstoneConductor(param0.instance, param1.instance);
+        return instance.isSolidBlock(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::getAnalogOutputSignal
     public int getAnalogOutputSignal(LevelReference param0, BlockPosReference param1) {
-        return instance.getAnalogOutputSignal(param0.instance, param1.instance);
+        return instance.getComparatorOutput(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::requiresCorrectToolForDrops
     public boolean requiresCorrectToolForDrops() {
-        return instance.requiresCorrectToolForDrops();
+        return instance.isToolRequired();
     }
 
     // Generated from BlockStateBase::propagatesSkylightDown
     public boolean propagatesSkylightDown(LevelReference param0, BlockPosReference param1) {
-        return instance.propagatesSkylightDown(param0.instance, param1.instance);
+        return instance.isTransparent(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::useShapeForLightOcclusion
     public boolean useShapeForLightOcclusion() {
-        return instance.useShapeForLightOcclusion();
+        return instance.hasSidedTransparency();
     }
 
     // Generated from BlockStateBase::entityCanStandOnFace
     public boolean entityCanStandOnFace(LevelReference param0, BlockPosReference param1, EntityReference<?> param2, Statics.Directions param3) {
-        return instance.entityCanStandOnFace(param0.instance, param1.instance, param2.instance, param3.instance);
+        return instance.isSolidSurface(param0.instance, param1.instance, param2.instance, param3.instance);
     }
 
     // Generated from BlockStateBase::hasLargeCollisionShape
     public boolean hasLargeCollisionShape() {
-        return instance.hasLargeCollisionShape();
+        return instance.exceedsCube();
     }
 
     // Generated from BlockStateBase::isCollisionShapeFullBlock
     public boolean isCollisionShapeFullBlock(LevelReference param0, BlockPosReference param1) {
-        return instance.isCollisionShapeFullBlock(param0.instance, param1.instance);
+        return instance.isFullCube(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::isRandomlyTicking
     public boolean isRandomlyTicking() {
-        return instance.isRandomlyTicking();
+        return instance.hasRandomTicks();
     }
 
     // Generated from BlockStateBase::hasBlockEntity
@@ -102,7 +101,7 @@ public class BlockStateReference extends Reference<BlockState> {
 
     // Generated from BlockStateBase::isFaceSturdy
     public boolean isFaceSturdy(LevelReference param0, BlockPosReference param1, Statics.Directions param2) {
-        return instance.isFaceSturdy(param0.instance, param1.instance, param2.instance);
+        return instance.isSideSolidFullSquare(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from BlockStateBase::isAir
@@ -112,22 +111,22 @@ public class BlockStateReference extends Reference<BlockState> {
 
     // Generated from BlockStateBase::canOcclude
     public boolean canOcclude() {
-        return instance.canOcclude();
+        return instance.isOpaque();
     }
 
     // Generated from BlockStateBase::isSuffocating
     public boolean isSuffocating(LevelReference param0, BlockPosReference param1) {
-        return instance.isSuffocating(param0.instance, param1.instance);
+        return instance.shouldSuffocate(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::isViewBlocking
     public boolean isViewBlocking(LevelReference param0, BlockPosReference param1) {
-        return instance.isViewBlocking(param0.instance, param1.instance);
+        return instance.shouldBlockVision(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::getLightBlock
     public int getLightBlock(LevelReference param0, BlockPosReference param1) {
-        return instance.getLightBlock(param0.instance, param1.instance);
+        return instance.getOpacity(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::getBlock
@@ -137,51 +136,51 @@ public class BlockStateReference extends Reference<BlockState> {
 
     // Generated from BlockStateBase::getShadeBrightness
     public float getShadeBrightness(LevelReference param0, BlockPosReference param1) {
-        return instance.getShadeBrightness(param0.instance, param1.instance);
+        return instance.getAmbientOcclusionLightLevel(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::isSignalSource
     public boolean isSignalSource() {
-        return instance.isSignalSource();
+        return instance.emitsRedstonePower();
     }
 
     // Generated from BlockStateBase::getLightEmission
     public int getLightEmission() {
-        return instance.getLightEmission();
+        return instance.getLuminance();
     }
 
     // Generated from BlockStateBase::getDestroySpeed
     public float getDestroySpeed(LevelReference param0, BlockPosReference param1) {
-        return instance.getDestroySpeed(param0.instance, param1.instance);
+        return instance.getHardness(param0.instance, param1.instance);
     }
 
     // Generated from BlockStateBase::getSignal
     public int getSignal(LevelReference param0, BlockPosReference param1, Statics.Directions param2) {
-        return instance.getSignal(param0.instance, param1.instance, param2.instance);
+        return instance.getWeakRedstonePower(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from BlockStateBase::getDestroyProgress
     public float getDestroyProgress(PlayerReference param0, LevelReference param1, BlockPosReference param2) {
-        return instance.getDestroyProgress(param0.instance, param1.instance, param2.instance);
+        return instance.calcBlockBreakingDelta(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from BlockStateBase::getDirectSignal
     public int getDirectSignal(LevelReference param0, BlockPosReference param1, Statics.Directions param2) {
-        return instance.getDirectSignal(param0.instance, param1.instance, param2.instance);
+        return instance.getStrongRedstonePower(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from BlockStateBase::triggerEvent
     public boolean triggerEvent(LevelReference param0, BlockPosReference param1, int param2, int param3) {
-        return instance.triggerEvent(param0.instance, param1.instance, param2, param3);
+        return instance.onSyncedBlockEvent(param0.instance, param1.instance, param2, param3);
     }
 
     // Generated from BlockStateBase::entityCanStandOn
     public boolean entityCanStandOn(LevelReference param0, BlockPosReference param1, EntityReference<?> param2) {
-        return instance.entityCanStandOn(param0.instance, param1.instance, param2.instance);
+        return instance.hasSolidTopSurface(param0.instance, param1.instance, param2.instance);
     }
 
     // Generated from BlockStateBase::attack
     public void attack(LevelReference param0, BlockPosReference param1, PlayerReference param2) {
-        instance.attack(param0.instance, param1.instance, param2.instance);
+        instance.onBlockBreakStart(param0.instance, param1.instance, param2.instance);
     }
 }

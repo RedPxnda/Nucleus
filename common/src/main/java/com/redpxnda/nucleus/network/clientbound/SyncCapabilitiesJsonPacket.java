@@ -3,7 +3,7 @@ package com.redpxnda.nucleus.network.clientbound;
 import com.google.gson.JsonElement;
 import com.redpxnda.nucleus.capability.entity.doubles.CapabilityRegistryListener;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 import java.util.Map;
 
@@ -12,7 +12,7 @@ public class SyncCapabilitiesJsonPacket extends SyncJsonMapPacket {
         super(elements);
     }
 
-    public SyncCapabilitiesJsonPacket(FriendlyByteBuf buf) {
+    public SyncCapabilitiesJsonPacket(PacketByteBuf buf) {
         super(buf);
     }
 

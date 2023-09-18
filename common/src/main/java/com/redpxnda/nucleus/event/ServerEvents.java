@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.event;
 
+import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.packs.resources.CloseableResourceManager;
 
 public interface ServerEvents {
     PrioritizedEvent<EndDataPackReload> END_DATA_PACK_RELOAD = PrioritizedEvent.createLoop();
@@ -16,6 +16,6 @@ public interface ServerEvents {
          * @param resourceManager the resource manager
          * @param success if the reload was successful
          */
-        void endDataPackReload(MinecraftServer server, CloseableResourceManager resourceManager, boolean success);
+        void endDataPackReload(MinecraftServer server, LifecycledResourceManager resourceManager, boolean success);
     }
 }

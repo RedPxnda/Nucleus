@@ -6,17 +6,17 @@ import com.redpxnda.nucleus.codec.ValueAssigner;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.manager.DynamicParticleManager;
 import com.redpxnda.nucleus.util.ByteBufUtil;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
-public class MimicParticleOptions implements ParticleOptions {
+public class MimicParticleOptions implements ParticleEffect {
     public ValueAssigner<Manager> setup, tick;
 
     public static ValueAssigner.CodecBuilder<Manager> setupBuilder = DynamicParticleManager.setupBuilder.extend(Manager.class)
-            .add("texture", ResourceLocation.CODEC, Manager::setTexture, new ResourceLocation("item/stick"));
+            .add("texture", Identifier.CODEC, Manager::setTexture, new Identifier("item/stick"));
     public static ValueAssigner.CodecBuilder<Manager> tickBuilder = DynamicParticleManager.tickBuilder.extend(Manager.class);
     public static Codec<ValueAssigner<Manager>> vaSetupCodec = setupBuilder.build();
     public static Codec<ValueAssigner<Manager>> vaTickCodec = tickBuilder.build();
@@ -41,17 +41,17 @@ public class MimicParticleOptions implements ParticleOptions {
     }
 
     @Override
-    public void writeToNetwork(FriendlyByteBuf buf) {
+    public void write(PacketByteBuf buf) {
         ByteBufUtil.writeWithCodec(buf, this, codec);
     }
 
     @Override
-    public String writeToString() {
-        return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()).toString();
+    public String asString() {
+        return Registries.PARTICLE_TYPE.getId(this.getType()).toString();
     }
 
     public interface Manager extends DynamicParticleManager {
-        ResourceLocation getTexture();
-        void setTexture(ResourceLocation rl);
+        Identifier getTexture();
+        void setTexture(Identifier rl);
     }
 }

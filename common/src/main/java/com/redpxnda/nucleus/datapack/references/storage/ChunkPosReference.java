@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.util.math.ChunkPos;
 
 @SuppressWarnings("unused")
 public class ChunkPosReference extends Reference<ChunkPos> {
@@ -24,32 +24,32 @@ public class ChunkPosReference extends Reference<ChunkPos> {
 
     // Generated from ChunkPos::getMiddleBlockPosition
     public BlockPosReference getMiddleBlockPosition(int param0) {
-        return new BlockPosReference(instance.getMiddleBlockPosition(param0));
+        return new BlockPosReference(instance.getCenterAtY(param0));
     }
 
     // Generated from ChunkPos::getChessboardDistance
     public int getChessboardDistance(ChunkPosReference param0) {
-        return instance.getChessboardDistance(param0.instance);
+        return instance.getChebyshevDistance(param0.instance);
     }
 
     // Generated from ChunkPos::getMiddleBlockX
     public int getMiddleBlockX() {
-        return instance.getMiddleBlockX();
+        return instance.getCenterX();
     }
 
     // Generated from ChunkPos::getBlockZ
     public int getBlockZ(int param0) {
-        return instance.getBlockZ(param0);
+        return instance.getOffsetZ(param0);
     }
 
     // Generated from ChunkPos::getMaxBlockX
     public int getMaxBlockX() {
-        return instance.getMaxBlockX();
+        return instance.getEndX();
     }
 
     // Generated from ChunkPos::getMaxBlockZ
     public int getMaxBlockZ() {
-        return instance.getMaxBlockZ();
+        return instance.getEndZ();
     }
 
     // Generated from ChunkPos::getRegionX
@@ -59,12 +59,12 @@ public class ChunkPosReference extends Reference<ChunkPos> {
 
     // Generated from ChunkPos::getMinBlockZ
     public int getMinBlockZ() {
-        return instance.getMinBlockZ();
+        return instance.getStartZ();
     }
 
     // Generated from ChunkPos::getMinBlockX
     public int getMinBlockX() {
-        return instance.getMinBlockX();
+        return instance.getStartX();
     }
 
     // Generated from ChunkPos::getRegionZ
@@ -79,31 +79,31 @@ public class ChunkPosReference extends Reference<ChunkPos> {
 
     // Generated from ChunkPos::getBlockX
     public int getBlockX(int param0) {
-        return instance.getBlockX(param0);
+        return instance.getOffsetX(param0);
     }
 
     // Generated from ChunkPos::getMiddleBlockZ
     public int getMiddleBlockZ() {
-        return instance.getMiddleBlockZ();
+        return instance.getCenterZ();
     }
 
     // Generated from ChunkPos::getRegionLocalX
     public int getRegionLocalX() {
-        return instance.getRegionLocalX();
+        return instance.getRegionRelativeX();
     }
 
     // Generated from ChunkPos::getBlockAt
     public BlockPosReference getBlockAt(int param0, int param1, int param2) {
-        return new BlockPosReference(instance.getBlockAt(param0, param1, param2));
+        return new BlockPosReference(instance.getBlockPos(param0, param1, param2));
     }
 
     // Generated from ChunkPos::getRegionLocalZ
     public int getRegionLocalZ() {
-        return instance.getRegionLocalZ();
+        return instance.getRegionRelativeZ();
     }
 
     // Generated from ChunkPos::getWorldPosition
     public BlockPosReference getWorldPosition() {
-        return new BlockPosReference(instance.getWorldPosition());
+        return new BlockPosReference(instance.getStartPos());
     }
 }

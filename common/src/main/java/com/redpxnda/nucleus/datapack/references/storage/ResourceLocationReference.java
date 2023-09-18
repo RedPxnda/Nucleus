@@ -1,13 +1,13 @@
 package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 @SuppressWarnings("unused")
-public class ResourceLocationReference extends Reference<ResourceLocation> {
+public class ResourceLocationReference extends Reference<Identifier> {
     static { Reference.register(ResourceLocationReference.class); }
 
-    public ResourceLocationReference(ResourceLocation instance) {
+    public ResourceLocationReference(Identifier instance) {
         super(instance);
     }
 
@@ -33,17 +33,17 @@ public class ResourceLocationReference extends Reference<ResourceLocation> {
 
     // Generated from ResourceLocation::toLanguageKey
     public String toLanguageKey(String param0) {
-        return instance.toLanguageKey(param0);
+        return instance.toTranslationKey(param0);
     }
 
     // Generated from ResourceLocation::toLanguageKey
     public String toLanguageKey() {
-        return instance.toLanguageKey();
+        return instance.toTranslationKey();
     }
 
     // Generated from ResourceLocation::toShortLanguageKey
     public String toShortLanguageKey() {
-        return instance.toShortLanguageKey();
+        return instance.toShortTranslationKey();
     }
 
     // Generated from ResourceLocation::getNamespace

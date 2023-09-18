@@ -1,19 +1,19 @@
 package com.redpxnda.nucleus.registry.particles.morphing;
 
+import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.registry.particles.ControllerParticle;
 import com.redpxnda.nucleus.registry.particles.DynamicPoseStackParticle;
-import com.redpxnda.nucleus.client.Rendering;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.world.ClientWorld;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParticleMorpher extends ParticleShape {
-    private final ClientLevel level;
+    private final ClientWorld level;
     private final List<ControllerParticle> controllers = new ArrayList<>();
 
-    public ParticleMorpher(ClientLevel level, double x, double y, double z) {
+    public ParticleMorpher(ClientWorld level, double x, double y, double z) {
         this.level = level;
         this.x = x;
         this.y = y;

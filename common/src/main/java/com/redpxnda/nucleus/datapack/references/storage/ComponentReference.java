@@ -2,13 +2,12 @@ package com.redpxnda.nucleus.datapack.references.storage;
 
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.Statics;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-
 import java.util.List;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 
 @SuppressWarnings("unused")
-public class ComponentReference<C extends Component> extends Reference<C> {
+public class ComponentReference<C extends Text> extends Reference<C> {
     static { Reference.register(ComponentReference.class); }
 
     public ComponentReference(C instance) {
@@ -36,16 +35,16 @@ public class ComponentReference<C extends Component> extends Reference<C> {
 
     // Generated from Component::getString
     public String getString(int param0) {
-        return instance.getString(param0);
+        return instance.asTruncatedString(param0);
     }
 
     // Generated from Component::getSiblings
-    public List<ComponentReference<Component>> getSiblings() {
+    public List<ComponentReference<Text>> getSiblings() {
         return instance.getSiblings().stream().map(ComponentReference::new).toList();
     }
 
-    public static class Mutable extends ComponentReference<MutableComponent> {
-        public Mutable(MutableComponent instance) {
+    public static class Mutable extends ComponentReference<MutableText> {
+        public Mutable(MutableText instance) {
             super(instance);
         }
 
@@ -55,7 +54,7 @@ public class ComponentReference<C extends Component> extends Reference<C> {
         }
 
         public Mutable withStyle(Statics.ChatFormattings chatFormatting) {
-            instance.withStyle(chatFormatting.instance);
+            instance.formatted(chatFormatting.instance);
             return this;
         }
     }

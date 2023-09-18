@@ -1,6 +1,6 @@
 package com.redpxnda.nucleus.datapack.constants;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ public class Constants {
         return constants;
     }
 
-    public static void set(ResourceLocation loc, Object value) {
+    public static void set(Identifier loc, Object value) {
         Map<String, Object> map;
         String namespace = loc.getNamespace();
         if (constants.containsKey(namespace))
@@ -22,7 +22,7 @@ public class Constants {
         }
         map.put(loc.getPath(), value);
     }
-    public static Object get(ResourceLocation loc) {
+    public static Object get(Identifier loc) {
         return constants.get(loc.getNamespace()).get(loc.getPath());
     }
     public static Object get(String namespace, String path) {

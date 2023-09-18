@@ -1,19 +1,21 @@
 package com.redpxnda.nucleus.datapack.references.entity;
 
 import com.redpxnda.nucleus.capability.entity.EntityCapability;
-import com.redpxnda.nucleus.datapack.references.*;
+import com.redpxnda.nucleus.capability.entity.EntityDataManager;
+import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
+import com.redpxnda.nucleus.datapack.references.LevelReference;
+import com.redpxnda.nucleus.datapack.references.Reference;
+import com.redpxnda.nucleus.datapack.references.Statics;
 import com.redpxnda.nucleus.datapack.references.block.BlockPosReference;
 import com.redpxnda.nucleus.datapack.references.block.BlockStateReference;
 import com.redpxnda.nucleus.datapack.references.item.ItemStackReference;
 import com.redpxnda.nucleus.datapack.references.storage.*;
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
-import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
 import com.redpxnda.nucleus.util.StatManager;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
 import java.util.List;
 import java.util.Map;
@@ -37,17 +39,17 @@ public class EntityReference<E extends Entity> extends Reference<E> {
     }
 
     public EntityCapability<?> getCapability(String str) {
-        return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(new ResourceLocation(str)));
+        return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(new Identifier(str)));
     }
     public EntityCapability<?> getCapability(ResourceLocationReference ref) {
         return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(ref.instance));
     }
 
     public boolean is(String str) {
-        return instance.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(str)));
+        return instance.getType().equals(Registries.ENTITY_TYPE.get(new Identifier(str)));
     }
     public boolean is(ResourceLocationReference ref) {
-        return instance.getType().equals(BuiltInRegistries.ENTITY_TYPE.get(ref.instance));
+        return instance.getType().equals(Registries.ENTITY_TYPE.get(ref.instance));
     }
 
     // Generated from Entity::getName
@@ -67,7 +69,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::position
     public Vec3Reference position() {
-        return new Vec3Reference(instance.position());
+        return new Vec3Reference(instance.getPos());
     }
 
     // Generated from Entity::isAlive
@@ -82,22 +84,22 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getType
     public String getType() {
-        return BuiltInRegistries.ENTITY_TYPE.getKey(instance.getType()).toString();
+        return Registries.ENTITY_TYPE.getId(instance.getType()).toString();
     }
 
     // Generated from Entity::getSlot
     public SlotAccessReference getSlot(int param0) {
-        return new SlotAccessReference(instance.getSlot(param0));
+        return new SlotAccessReference(instance.getStackReference(param0));
     }
 
     // Generated from Entity::is
     public boolean is(EntityReference<?> param0) {
-        return instance.is(param0.instance);
+        return instance.isPartOf(param0.instance);
     }
 
     // Generated from Entity::push
     public void push(double param0, double param1, double param2) {
-        instance.push(param0, param1, param2);
+        instance.addVelocity(param0, param1, param2);
     }
 
     // Generated from Entity::getDisplayName
@@ -107,41 +109,41 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getLevel
     public LevelReference getLevel() {
-        return new LevelReference(instance.level());
+        return new LevelReference(instance.getWorld());
     }
 
     // Generated from Entity::setRemainingFireTicks
     public void setRemainingFireTicks(int param0) {
-        instance.setRemainingFireTicks(param0);
+        instance.setFireTicks(param0);
     }
 
     // Generated from Entity::canSpawnSprintParticle
     public boolean canSpawnSprintParticle() {
-        return instance.canSpawnSprintParticle();
+        return instance.shouldSpawnSprintingParticles();
     }
 
     // Generated from Entity::getDimensionChangingDelay
     public int getDimensionChangingDelay() {
-        return instance.getDimensionChangingDelay();
+        return instance.getDefaultPortalCooldown();
     }
 
     // Generated from Entity::getRemainingFireTicks
     public int getRemainingFireTicks() {
-        return instance.getRemainingFireTicks();
+        return instance.getFireTicks();
     }
 
     // Generated from Entity::isPassengerOfSameVehicle
     public boolean isPassengerOfSameVehicle(EntityReference<?> param0) {
-        return instance.isPassengerOfSameVehicle(param0.instance);
+        return instance.isConnectedThroughVehicle(param0.instance);
     }
 
     public void sendSystemMessage(ComponentReference<?> component) {
-        instance.sendSystemMessage(component.instance);
+        instance.sendMessage(component.instance);
     }
 
     // Generated from Entity::isInWaterRainOrBubble
     public boolean isInWaterRainOrBubble() {
-        return instance.isInWaterRainOrBubble();
+        return instance.isWet();
     }
 
     // Generated from Entity::getControllingPassenger
@@ -151,7 +153,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::canChangeDimensions
     public boolean canChangeDimensions() {
-        return instance.canChangeDimensions();
+        return instance.canUsePortals();
     }
 
     // Generated from Entity::setCustomNameVisible
@@ -166,12 +168,12 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getTicksRequiredToFreeze
     public int getTicksRequiredToFreeze() {
-        return instance.getTicksRequiredToFreeze();
+        return instance.getMinFreezeDamageTicks();
     }
 
     // Generated from Entity::touchingUnloadedChunk
     public boolean touchingUnloadedChunk() {
-        return instance.touchingUnloadedChunk();
+        return instance.isRegionUnloaded();
     }
 
     // Generated from Entity::hasControllingPassenger
@@ -181,17 +183,17 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::hasIndirectPassenger
     public boolean hasIndirectPassenger(EntityReference<?> param0) {
-        return instance.hasIndirectPassenger(param0.instance);
+        return instance.hasPassengerDeep(param0.instance);
     }
 
     // Generated from Entity::hasExactlyOnePlayerPassenger
     public boolean hasExactlyOnePlayerPassenger() {
-        return instance.hasExactlyOnePlayerPassenger();
+        return instance.hasPlayerRider();
     }
 
     // Generated from Entity::getIndirectPassengers
     public List<EntityReference<Entity>> getSelfAndPassengers() {
-        return instance.getSelfAndPassengers().map(EntityReference::new).toList();
+        return instance.streamSelfAndPassengers().map(EntityReference::new).toList();
     }
 
     // Generated from Entity::setOnGround
@@ -206,37 +208,37 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getDeltaMovement
     public Vec3Reference getDeltaMovement() {
-        return new Vec3Reference(instance.getDeltaMovement());
+        return new Vec3Reference(instance.getVelocity());
     }
 
     // Generated from Entity::setDeltaMovement
     public void setDeltaMovement(double param0, double param1, double param2) {
-        instance.setDeltaMovement(param0, param1, param2);
+        instance.setVelocity(param0, param1, param2);
     }
 
     // Generated from Entity::isOnGround
     public boolean onGround() {
-        return instance.onGround();
+        return instance.isOnGround();
     }
 
     // Generated from Entity::resetFallDistance
     public void resetFallDistance() {
-        instance.resetFallDistance();
+        instance.onLanding();
     }
 
     // Generated from Entity::hurt
     public boolean hurt(DamageSourceReference param0, float param1) {
-        return instance.hurt(param0.instance, param1);
+        return instance.damage(param0.instance, param1);
     }
 
     // Generated from Entity::setSecondsOnFire
     public void setSecondsOnFire(int param0) {
-        instance.setSecondsOnFire(param0);
+        instance.setOnFireFor(param0);
     }
 
     // Generated from Entity::setPortalCooldown
     public void resetPortalCooldown() {
-        instance.setPortalCooldown();
+        instance.resetPortalCooldown();
     }
 
     // Generated from Entity::isInLava
@@ -246,37 +248,37 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::lavaHurt
     public void burnWithLava() {
-        instance.lavaHurt();
+        instance.setOnFireFromLava();
     }
 
     // Generated from Entity::getTicksFrozen
     public int getTicksFrozen() {
-        return instance.getTicksFrozen();
+        return instance.getFrozenTicks();
     }
 
     // Generated from Entity::setTicksFrozen
     public void setTicksFrozen(int param0) {
-        instance.setTicksFrozen(param0);
+        instance.setFrozenTicks(param0);
     }
 
     // Generated from Entity::isOnPortalCooldown
     public boolean isOnPortalCooldown() {
-        return instance.isOnPortalCooldown();
+        return instance.hasPortalCooldown();
     }
 
     // Generated from Entity::isInWater
     public boolean isInWater() {
-        return instance.isInWater();
+        return instance.isTouchingWater();
     }
 
     // Generated from Entity::getBlockStateOn
     public BlockStateReference getBlockStateOn() {
-        return new BlockStateReference(instance.getBlockStateOn());
+        return new BlockStateReference(instance.getSteppingBlockState());
     }
 
     // Generated from Entity::getOnPos
     public BlockPosReference getOnPos() {
-        return new BlockPosReference(instance.getOnPos());
+        return new BlockPosReference(instance.getSteppingPos());
     }
 
     // Generated from Entity::isSilent
@@ -286,7 +288,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::isNoGravity
     public boolean isNoGravity() {
-        return instance.isNoGravity();
+        return instance.hasNoGravity();
     }
 
     // Generated from Entity::setNoGravity
@@ -306,7 +308,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::isInWaterOrBubble
     public boolean isInWaterOrBubble() {
-        return instance.isInWaterOrBubble();
+        return instance.isInsideWaterOrBubbleColumn();
     }
 
     // Generated from Entity::isSwimming
@@ -316,12 +318,12 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::isInWaterOrRain
     public boolean isInWaterOrRain() {
-        return instance.isInWaterOrRain();
+        return instance.isTouchingWaterOrRain();
     }
 
     // Generated from Entity::isUnderWater
     public boolean isUnderWater() {
-        return instance.isUnderWater();
+        return instance.isSubmergedInWater();
     }
 
     // Generated from Entity::getEyeY
@@ -331,37 +333,37 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getPassengers
     public List<EntityReference<Entity>> getPassengers() {
-        return instance.getPassengers().stream().map(EntityReference::new).toList();
+        return instance.getPassengerList().stream().map(EntityReference::new).toList();
     }
 
     // Generated from Entity::causeFallDamage
     public boolean causeFallDamage(float param0, float param1, DamageSourceReference param2) {
-        return instance.causeFallDamage(param0, param1, param2.instance);
+        return instance.handleFallDamage(param0, param1, param2.instance);
     }
 
     // Generated from Entity::isCrouching
     public boolean isCrouching() {
-        return instance.isCrouching();
+        return instance.isInSneakingPose();
     }
 
     // Generated from Entity::moveTo
     public void moveTo(double param0, double param1, double param2, float param3, float param4) {
-        instance.moveTo(param0, param1, param2, param3, param4);
+        instance.refreshPositionAndAngles(param0, param1, param2, param3, param4);
     }
 
     // Generated from Entity::moveTo
     public void moveTo(Vec3Reference param0) {
-        instance.moveTo(param0.instance);
+        instance.refreshPositionAfterTeleport(param0.instance);
     }
 
     // Generated from Entity::moveTo
     public void moveTo(double param0, double param1, double param2) {
-        instance.moveTo(param0, param1, param2);
+        instance.refreshPositionAfterTeleport(param0, param1, param2);
     }
 
     // Generated from Entity::moveRelative
     public void moveRelative(float param0, Vec3Reference param1) {
-        instance.moveRelative(param0, param1.instance);
+        instance.updateVelocity(param0, param1.instance);
     }
 
     // Generated from Entity::distanceTo
@@ -380,8 +382,8 @@ public class EntityReference<E extends Entity> extends Reference<E> {
     }
 
     // Generated from Entity::playerTouch
-    public void playerTouch(Player param0) {
-        instance.playerTouch(param0);
+    public void playerTouch(PlayerEntity param0) {
+        instance.onPlayerCollision(param0);
     }
 
     // Generated from Entity::isPushable
@@ -391,7 +393,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getEyePosition
     public Vec3Reference getEyePosition() {
-        return new Vec3Reference(instance.getEyePosition());
+        return new Vec3Reference(instance.getEyePos());
     }
 
     // Generated from Entity::isInvulnerableTo
@@ -401,7 +403,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getAirSupply
     public int getAirSupply() {
-        return instance.getAirSupply();
+        return instance.getAir();
     }
 
     // Generated from Entity::getCustomName
@@ -411,17 +413,17 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getUUID
     public UUID getUUID() {
-        return instance.getUUID();
+        return instance.getUuid();
     }
 
     // Generated from Entity::chunkPosition
     public ChunkPosReference chunkPosition() {
-        return new ChunkPosReference(instance.chunkPosition());
+        return new ChunkPosReference(instance.getChunkPos());
     }
 
     // Generated from Entity::setAirSupply
     public void setAirSupply(int param0) {
-        instance.setAirSupply(param0);
+        instance.setAir(param0);
     }
 
     // Generated from Entity::setCustomName
@@ -431,12 +433,12 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::setYHeadRot
     public void setYHeadRot(float param0) {
-        instance.setYHeadRot(param0);
+        instance.setHeadYaw(param0);
     }
 
     // Generated from Entity::setYBodyRot
     public void setYBodyRot(float param0) {
-        instance.setYBodyRot(param0);
+        instance.setBodyYaw(param0);
     }
 
     // Generated from Entity::hasPassenger
@@ -446,12 +448,12 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::spawnAtLocation
     public EntityReference<ItemEntity> spawnAtLocation(ItemStackReference param0) {
-        return new EntityReference<>(instance.spawnAtLocation(param0.instance));
+        return new EntityReference<>(instance.dropStack(param0.instance));
     }
 
     // Generated from Entity::isInWall
     public boolean isInWall() {
-        return instance.isInWall();
+        return instance.isInsideWall();
     }
 
     // Generated from Entity::interact
@@ -461,17 +463,17 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::removeVehicle
     public void removeVehicle() {
-        instance.removeVehicle();
+        instance.dismountVehicle();
     }
 
     // Generated from Entity::isShiftKeyDown
     public boolean isShiftKeyDown() {
-        return instance.isShiftKeyDown();
+        return instance.isSneaking();
     }
 
     // Generated from Entity::getLookAngle
     public Vec3Reference getLookAngle() {
-        return new Vec3Reference(instance.getLookAngle());
+        return new Vec3Reference(instance.getRotationVector());
     }
 
     // Generated from Entity::startRiding
@@ -481,7 +483,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getRotationVector
     public Vec2Reference getRotationVector() {
-        return new Vec2Reference(instance.getRotationVector());
+        return new Vec2Reference(instance.getRotationClient());
     }
 
 //    // Generated from Entity::getServer
@@ -492,53 +494,53 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getForward
     public Vec3Reference getForward() {
-        return new Vec3Reference(instance.getForward());
+        return new Vec3Reference(instance.getRotationVecClient());
     }
 
     // Generated from Entity::animateHurt
     public void animateHurt(float f) {
-        instance.animateHurt(f);
+        instance.animateDamage(f);
     }
 
     // Generated from Entity::getAllSlots
     public List<ItemStackReference> getAllSlots() {
-        return StreamSupport.stream(instance.getAllSlots().spliterator(), false)
+        return StreamSupport.stream(instance.getItemsEquipped().spliterator(), false)
                 .map(ItemStackReference::new)
                 .toList();
     }
 
     // Generated from Entity::isVisuallyCrawling
     public boolean isVisuallyCrawling() {
-        return instance.isVisuallyCrawling();
+        return instance.isCrawling();
     }
 
     // Generated from Entity::getScoreboardName
     public String getScoreboardName() {
-        return instance.getScoreboardName();
+        return instance.getEntityName();
     }
 
     // Generated from Entity::getHandSlots
     public Iterable<ItemStackReference> getHandSlots() {
-        return StreamSupport.stream(instance.getHandSlots().spliterator(), false)
+        return StreamSupport.stream(instance.getHandItems().spliterator(), false)
                 .map(ItemStackReference::new)
                 .toList();
     }
 
     // Generated from Entity::isCurrentlyGlowing
     public boolean isCurrentlyGlowing() {
-        return instance.isCurrentlyGlowing();
+        return instance.isGlowing();
     }
 
     // Generated from Entity::getArmorSlots
     public Iterable<ItemStackReference> getArmorSlots() {
-        return StreamSupport.stream(instance.getArmorSlots().spliterator(), false)
+        return StreamSupport.stream(instance.getArmorItems().spliterator(), false)
                 .map(ItemStackReference::new)
                 .toList();
     }
 
     // Generated from Entity::setItemSlot
     public void setItemSlot(Statics.EquipmentSlots param0, ItemStackReference param1) {
-        instance.setItemSlot(param0.instance, param1.instance);
+        instance.equipStack(param0.instance, param1.instance);
     }
 
     // Generated from Entity::isInvisibleTo
@@ -548,7 +550,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::setShiftKeyDown
     public void setShiftKeyDown(boolean param0) {
-        instance.setShiftKeyDown(param0);
+        instance.setSneaking(param0);
     }
 
     // Generated from Entity::setSprinting
@@ -558,7 +560,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::isVisuallySwimming
     public boolean isVisuallySwimming() {
-        return instance.isVisuallySwimming();
+        return instance.isInSwimmingPose();
     }
 
     // Generated from Entity::isInvisible
@@ -573,17 +575,17 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::isAlliedTo
     public boolean isAlliedTo(EntityReference<?> param0) {
-        return instance.isAlliedTo(param0.instance);
+        return instance.isTeammate(param0.instance);
     }
 
     // Generated from Entity::getPercentFrozen
     public float getPercentFrozen() {
-        return instance.getPercentFrozen();
+        return instance.getFreezingScale();
     }
 
     // Generated from Entity::isFullyFrozen
     public boolean isFullyFrozen() {
-        return instance.isFullyFrozen();
+        return instance.isFrozen();
     }
 
     // Generated from Entity::setInvulnerable
@@ -603,12 +605,12 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getYHeadRot
     public float getYHeadRot() {
-        return instance.getYHeadRot();
+        return instance.getHeadYaw();
     }
 
     // Generated from Entity::getEyeHeight
     public float getEyeHeight() {
-        return instance.getEyeHeight();
+        return instance.getStandingEyeHeight();
     }
 
     // Generated from Entity::isSpectator
@@ -618,27 +620,27 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::setPos
     public void setPos(Vec3Reference param0) {
-        instance.setPos(param0.instance);
+        instance.setPosition(param0.instance);
     }
 
     // Generated from Entity::setPos
     public void setPos(double param0, double param1, double param2) {
-        instance.setPos(param0, param1, param2);
+        instance.setPosition(param0, param1, param2);
     }
 
     // Generated from Entity::unRide
     public void unRide() {
-        instance.unRide();
+        instance.detach();
     }
 
     // Generated from Entity::getTeamColor
     public int getTeamColor() {
-        return instance.getTeamColor();
+        return instance.getTeamColorValue();
     }
 
     // Generated from Entity::isVehicle
     public boolean isVehicle() {
-        return instance.isVehicle();
+        return instance.hasPassengers();
     }
 
     // Generated from Entity::getZ
@@ -663,7 +665,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getMaxAirSupply
     public int getMaxAirSupply() {
-        return instance.getMaxAirSupply();
+        return instance.getMaxAir();
     }
 
     // Generated from Entity::getPose
@@ -673,7 +675,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::hasPose
     public boolean hasPose(Statics.Poses param0) {
-        return instance.hasPose(param0.instance);
+        return instance.isInPose(param0.instance);
     }
 
     // Generated from Entity::discard
@@ -698,27 +700,27 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::addTag
     public boolean addTag(String param0) {
-        return instance.addTag(param0);
+        return instance.addCommandTag(param0);
     }
 
     // Generated from Entity::removeTag
     public boolean removeTag(String param0) {
-        return instance.removeTag(param0);
+        return instance.removeScoreboardTag(param0);
     }
 
     // Generated from Entity::isPassenger
     public boolean isPassenger() {
-        return instance.isPassenger();
+        return instance.hasVehicle();
     }
 
     // Generated from Entity::ejectPassengers
     public void ejectPassengers() {
-        instance.ejectPassengers();
+        instance.removeAllPassengers();
     }
 
     // Generated from Entity::turn
     public void turn(double param0, double param1) {
-        instance.turn(param0, param1);
+        instance.changeLookDirection(param0, param1);
     }
 
     // Generated from Entity::getVehicle
@@ -728,22 +730,22 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::clearFire
     public void clearFire() {
-        instance.clearFire();
+        instance.extinguish();
     }
 
     // Generated from Entity::getXRot
     public float getXRot() {
-        return instance.getXRot();
+        return instance.getPitch();
     }
 
     // Generated from Entity::setYRot
     public void setYRot(float param0) {
-        instance.setYRot(param0);
+        instance.setYaw(param0);
     }
 
     // Generated from Entity::setXRot
     public void setXRot(float param0) {
-        instance.setXRot(param0);
+        instance.setPitch(param0);
     }
 
     // Generated from Entity::setBoundingBox
@@ -753,17 +755,17 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::getYRot
     public float getYRot() {
-        return instance.getYRot();
+        return instance.getYaw();
     }
 
     // Generated from Entity::getMaxFallDistance
     public int getMaxFallDistance() {
-        return instance.getMaxFallDistance();
+        return instance.getSafeFallDistance();
     }
 
     // Generated from Entity::getStringUUID
     public String getStringUUID() {
-        return instance.getStringUUID();
+        return instance.getUuidAsString();
     }
 
     // Generated from Entity::hasCustomName
@@ -773,22 +775,22 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::dismountTo
     public void dismountTo(double param0, double param1, double param2) {
-        instance.dismountTo(param0, param1, param2);
+        instance.requestTeleportAndDismount(param0, param1, param2);
     }
 
     // Generated from Entity::getMotionDirection
     public Statics.Directions getMotionDirection() {
-        return Statics.Directions.get(instance.getMotionDirection());
+        return Statics.Directions.get(instance.getMovementDirection());
     }
 
     // Generated from Entity::teleportTo
     public void teleportTo(double param0, double param1, double param2) {
-        instance.teleportTo(param0, param1, param2);
+        instance.requestTeleport(param0, param1, param2);
     }
 
     // Generated from Entity::getDirection
     public Statics.Directions getDirection() {
-        return Statics.Directions.get(instance.getDirection());
+        return Statics.Directions.get(instance.getHorizontalFacing());
     }
 
     // Generated from Entity::getFirstPassenger
@@ -808,12 +810,12 @@ public class EntityReference<E extends Entity> extends Reference<E> {
 
     // Generated from Entity::setIsInPowderSnow
     public void setIsInPowderSnow(boolean param0) {
-        instance.setIsInPowderSnow(param0);
+        instance.setInPowderSnow(param0);
     }
 
     // Generated from Entity::isFreezing
     public boolean isFreezing() {
-        return instance.isFreezing();
+        return instance.shouldEscapePowderSnow();
     }
 
     // Generated from Entity::getBlockY

@@ -9,7 +9,7 @@ import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.GuiDrawUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.DrawContext;
 
 @Environment(EnvType.CLIENT)
 public abstract class RenderingMode {
@@ -19,7 +19,7 @@ public abstract class RenderingMode {
     public @AutoCodec.Ignored float interpolateTime = 1;
     public @AutoCodec.Ignored boolean adjustInterpolateTarget = true; // true enables behavior to prevent jumps when values change in the middle of an interpolation animation
 
-    public abstract void render(double capValue, GuiGraphics graphics, int x, int y, float alpha);
+    public abstract void render(double capValue, DrawContext graphics, int x, int y, float alpha);
 
     public abstract int getWidth();
 
@@ -42,7 +42,7 @@ public abstract class RenderingMode {
         public Color emptyColor = Color.GRAY;
 
         @Override
-        public void render(double capValue, GuiGraphics graphics, int x, int y, float alpha) {
+        public void render(double capValue, DrawContext graphics, int x, int y, float alpha) {
             float fillPercent = (float) MathUtil.clamp(capValue/maxValue, 0, 1);
             x-=width/2f;
             float filledX = x + fillPercent*width;

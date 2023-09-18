@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.math.MathUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 @Environment(EnvType.CLIENT)
 public interface RenderingPredicate {
@@ -50,14 +50,14 @@ public interface RenderingPredicate {
 
         @Override
         public boolean canRender(double val, long time) {
-            long currentTime = Util.getMillis();
+            long currentTime = Util.getMeasuringTimeMs();
             double dif = (currentTime - time) / 1000d;
             return dif < seconds; // didnt inline this stuff for testing purposes
         }
 
         @Override
         public float getAlpha(long time) {
-            long currentTime = Util.getMillis();
+            long currentTime = Util.getMeasuringTimeMs();
             float dif = (currentTime - time) / 1000f;
             if (!hasSetFadeIn) {
                 fadeInStart = time;

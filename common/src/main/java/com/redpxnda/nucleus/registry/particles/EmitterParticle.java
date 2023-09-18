@@ -1,30 +1,27 @@
 package com.redpxnda.nucleus.registry.particles;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Camera;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.particle.ParticleEffect;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.function.Supplier;
 
 public class EmitterParticle extends DynamicPoseStackParticle {
-    private ParticleOptions emit;
+    private ParticleEffect emit;
     private Supplier<Double> frequency;
     private Supplier<Double> count;
     private Supplier<Double> speed;
     private long lastSpawn = -100;
     private int startingTicks;
 
-    public EmitterParticle(EmitterParticleOptions options, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
-        super(null, RenderType.translucent(), clientLevel, d, e, f, g, h, i);
+    public EmitterParticle(EmitterParticleOptions options, ClientWorld clientLevel, double d, double e, double f, double g, double h, double i) {
+        super(null, RenderLayer.getTranslucent(), clientLevel, d, e, f, g, h, i);
         this.applyOptions(options);
     }
 
@@ -41,25 +38,25 @@ public class EmitterParticle extends DynamicPoseStackParticle {
     }
 
     @Override
-    public void render(VertexConsumer vertexConsumer, PoseStack poseStack, float x, float y, float z, Camera camera, float f) {
+    public void render(VertexConsumer vertexConsumer, MatrixStack poseStack, float x, float y, float z, Camera camera, float f) {
         if (startingTicks > 0) {
             startingTicks--;
             return;
         }
-        if (level.getGameTime()-frequency.get() > lastSpawn) {
+        if (world.getTime()-frequency.get() > lastSpawn) {
             super.render(vertexConsumer, poseStack, x, y, z, camera, f);
 
             for (int i = 0; i < count.get(); i++) {
-                level.addParticle(emit, x, y, z, speed.get(), speed.get(), speed.get());
+                world.addParticle(emit, x, y, z, speed.get(), speed.get(), speed.get());
             }
-            lastSpawn = level.getGameTime();
+            lastSpawn = world.getTime();
         }
     }
 
-    public static class Provider implements ParticleProvider<EmitterParticleOptions> {
+    public static class Provider implements ParticleFactory<EmitterParticleOptions> {
         @Nullable
         @Override
-        public Particle createParticle(EmitterParticleOptions o, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
+        public Particle createParticle(EmitterParticleOptions o, ClientWorld clientLevel, double d, double e, double f, double g, double h, double i) {
             return new EmitterParticle(o, clientLevel, d, e, f, g, h, i);
         }
     }

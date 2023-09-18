@@ -1,15 +1,15 @@
 package com.redpxnda.nucleus.impl;
 
-import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.util.Identifier;
 
 import java.util.function.Consumer;
 
 public class ShaderRegistry {
     @ExpectPlatform
-    public static void register(ResourceLocation loc, VertexFormat vertexFormat, Consumer<ShaderInstance> onLoad) {
+    public static void register(Identifier loc, VertexFormat vertexFormat, Consumer<ShaderProgram> onLoad) {
         throw new AssertionError();
     }
 }

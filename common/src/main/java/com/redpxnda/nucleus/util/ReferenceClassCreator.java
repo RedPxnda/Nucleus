@@ -1,16 +1,13 @@
 package com.redpxnda.nucleus.util;
 
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.level.gameevent.GameEvent;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ReferenceClassCreator {

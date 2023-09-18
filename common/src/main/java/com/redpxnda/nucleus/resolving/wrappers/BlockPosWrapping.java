@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.resolving.wrappers;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 @SuppressWarnings("unused")
 public interface BlockPosWrapping {
@@ -10,8 +10,8 @@ public interface BlockPosWrapping {
     }
 
     @WrapperMethod(alias = "center")
-    default Vec3 nucleusWrapper$getCenter() {
-        return getAsBlockPos(this).getCenter();
+    default Vec3d nucleusWrapper$getCenter() {
+        return getAsBlockPos(this).toCenterPos();
     }
 
     /**
@@ -19,7 +19,7 @@ public interface BlockPosWrapping {
      */
     @WrapperMethod(alias = "above")
     default BlockPos nucleusWrapper$above() {
-        return getAsBlockPos(this).above();
+        return getAsBlockPos(this).up();
     }
 
     /**
@@ -27,7 +27,7 @@ public interface BlockPosWrapping {
      */
     @WrapperMethod(alias = "below")
     default BlockPos nucleusWrapper$below() {
-        return getAsBlockPos(this).below();
+        return getAsBlockPos(this).down();
     }
 
     @WrapperMethod(alias = "north")

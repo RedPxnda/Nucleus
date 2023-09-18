@@ -5,15 +5,15 @@ import com.google.gson.JsonObject;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.util.JsonUtil;
 import dev.architectury.platform.Platform;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.resource.JsonDataLoader;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CurioTrinketResourceListener extends SimpleJsonResourceReloadListener {
+public class CurioTrinketResourceListener extends JsonDataLoader {
     private static int invalidItemCount = 0;
     public static final Map<String, SlotName> slotNames = new HashMap<>();
 
@@ -22,7 +22,7 @@ public class CurioTrinketResourceListener extends SimpleJsonResourceReloadListen
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, JsonElement> object, ResourceManager resourceManager, Profiler profiler) {
         boolean curiosLoaded = Platform.isModLoaded("curios");
         if (!Platform.isModLoaded("trinkets") && !curiosLoaded) return;
         slotNames.clear();
