@@ -26,13 +26,16 @@ public class EntityMixin implements EntityWrapping, EntityDataSaver {
     }
 
     @Inject(method = "writeNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    private void addCustomSaveData(NbtCompound tag, CallbackInfoReturnable<NbtCompound> cir) {
+    private void addCustomSaveData(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
+        NbtCompound tag = new NbtCompound();
         nucleus$caps.forEach((id, cap) -> tag.put(id, cap.toNbt()));
+        root.put("nucleus:capabilities", tag);
     }
 
     @Inject(method = "readNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    private void nucleus$loadCapabilities(NbtCompound tag, CallbackInfo ci) {
-        if ((Object) this instanceof Entity entity) {
+    private void nucleus$loadCapabilities(NbtCompound root, CallbackInfo ci) {
+        if ((Object) this instanceof Entity entity && root.contains("nucleus:capabilities")) {
+            NbtCompound tag = root.getCompound("nucleus:capabilities");
             EntityDataRegistry.CAPABILITIES.forEach((cap, holder) -> {
                 if (holder.predicate().test(entity)) {
                     EntityCapability toLoad = holder.construct(entity);
