@@ -26,7 +26,7 @@ public class EntityMixin implements EntityWrapping, EntityDataSaver {
     }
 
     @Inject(method = "writeNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    private void addCustomSaveData(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
+    private void ncucleus$saveCapabilities(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
         NbtCompound tag = new NbtCompound();
         nucleus$caps.forEach((id, cap) -> tag.put(id, cap.toNbt()));
         root.put("nucleus:capabilities", tag);

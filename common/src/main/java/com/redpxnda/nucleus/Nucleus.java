@@ -144,7 +144,7 @@ public class Nucleus {
 
     /*public static class TestEntityCap implements EntityCapability<CompoundTag> {
         public static void init() {
-            EntityDataRegistry.register(new ResourceLocation(MOD_ID, "test"), e -> e instanceof Player, TestEntityCap.class, TestEntityCap::new);
+            ItemStackDataRegistry.register(new ResourceLocation(MOD_ID, "test"), e -> e instanceof Player, TestEntityCap.class, TestEntityCap::new);
         }
 
         private int value = 0;

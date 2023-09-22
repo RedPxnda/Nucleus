@@ -6,28 +6,29 @@
   "plugin": "com.redpxnda.nucleus.mixin.plugin.MixinPlugin",
   "client": [
     "client.ClientLevelAccessor",
-    "client.GameRendererMixin",
+    "client.ClientPlayerEntityMixin",
     "client.DrawContextAccessor",
+    "client.GameRendererMixin",
     "client.GuiMixin",
     "client.HeldItemFeatureRendererMixin",
     "client.HeldItemRendererMixin",
-    "client.WorldRendererAccessor",
     "client.LivingEntityRendererMixin",
-    "client.ClientPlayerEntityMixin",
+    "client.MatrixStackAccessor",
     "client.MouseMixin",
     "client.ParticleEngineMixin",
-    "client.MatrixStackAccessor"
+    "client.WorldRendererAccessor"
   ],
   "mixins": [
-    "BoxMixin",
     "BlockPosMixin",
-    "ThreadedAnvilChunkStorageAccessor",
+    "BoxMixin",
     "EntityMixin",
-    "WorldMixin",
+    "ItemStackMixin",
     "LivingEntityMixin",
     "MinecraftServerMixin",
     "ServerEntityMixin",
-    "TrackedEntityAccessor"
+    "ThreadedAnvilChunkStorageAccessor",
+    "TrackedEntityAccessor",
+    "WorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1
