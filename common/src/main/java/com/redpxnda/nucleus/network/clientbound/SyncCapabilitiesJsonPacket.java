@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.network.clientbound;
 
 import com.google.gson.JsonElement;
-import com.redpxnda.nucleus.capability.entity.doubles.CapabilityRegistryListener;
+import com.redpxnda.nucleus.facet.doubles.CapabilityRegistryListener;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
 

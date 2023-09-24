@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.capability.entity.doubles;
+package com.redpxnda.nucleus.facet.doubles;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;

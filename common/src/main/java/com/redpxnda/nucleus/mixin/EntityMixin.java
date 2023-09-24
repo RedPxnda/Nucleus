@@ -1,11 +1,15 @@
 package com.redpxnda.nucleus.mixin;
 
-import com.redpxnda.nucleus.capability.entity.EntityCapability;
-import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
-import com.redpxnda.nucleus.capability.entity.EntityDataSaver;
+import com.redpxnda.nucleus.facet.FacetAttachmentEvent;
+import com.redpxnda.nucleus.facet.FacetHolder;
+import com.redpxnda.nucleus.facet.FacetInventory;
+import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.resolving.wrappers.EntityWrapping;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,38 +17,37 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Mixin(Entity.class)
-public class EntityMixin implements EntityWrapping, EntityDataSaver {
+public class EntityMixin implements EntityWrapping, FacetHolder {
     @Unique
-    private final Map<String, EntityCapability<?>> nucleus$caps = new HashMap<>();
+    private final FacetInventory nucleus$facets = new FacetInventory();
+    
     @Override
-    public Map<String, EntityCapability<?>> getCapabilities() {
-        return nucleus$caps;
+    public FacetInventory getFacets() {
+        return nucleus$facets;
+    }
+    
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void nucleus$setupFacets(EntityType type, World world, CallbackInfo ci) {
+        FacetAttachmentEvent.FacetAttacher attacher = new FacetAttachmentEvent.FacetAttacher();
+        FacetRegistry.ENTITY_FACET_ATTACHMENT.invoker().attach((Entity) (Object) this, attacher);
+        setFacetsFromAttacher(attacher);
     }
 
     @Inject(method = "writeNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    private void ncucleus$saveCapabilities(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
+    private void nucleus$saveFacets(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
         NbtCompound tag = new NbtCompound();
-        nucleus$caps.forEach((id, cap) -> tag.put(id, cap.toNbt()));
-        root.put("nucleus:capabilities", tag);
+        nucleus$facets.forEach((key, facet) -> tag.put(key.id().toString(), facet.toNbt()));
+        root.put(FacetRegistry.TAG_FACETS_ID, tag);
     }
 
     @Inject(method = "readNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V"))
-    private void nucleus$loadCapabilities(NbtCompound root, CallbackInfo ci) {
-        if ((Object) this instanceof Entity entity && root.contains("nucleus:capabilities")) {
-            NbtCompound tag = root.getCompound("nucleus:capabilities");
-            EntityDataRegistry.CAPABILITIES.forEach((cap, holder) -> {
-                if (holder.predicate().test(entity)) {
-                    EntityCapability toLoad = holder.construct(entity);
-
-                    String id = holder.id().toString();
-                    if (tag.contains(id)) toLoad.loadNbt(tag.get(id)); // load nbt if present
-
-                    nucleus$caps.put(id, toLoad);
-                }
+    private void nucleus$loadFacets(NbtCompound root, CallbackInfo ci) {
+        if (root.contains(FacetRegistry.TAG_FACETS_ID)) {
+            NbtCompound tag = root.getCompound(FacetRegistry.TAG_FACETS_ID);
+            nucleus$facets.forEach((key, facet) -> {
+                NbtElement element = tag.get(key.id().toString());
+                FacetRegistry.loadNbtToFacet(element, key, facet);
             });
         }
     }

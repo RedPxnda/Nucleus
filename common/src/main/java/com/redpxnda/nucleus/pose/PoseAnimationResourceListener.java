@@ -66,7 +66,7 @@ public class PoseAnimationResourceListener extends JsonDataLoader {
             hands.setMainhand(true);
         });*/
         RenderEvents.ITEM_HAND_LAYER_RENDER.register((model, player, stack, displayContext, arm, matrices, buffer, light) -> {
-            ClientPoseCapability cap = ClientPoseCapability.getFor(player);
+            ClientPoseFacet cap = ClientPoseFacet.get(player);
             if (cap == null || cap.animation == null) return EventResult.pass();
 
             Arm playerArm = player.getMainArm();
@@ -112,7 +112,7 @@ public class PoseAnimationResourceListener extends JsonDataLoader {
         });
         RenderEvents.RENDER_ARM_WITH_ITEM.register((stage, armRenderer, player, matrices, buffer, stack, hand, partialTicks, pitch, swingProgress, equippedProgress, combinedLight) -> {
             if (stage == RenderEvents.ArmRenderStage.ARM || stage == RenderEvents.ArmRenderStage.ITEM) {
-                ClientPoseCapability cap = ClientPoseCapability.getFor(player);
+                ClientPoseFacet cap = ClientPoseFacet.get(player);
                 if (cap == null || cap.animation == null) return EventResult.pass();
 
                 boolean isUsedArm = cap.usedHand == hand;
@@ -161,7 +161,7 @@ public class PoseAnimationResourceListener extends JsonDataLoader {
         RenderEvents.LIVING_ENTITY_RENDER.register((stage, m, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.POSE_SETUP) return EventResult.pass();
             if (m instanceof BipedEntityModel<? extends LivingEntity> model) {
-                ClientPoseCapability cap = ClientPoseCapability.getFor(entity);
+                ClientPoseFacet cap = ClientPoseFacet.get(entity);
                 if (cap == null || cap.animation == null) return EventResult.pass();
 
                 Arm arm = cap.usedHand == Hand.MAIN_HAND ? entity.getMainArm() : entity.getMainArm().getOpposite();

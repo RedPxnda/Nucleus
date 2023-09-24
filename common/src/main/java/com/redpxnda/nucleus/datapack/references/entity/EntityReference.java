@@ -1,8 +1,5 @@
 package com.redpxnda.nucleus.datapack.references.entity;
 
-import com.redpxnda.nucleus.capability.entity.EntityCapability;
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
-import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
 import com.redpxnda.nucleus.datapack.references.LevelReference;
 import com.redpxnda.nucleus.datapack.references.Reference;
 import com.redpxnda.nucleus.datapack.references.Statics;
@@ -34,7 +31,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
         return StatManager.entity.evaluate(instance);
     }
 
-    public <T extends EntityCapability<?>> T getCapability(Class<T> cap) {
+    /*public <T extends EntityCapability<?>> T getCapability(Class<T> cap) {
         return EntityDataManager.getCapability(instance, cap);
     }
 
@@ -43,7 +40,7 @@ public class EntityReference<E extends Entity> extends Reference<E> {
     }
     public EntityCapability<?> getCapability(ResourceLocationReference ref) {
         return EntityDataManager.getCapability(instance, EntityDataRegistry.getFromId(ref.instance));
-    }
+    }*/
 
     public boolean is(String str) {
         return instance.getType().equals(Registries.ENTITY_TYPE.get(new Identifier(str)));

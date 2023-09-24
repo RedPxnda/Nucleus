@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.capability.entity.doubles;
+package com.redpxnda.nucleus.facet.doubles;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -35,7 +35,7 @@ public class CapabilityRegistryListener extends JsonDataLoader {
         data = map;
     }
     public static void fireWith(Map<String, JsonElement> files) {
-        DoublesCapability.defaultValues.clear();
+        NumericalsFacet.defaultValues.clear();
         boolean isClient = Platform.getEnvironment() == Env.CLIENT;
         if (isClient) ClientCapabilityListener.renderers.clear();
         files.forEach((path, value) -> {
@@ -54,7 +54,7 @@ public class CapabilityRegistryListener extends JsonDataLoader {
                 String name = new Identifier(element.get("name").getAsString()).toString(); // forcing resource location format for compat reasons
 
                 if (element.get("defaultValue") instanceof JsonPrimitive primitive)
-                    DoublesCapability.defaultValues.put(name, primitive.getAsDouble());
+                    NumericalsFacet.defaultValues.put(name, primitive.getAsDouble());
                 if (element.get("rendering") instanceof JsonObject obj && isClient)
                     ClientCapabilityListener.parseRenderingObject(obj, name);
             });

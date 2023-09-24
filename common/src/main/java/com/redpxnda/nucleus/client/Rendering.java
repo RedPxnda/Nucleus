@@ -2,9 +2,9 @@ package com.redpxnda.nucleus.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.redpxnda.nucleus.capability.entity.doubles.ClientCapabilityListener;
-import com.redpxnda.nucleus.capability.entity.doubles.DoublesCapability;
-import com.redpxnda.nucleus.capability.entity.doubles.RenderingMode;
+import com.redpxnda.nucleus.facet.doubles.ClientCapabilityListener;
+import com.redpxnda.nucleus.facet.doubles.NumericalsFacet;
+import com.redpxnda.nucleus.facet.doubles.RenderingMode;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
@@ -177,7 +177,7 @@ public class Rendering {
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc.player != null) {
                 PlayerEntity player = mc.player;
-                DoublesCapability cap = DoublesCapability.getAllFor(player);
+                NumericalsFacet cap = NumericalsFacet.get(player);
                 if (cap == null) return;
 
                 int width = graphics.getScaledWindowWidth()/2;

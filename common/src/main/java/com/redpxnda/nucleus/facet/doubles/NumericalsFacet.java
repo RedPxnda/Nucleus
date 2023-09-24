@@ -1,9 +1,9 @@
-package com.redpxnda.nucleus.capability.entity.doubles;
+package com.redpxnda.nucleus.facet.doubles;
 
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
-import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
+import com.redpxnda.nucleus.facet.EntityFacet;
+import com.redpxnda.nucleus.facet.FacetKey;
 import com.redpxnda.nucleus.network.PlayerSendable;
-import com.redpxnda.nucleus.network.clientbound.DoublesCapabilitySyncPacket;
+import com.redpxnda.nucleus.network.clientbound.DoublesFacetSyncPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Util;
@@ -12,18 +12,19 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DoublesCapability implements SyncedEntityCapability<NbtCompound> {
+public class NumericalsFacet implements EntityFacet<NbtCompound> {
+    public static FacetKey<NumericalsFacet> KEY;
     public static final Map<String, Double> defaultValues = new HashMap<>();
 
     public final Map<String, Double> doubles = new HashMap<>();
     public Map<String, Long> modifications = new HashMap<>(); // only used and modified by client
     public Map<String, Double> prevValues = new HashMap<>(); // only used and modified by client
 
-    public static DoublesCapability getAllFor(Entity entity) {
-        return EntityDataManager.getCapability(entity, DoublesCapability.class);
+    public static NumericalsFacet get(Entity entity) {
+        return KEY.get(entity);
     }
 
-    public DoublesCapability(Entity entity) {
+    public NumericalsFacet(Entity entity) {
         doubles.putAll(defaultValues);
     }
 
@@ -73,6 +74,6 @@ public class DoublesCapability implements SyncedEntityCapability<NbtCompound> {
 
     @Override
     public PlayerSendable createPacket(Entity target) {
-        return new DoublesCapabilitySyncPacket(target, this);
+        return new DoublesFacetSyncPacket(target, this);
     }
 }

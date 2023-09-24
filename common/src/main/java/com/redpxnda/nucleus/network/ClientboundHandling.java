@@ -1,11 +1,10 @@
 package com.redpxnda.nucleus.network;
 
-import com.redpxnda.nucleus.capability.entity.EntityCapability;
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
-import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
-import com.redpxnda.nucleus.capability.entity.doubles.ClientCapabilityListener;
-import com.redpxnda.nucleus.capability.entity.doubles.DoublesCapability;
-import com.redpxnda.nucleus.capability.entity.doubles.RenderingMode;
+import com.redpxnda.nucleus.facet.Facet;
+import com.redpxnda.nucleus.facet.FacetRegistry;
+import com.redpxnda.nucleus.facet.doubles.ClientCapabilityListener;
+import com.redpxnda.nucleus.facet.doubles.NumericalsFacet;
+import com.redpxnda.nucleus.facet.doubles.RenderingMode;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -44,7 +43,7 @@ public class ClientboundHandling {
         );
     }
 
-    public static <T extends NbtElement> @Nullable EntityCapability<T> getEntityCap(int entityId, Identifier capId) {
+    public static <T extends NbtElement> @Nullable Facet<T> getFacetFromSync(int entityId, Identifier facetId) {
         MinecraftClient mc = MinecraftClient.getInstance();
         World level = mc.world;
         if (level == null) return null;
@@ -52,32 +51,32 @@ public class ClientboundHandling {
         Entity entity = level.getEntityById(entityId);
         if (entity == null) return null;
 
-        return (EntityCapability<T>) EntityDataManager.getOrCreateCapability(entity, EntityDataRegistry.getFromId(capId));
+        return (Facet<T>) FacetRegistry.get(facetId).get(entity);
     }
-    public static <T extends NbtElement> @Nullable EntityCapability<T> getAndSetClientEntityCap(int entityId, Identifier capId, T data) {
-        EntityCapability<T> cap = getEntityCap(entityId, capId);
-        if (cap != null)
-            cap.loadNbt(data);
-        return cap;
+    public static <T extends NbtElement> @Nullable Facet<T> getAndSetClientEntityFacet(int entityId, Identifier capId, T data) {
+        Facet<T> facet = getFacetFromSync(entityId, capId);
+        if (facet != null)
+            facet.loadNbt(data);
+        return facet;
     }
 
-    public static void handleClientDoublesCapabilityAdjustment(DoublesCapability cap, NbtCompound capData) {
+    public static void handleClientDoublesFacetAdjustment(NumericalsFacet facet, NbtCompound data) {
         Map<String, Double> prevValues = new HashMap<>();
-        cap.doubles.forEach((key, val) -> {
+        facet.doubles.forEach((key, val) -> {
             RenderingMode mode = ClientCapabilityListener.renderers.get(key);
             long currentTime = Util.getMeasuringTimeMs();
             if (mode != null && mode.adjustInterpolateTarget) {
-                long lastMod = cap.getModificationTime(key, -1000);
+                long lastMod = facet.getModificationTime(key, -1000);
                 float dif = (currentTime - lastMod) / 1000f;
                 float lerpDelta = MathHelper.clamp(dif/mode.interpolateTime, 0f, 1f);
-                val = mode.interpolate.interpolate(lerpDelta, cap.prevValues.getOrDefault(key, val), val);
+                val = mode.interpolate.interpolate(lerpDelta, facet.prevValues.getOrDefault(key, val), val);
             }
 
             prevValues.put(key, val);
-            cap.modifications.put(key, cap.modifications.containsKey(key) ? currentTime : -1000);
+            facet.modifications.put(key, facet.modifications.containsKey(key) ? currentTime : -1000);
         });
-        cap.prevValues = prevValues;
+        facet.prevValues = prevValues;
 
-        cap.loadNbt(capData);
+        facet.loadNbt(data);
     }
 }

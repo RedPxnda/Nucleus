@@ -1,12 +1,13 @@
-package com.redpxnda.nucleus.capability.entity;
+package com.redpxnda.nucleus.facet;
 
 import com.redpxnda.nucleus.network.PlayerSendable;
-import com.redpxnda.nucleus.network.clientbound.CapabilitySyncPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public interface SyncedEntityCapability<T extends NbtElement> extends EntityCapability<T> {
+public interface EntityFacet<T extends NbtElement> extends Facet<T> {
+    default void onRemoved(Entity entity) {}
+
     default void sendToClients(Entity capHolder, Iterable<ServerPlayerEntity> players) {
         createPacket(capHolder).send(players);
     }
@@ -19,7 +20,5 @@ public interface SyncedEntityCapability<T extends NbtElement> extends EntityCapa
     default void sendToClient(Entity capHolder, ServerPlayerEntity player) {
         createPacket(capHolder).send(player);
     }
-    default PlayerSendable createPacket(Entity target) {
-        return new CapabilitySyncPacket<>(target, this);
-    }
+    PlayerSendable createPacket(Entity target);
 }

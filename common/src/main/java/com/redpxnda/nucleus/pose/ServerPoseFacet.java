@@ -1,24 +1,26 @@
 package com.redpxnda.nucleus.pose;
 
-import com.redpxnda.nucleus.capability.entity.SyncedEntityCapability;
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
+import com.redpxnda.nucleus.facet.EntityFacet;
+import com.redpxnda.nucleus.facet.FacetKey;
 import com.redpxnda.nucleus.network.PlayerSendable;
-import com.redpxnda.nucleus.network.clientbound.PoseCapabilitySyncPacket;
+import com.redpxnda.nucleus.network.clientbound.PoseFacetSyncPacket;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 
-public class ServerPoseCapability implements SyncedEntityCapability<NbtCompound> {
-    public static ServerPoseCapability getFor(LivingEntity entity) {
-        return EntityDataManager.getCapability(entity, ServerPoseCapability.class);
+public class ServerPoseFacet implements EntityFacet<NbtCompound> {
+    public static FacetKey<ServerPoseFacet> KEY;
+
+    public static ServerPoseFacet get(ServerPlayerEntity entity) {
+        return KEY.get(entity);
     }
 
     protected String pose = "none";
     protected Hand usedHand = Hand.MAIN_HAND;
     protected long updateTime = -100;
 
-    public ServerPoseCapability(Entity entity) {
+    public ServerPoseFacet(Entity entity) {
     }
 
     @Override
@@ -66,6 +68,6 @@ public class ServerPoseCapability implements SyncedEntityCapability<NbtCompound>
 
     @Override
     public PlayerSendable createPacket(Entity target) {
-        return new PoseCapabilitySyncPacket(target, this);
+        return new PoseFacetSyncPacket(target, this);
     }
 }

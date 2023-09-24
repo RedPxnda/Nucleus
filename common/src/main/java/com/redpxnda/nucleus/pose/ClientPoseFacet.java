@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.pose;
 
 import com.redpxnda.nucleus.Nucleus;
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
+import com.redpxnda.nucleus.facet.FacetKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
@@ -12,16 +12,17 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
-public class ClientPoseCapability extends ServerPoseCapability {
+public class ClientPoseFacet extends ServerPoseFacet {
+    public static FacetKey<ClientPoseFacet> KEY;
     public static final Identifier loc = Nucleus.loc("client_pose");
 
-    public ClientPoseCapability(Entity entity) {
+    public ClientPoseFacet(Entity entity) {
         super(entity);
     }
 
-    public static @Nullable ClientPoseCapability getFor(LivingEntity entity) {
+    public static @Nullable ClientPoseFacet get(LivingEntity entity) {
         if (!(entity instanceof PlayerEntity)) return null;
-        return EntityDataManager.getCapability(entity, ClientPoseCapability.class);
+        return KEY.get(entity);
     }
 
     public HumanoidPoseAnimation animation = null;

@@ -1,71 +1,81 @@
 package com.redpxnda.nucleus.mixin;
 
-import com.redpxnda.nucleus.capability.item.ItemStackCapability;
-import com.redpxnda.nucleus.capability.item.ItemStackDataRegistry;
-import com.redpxnda.nucleus.capability.item.ItemStackDataSaver;
+import com.redpxnda.nucleus.facet.*;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Mixin(ItemStack.class)
-public class ItemStackMixin implements ItemStackDataSaver {
+public class ItemStackMixin implements FacetHolder {
     @Unique
-    private final Map<String, ItemStackCapability<?>> nucleus$caps = new HashMap<>();
+    private final FacetInventory nucleus$facets = new FacetInventory();
+    
     @Override
-    public Map<String, ItemStackCapability<?>> getCapabilities() {
-        return nucleus$caps;
+    public FacetInventory getFacets() {
+        return nucleus$facets;
     }
 
-    @Inject(method = "writeNbt", at = @At("HEAD"))
-    private void nucleus$saveCapabilities(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
-        NbtCompound tag = new NbtCompound();
-        nucleus$caps.forEach((id, cap) -> tag.put(id, cap.toNbt()));
-        root.put("nucleus:capabilities", tag);
+    @Inject(method = "<init>(Lnet/minecraft/item/ItemConvertible;I)V", at = @At("RETURN"))
+    private void nucleus$setupFacetsOnItemCreation(ItemConvertible item, int count, CallbackInfo ci) {
+        nucleus$setupFacets();
     }
 
-    @Inject(method = "fromNbt", at = @At("RETURN"))
-    private static void nucleus$readCapabilities(NbtCompound root, CallbackInfoReturnable<ItemStack> cir) {
-        ItemStack stack = cir.getReturnValue();
-        nucleus$loadCaps(stack, root);
-    }
+    @Inject(method = "writeNbt", at = @At("TAIL"))
+    private void nucleus$saveFacets(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
+        NbtCompound facetsNbt = new NbtCompound();
+        nucleus$facets.forEach((key, facet) -> facetsNbt.put(key.id().toString(), facet.toNbt()));
 
-    private static void nucleus$loadCaps(ItemStack stack, NbtCompound root) {
-        if (stack.isEmpty()) return;
-        if (root.contains("nucleus:capabilities")) {
-            NbtCompound tag = root.getCompound("nucleus:capabilities");
-            ItemStackDataRegistry.CAPABILITIES.forEach((cap, holder) -> {
-                if (holder.predicate().test(stack)) {
-                    ItemStackCapability toLoad = holder.construct(stack);
+        boolean shouldPlace = !facetsNbt.isEmpty();
+        boolean hasTag = root.contains("tag");
 
-                    String id = holder.id().toString();
-                    if (tag.contains(id)) toLoad.loadNbt(tag.get(id)); // load nbt if present
-
-                    nucleus$getAsDataSaver(stack).getCapabilities().put(id, toLoad);
-                }
-            });
+        if (shouldPlace) {
+            if (!hasTag) root.put("tag", new NbtCompound());
+            root.getCompound("tag").put(FacetRegistry.TAG_FACETS_ID, facetsNbt);
         }
+    }
+
+    @Inject(method = "<init>(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("RETURN"))
+    private void nucleus$readFacets(NbtCompound nbt, CallbackInfo ci) {
+        nucleus$setupFacets();
+        nucleus$loadTagFacetData(nbt.getCompound("tag"));
+    }
+
+    @Inject(method = "setNbt", at = @At("TAIL"))
+    private void nucleus$reloadFacets(NbtCompound nbt, CallbackInfo ci) {
+        nucleus$loadTagFacetData(nbt);
     }
 
     @Inject(method = "copy", at = @At("TAIL"))
-    private void nucleus$copyCapabilities(CallbackInfoReturnable<ItemStack> cir) {
+    private void nucleus$copyFacets(CallbackInfoReturnable<ItemStack> cir) {
         ItemStack newStack = cir.getReturnValue();
-        if (newStack.hasNbt()) {
-            nucleus$caps.forEach((id, cap) -> {
-                ItemStackCapability newCap = cap.createCopy();
-                if (cap.getClass() != newCap.getClass()) throw new IllegalStateException("ItemStackCapability copy method unexpectedly did not return a capability of the same class!");
-                nucleus$getAsDataSaver(newStack).getCapabilities().put(id, newCap);
+        FacetHolder.of(newStack).getFacets().forEach((key, facet) -> {
+            if (facet instanceof ItemStackFacet isf) {
+                Facet<?> old = nucleus$facets.get(key);
+                if (old != null) isf.onCopied((ItemStackFacet) old);
+            }
+        });
+    }
+
+    private void nucleus$loadTagFacetData(NbtCompound tag) {
+        if (tag.contains(FacetRegistry.TAG_FACETS_ID)) {
+            NbtCompound facets = tag.getCompound(FacetRegistry.TAG_FACETS_ID);
+            nucleus$facets.forEach((key, facet) -> {
+                NbtElement element = facets.get(key.id().toString());
+                FacetRegistry.loadNbtToFacet(element, key, facet);
             });
         }
     }
 
-    private static ItemStackDataSaver nucleus$getAsDataSaver(ItemStack item) {
-        return ((ItemStackDataSaver) (Object) item);
+    private void nucleus$setupFacets() {
+        FacetAttachmentEvent.FacetAttacher attacher = new FacetAttachmentEvent.FacetAttacher();
+        FacetRegistry.ITEM_FACET_ATTACHMENT.invoker().attach((ItemStack) (Object) this, attacher);
+        setFacetsFromAttacher(attacher);
     }
 }

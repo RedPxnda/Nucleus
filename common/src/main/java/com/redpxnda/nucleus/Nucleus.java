@@ -3,38 +3,43 @@ package com.redpxnda.nucleus;
 import com.ezylang.evalex.config.ExpressionConfiguration;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
-import com.redpxnda.nucleus.capability.entity.EntityDataManager;
-import com.redpxnda.nucleus.capability.entity.EntityDataRegistry;
-import com.redpxnda.nucleus.capability.entity.TrackingUpdateSyncer;
-import com.redpxnda.nucleus.capability.entity.doubles.CapabilityRegistryListener;
-import com.redpxnda.nucleus.capability.entity.doubles.DoublesCapability;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
+import com.redpxnda.nucleus.facet.TrackingUpdateSyncer;
+import com.redpxnda.nucleus.facet.doubles.CapabilityRegistryListener;
+import com.redpxnda.nucleus.facet.doubles.NumericalsFacet;
+import com.redpxnda.nucleus.facet.FacetKey;
+import com.redpxnda.nucleus.facet.FacetRegistry;
+import com.redpxnda.nucleus.facet.ItemStackFacet;
 import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.*;
-import com.redpxnda.nucleus.pose.ClientPoseCapability;
+import com.redpxnda.nucleus.pose.ClientPoseFacet;
 import com.redpxnda.nucleus.pose.PoseAnimationResourceListener;
-import com.redpxnda.nucleus.pose.ServerPoseCapability;
+import com.redpxnda.nucleus.pose.ServerPoseFacet;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
+import com.redpxnda.nucleus.util.MiscUtil;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
-import dev.architectury.event.EventResult;
-import dev.architectury.event.events.common.EntityEvent;
+import dev.architectury.event.CompoundEventResult;
+import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkChannel;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtDouble;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
@@ -53,7 +58,7 @@ public class Nucleus {
     public static final Gson GSON = new Gson();
     public static final Logger LOGGER = LogUtils.getLogger();
     public static MinecraftServer SERVER;
-    private static final List<String> ADDON_NAMESPACES = new ArrayList<>(List.of("nucleus"));
+    private static final List<String> ADDON_NAMESPACES = MiscUtil.initialize(new ArrayList<>(), l -> l.add("nucleus"));
 
     public static void init() {
         reloadListeners();
@@ -71,66 +76,70 @@ public class Nucleus {
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
         // temp test code
-        /*if (Platform.isDevelopmentEnvironment()) {
+        if (Platform.isDevelopmentEnvironment()) {
             InteractionEvent.RIGHT_CLICK_ITEM.register((p, hand) -> {
                 if (p instanceof ServerPlayerEntity player) {
-                    if (player.getMainHandStack().isOf(Items.STICK) || player.getMainHandStack().isOf(Items.SADDLE)) {
+                    /*if (player.getMainHandStack().isOf(Items.STICK) || player.getMainHandStack().isOf(Items.SADDLE)) {
                         double amnt = player.getMainHandStack().isOf(Items.STICK) ? 5 : -5;
-                        DoublesCapability cap = DoublesCapability.getAllFor(player);
+                        NumericalsFacet cap = NumericalsFacet.getAllFor(player);
                         double val = cap.get("nucleus:test");
                         cap.set("nucleus:test", val + amnt);
                         cap.sendToClient(player);
                     } else if (player.getMainHandStack().isOf(Items.ALLIUM)) {
-                        ServerPoseCapability cap = ServerPoseCapability.getFor(player);
+                        ServerPoseFacet cap = ServerPoseFacet.getFor(player);
                         String animation = cap.getPose().equals("none") ? "nucleus:test" : "none";
                         Hand usedHand = !player.isSneaking() ? Hand.MAIN_HAND : Hand.OFF_HAND;
                         cap.set(animation, player.getWorld().getTime(), usedHand);
                         cap.sendToClient(player);
+                    }*/
+                    if (player.getMainHandStack().isOf(Items.STICK)) {
+                        ItemStack stack = player.getMainHandStack();
+                        TestItemFacet cap = TestItemFacet.KEY.get(stack);
+                        System.out.println(cap + " is the cap!");
+                        if (cap != null) {
+                            System.out.println(cap.val + " is the prev val!");
+                            cap.val++;
+                        }
                     }
                 }
                 return CompoundEventResult.pass();
             });
-        }*/
+        }
     }
 
     private static void packets() {
         registerPacket(SyncLuaFilePacket.class, SyncLuaFilePacket::new);
         registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
         registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
-        registerPacket(CapabilitySyncPacket.class, CapabilitySyncPacket::new);
-        registerPacket(DoublesCapabilitySyncPacket.class, DoublesCapabilitySyncPacket::new);
-        registerPacket(SyncCapabilitiesJsonPacket.class, SyncCapabilitiesJsonPacket::new);
-        registerPacket(PoseCapabilitySyncPacket.class, PoseCapabilitySyncPacket::new);
+        registerPacket(FacetSyncPacket.class, FacetSyncPacket::new);
+        registerPacket(DoublesFacetSyncPacket.class, DoublesFacetSyncPacket::new);
+        registerPacket(PoseFacetSyncPacket.class, PoseFacetSyncPacket::new);
+        registerPacket(SyncCapabilitiesJsonPacket.class, SyncCapabilitiesJsonPacket::new); // todo redo this guy
     }
     private static void events() {
     }
     private static void capabilities() {
-        EntityDataRegistry.register(loc("simple_doubles"), e -> true, DoublesCapability.class, DoublesCapability::new);
-        EntityDataRegistry.register(loc("pose"), e -> e instanceof PlayerEntity && !e.getWorld().isClient, ServerPoseCapability.class, ServerPoseCapability::new);
+        // Entities
+        NumericalsFacet.KEY = FacetRegistry.register(loc("entity_numericals"), NumericalsFacet.class);
+        ServerPoseFacet.KEY = FacetRegistry.register(loc("entity_pose"), ServerPoseFacet.class);
         EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
-                EntityDataRegistry.register(ClientPoseCapability.loc, e -> e instanceof PlayerEntity && e.getWorld().isClient, ClientPoseCapability.class, ClientPoseCapability::new)
+                ClientPoseFacet.KEY = FacetRegistry.register(loc("entity_pose_client"), ClientPoseFacet.class)
         );
 
-        EntityEvent.ADD.register((entity, world) -> {
-            EntityDataRegistry.CAPABILITIES.forEach((cls, cap) -> {
-                if (!cap.predicate().test(entity)) return;
-                EntityDataManager.getOrCreateCapability(entity, cls);
-            });
+        // ItemStacks
+        TestItemFacet.KEY = FacetRegistry.register(loc("test_item_facet"), TestItemFacet.class);
 
-            return EventResult.pass();
+        // Attachment
+        FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
+            attacher.add(NumericalsFacet.KEY, new NumericalsFacet(entity));
+
+            if (entity instanceof PlayerEntity) {
+                if (!entity.getWorld().isClient) attacher.add(ServerPoseFacet.KEY, new ServerPoseFacet(entity));
+                else attacher.add(ClientPoseFacet.KEY, new ClientPoseFacet(entity));
+            }
         });
-
-        PlayerEvent.PLAYER_JOIN.register(player -> {
-            if (!Platform.isForge()) // FU forge, don't change stuff like this pls
-                EntityDataRegistry.CAPABILITIES.forEach((cls, cap) -> {
-                    if (!cap.predicate().test(player)) return;
-                    EntityDataManager.getOrCreateCapability(player, cls);
-                });
-
-            DoublesCapability doublesCap = DoublesCapability.getAllFor(player);
-            ServerPoseCapability poseCap = ServerPoseCapability.getFor(player);
-            if (doublesCap != null) doublesCap.sendToClient(player);
-            if (poseCap != null) poseCap.sendToClient(player);
+        FacetRegistry.ITEM_FACET_ATTACHMENT.register((stack, attacher) -> {
+            if (stack.isOf(Items.STICK)) attacher.add(TestItemFacet.KEY, new TestItemFacet());
         });
     }
 
@@ -142,28 +151,35 @@ public class Nucleus {
         return new Identifier(MOD_ID, str);
     }
 
-    /*public static class TestEntityCap implements EntityCapability<CompoundTag> {
-        public static void init() {
-            ItemStackDataRegistry.register(new ResourceLocation(MOD_ID, "test"), e -> e instanceof Player, TestEntityCap.class, TestEntityCap::new);
-        }
+    public static class TestItemFacet implements ItemStackFacet<TestItemFacet, NbtDouble> {
+        public static FacetKey<TestItemFacet> KEY;
 
-        private int value = 0;
-        public int getValue() {
-            return value;
-        }
+        public double val = 5;
 
-        @Override
-        public CompoundTag toNbt() {
-            CompoundTag tag = new CompoundTag();
-            tag.putInt("Int", value);
-            return tag;
+        public TestItemFacet() {
+            //System.out.println("bruv: " + val);
+            //new Throwable().printStackTrace();
+        }
+        public TestItemFacet(double val) {
+            this.val = val;
         }
 
         @Override
-        public void loadNbt(CompoundTag tag) {
-            value = tag.getInt("Int");
+        public NbtDouble toNbt() {
+            return NbtDouble.of(val);
         }
-    }*/
+
+        @Override
+        public void loadNbt(NbtDouble tag) {
+            val = tag.doubleValue();
+        }
+
+        @Override
+        public void onCopied(TestItemFacet original) {
+            //ItemStackFacet.super.onCopied(original);
+            val = original.val;
+        }
+    }
 
     private static void reloadListeners() {
         ReloadListenerRegistry.register(ResourceType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces
