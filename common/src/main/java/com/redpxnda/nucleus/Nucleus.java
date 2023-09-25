@@ -6,12 +6,10 @@ import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
+import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.facet.TrackingUpdateSyncer;
 import com.redpxnda.nucleus.facet.doubles.CapabilityRegistryListener;
 import com.redpxnda.nucleus.facet.doubles.NumericalsFacet;
-import com.redpxnda.nucleus.facet.FacetKey;
-import com.redpxnda.nucleus.facet.FacetRegistry;
-import com.redpxnda.nucleus.facet.ItemStackFacet;
 import com.redpxnda.nucleus.math.evalex.ListContains;
 import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
@@ -24,22 +22,15 @@ import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
 import com.redpxnda.nucleus.util.MiscUtil;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
-import dev.architectury.event.CompoundEventResult;
-import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.networking.NetworkChannel;
-import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtDouble;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
@@ -76,10 +67,10 @@ public class Nucleus {
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
         // temp test code
-        if (Platform.isDevelopmentEnvironment()) {
+        /*if (Platform.isDevelopmentEnvironment()) {
             InteractionEvent.RIGHT_CLICK_ITEM.register((p, hand) -> {
                 if (p instanceof ServerPlayerEntity player) {
-                    /*if (player.getMainHandStack().isOf(Items.STICK) || player.getMainHandStack().isOf(Items.SADDLE)) {
+                    *//*if (player.getMainHandStack().isOf(Items.STICK) || player.getMainHandStack().isOf(Items.SADDLE)) {
                         double amnt = player.getMainHandStack().isOf(Items.STICK) ? 5 : -5;
                         NumericalsFacet cap = NumericalsFacet.getAllFor(player);
                         double val = cap.get("nucleus:test");
@@ -91,20 +82,22 @@ public class Nucleus {
                         Hand usedHand = !player.isSneaking() ? Hand.MAIN_HAND : Hand.OFF_HAND;
                         cap.set(animation, player.getWorld().getTime(), usedHand);
                         cap.sendToClient(player);
-                    }*/
-                    if (player.getMainHandStack().isOf(Items.STICK)) {
+                    }*//*
+                    *//*if (player.getMainHandStack().isOf(Items.STICK)) {
                         ItemStack stack = player.getMainHandStack();
                         TestItemFacet cap = TestItemFacet.KEY.get(stack);
                         System.out.println(cap + " is the cap!");
                         if (cap != null) {
-                            System.out.println(cap.val + " is the prev val!");
                             cap.val++;
+                            cap.updateNbtOf(TestItemFacet.KEY, stack);
+                            System.out.println("Set to: " + cap.val);
+                            System.out.println("Item nbt: " + stack.getNbt());
                         }
-                    }
+                    }*//*
                 }
                 return CompoundEventResult.pass();
             });
-        }
+        }*/
     }
 
     private static void packets() {
@@ -127,7 +120,7 @@ public class Nucleus {
         );
 
         // ItemStacks
-        TestItemFacet.KEY = FacetRegistry.register(loc("test_item_facet"), TestItemFacet.class);
+        //TestItemFacet.KEY = FacetRegistry.register(loc("test_item_facet"), TestItemFacet.class);
 
         // Attachment
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
@@ -138,9 +131,9 @@ public class Nucleus {
                 else attacher.add(ClientPoseFacet.KEY, new ClientPoseFacet(entity));
             }
         });
-        FacetRegistry.ITEM_FACET_ATTACHMENT.register((stack, attacher) -> {
-            if (stack.isOf(Items.STICK)) attacher.add(TestItemFacet.KEY, new TestItemFacet());
-        });
+        /*FacetRegistry.ITEM_FACET_ATTACHMENT.register((stack, attacher) -> {
+            if (MiscUtil.isItemOfIgnoringCount(stack, Items.STICK) && SERVER != null) attacher.add(TestItemFacet.KEY, new TestItemFacet());
+        });*/
     }
 
     public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<PacketByteBuf, T> decoder) {
@@ -151,7 +144,7 @@ public class Nucleus {
         return new Identifier(MOD_ID, str);
     }
 
-    public static class TestItemFacet implements ItemStackFacet<TestItemFacet, NbtDouble> {
+    /*public static class TestItemFacet implements ItemStackFacet<TestItemFacet, NbtDouble> {
         public static FacetKey<TestItemFacet> KEY;
 
         public double val = 5;
@@ -179,7 +172,7 @@ public class Nucleus {
             //ItemStackFacet.super.onCopied(original);
             val = original.val;
         }
-    }
+    }*/
 
     private static void reloadListeners() {
         ReloadListenerRegistry.register(ResourceType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces

@@ -4,8 +4,12 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.internal.LinkedTreeMap;
 import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
+import com.redpxnda.nucleus.mixin.ItemStackAccessor;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import org.apache.commons.lang3.ArrayUtils;
 import org.luaj.vm2.LuaFunction;
@@ -71,6 +75,13 @@ public class MiscUtil {
                 return setup.apply(arg1, arg2);
             }
         };
+    }
+
+    public static boolean isItemEmptyIgnoringCount(ItemStack stack) {
+        return stack == ItemStack.EMPTY || ((ItemStackAccessor) (Object) stack).nucleus$getItemDirect() == Items.AIR;
+    }
+    public static boolean isItemOfIgnoringCount(ItemStack stack, Item itemToCheck) {
+        return ((ItemStackAccessor) (Object) stack).nucleus$getItemDirect() == itemToCheck;
     }
 
     //convert non-primitive array to primitive

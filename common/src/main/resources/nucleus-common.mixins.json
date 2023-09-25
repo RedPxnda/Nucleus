@@ -22,6 +22,7 @@
     "BlockPosMixin",
     "BoxMixin",
     "EntityMixin",
+    "ItemStackAccessor",
     "ItemStackMixin",
     "LivingEntityMixin",
     "MinecraftServerMixin",

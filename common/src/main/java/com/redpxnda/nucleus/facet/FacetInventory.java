@@ -33,6 +33,10 @@ public class FacetInventory {
         return facets.containsKey(key);
     }
 
+    public boolean isEmpty() {
+        return facets.isEmpty();
+    }
+
     public void forEach(BiConsumer<? super FacetKey<?>, ? super Facet<?>> action) {
         facets.forEach(action);
     }
