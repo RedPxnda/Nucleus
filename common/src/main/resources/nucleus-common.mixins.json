@@ -27,6 +27,7 @@
     "LivingEntityMixin",
     "MinecraftServerMixin",
     "ServerEntityMixin",
+    "StatusEffectInstanceMixin",
     "ThreadedAnvilChunkStorageAccessor",
     "TrackedEntityAccessor",
     "WorldMixin"

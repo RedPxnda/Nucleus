@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.facet;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
@@ -16,6 +17,7 @@ public class FacetRegistry {
 
     public static final PrioritizedEvent<FacetAttachmentEvent<Entity>> ENTITY_FACET_ATTACHMENT = PrioritizedEvent.createLoop();
     public static final PrioritizedEvent<FacetAttachmentEvent<ItemStack>> ITEM_FACET_ATTACHMENT = PrioritizedEvent.createLoop();
+    public static final PrioritizedEvent<FacetAttachmentEvent<StatusEffectInstance>> STATUS_EFFECT_FACET_ATTACHMENT = PrioritizedEvent.createLoop();
 
     public static <T extends Facet<?>> FacetKey<T> register(Identifier id, Class<T> cls) {
         FacetKey<T> key = new FacetKey<>(id, cls);

@@ -8,7 +8,9 @@ public interface ItemStackFacet<F extends ItemStackFacet<F, T>, T extends NbtEle
     default void updateNbtOf(FacetKey<F> key, ItemStack stack) {
         stack.getOrCreateSubNbt(FacetRegistry.TAG_FACETS_ID).put(key.id().toString(), toNbt());
     }
-    default void onCopied(F original) {}
+    default void onCopied(F original) {
+        loadNbt(original.toNbt());
+    }
 
     static void setupFacets(ItemStack stack) {
         FacetAttachmentEvent.FacetAttacher attacher = new FacetAttachmentEvent.FacetAttacher();

@@ -122,6 +122,9 @@ public class Nucleus {
         // ItemStacks
         //TestItemFacet.KEY = FacetRegistry.register(loc("test_item_facet"), TestItemFacet.class);
 
+        // Status Effect Instances
+        //TestStatusEffectFacet.KEY = FacetRegistry.register(loc("test_status_effect_facet"), TestStatusEffectFacet.class);
+
         // Attachment
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
             attacher.add(NumericalsFacet.KEY, new NumericalsFacet(entity));
@@ -134,6 +137,9 @@ public class Nucleus {
         /*FacetRegistry.ITEM_FACET_ATTACHMENT.register((stack, attacher) -> {
             if (MiscUtil.isItemOfIgnoringCount(stack, Items.STICK) && SERVER != null) attacher.add(TestItemFacet.KEY, new TestItemFacet());
         });*/
+        /*FacetRegistry.STATUS_EFFECT_FACET_ATTACHMENT.register((object, attacher) -> {
+            attacher.add(TestStatusEffectFacet.KEY, new TestStatusEffectFacet());
+        });*/
     }
 
     public static <T extends SimplePacket> void registerPacket(Class<T> cls, Function<PacketByteBuf, T> decoder) {
@@ -143,6 +149,33 @@ public class Nucleus {
     public static Identifier loc(String str) {
         return new Identifier(MOD_ID, str);
     }
+
+    /*public static class TestStatusEffectFacet implements StatusEffectFacet<TestStatusEffectFacet, NbtDouble> {
+        public static FacetKey<TestStatusEffectFacet> KEY;
+
+        public double val = 0;
+
+        @Override
+        public NbtDouble toNbt() {
+            return NbtDouble.of(val);
+        }
+
+        @Override
+        public void loadNbt(NbtDouble nbt) {
+            val = nbt.doubleValue();
+        }
+
+        @Override
+        public void applyEffectUpdate(LivingEntity entity, StatusEffectInstance instance) {
+            val++;
+        }
+
+        @Override
+        public void onApplied(LivingEntity entity, StatusEffectInstance instance) {
+            entity.setOnFireFor(2);
+            val+=5;
+        }
+    }*/
 
     /*public static class TestItemFacet implements ItemStackFacet<TestItemFacet, NbtDouble> {
         public static FacetKey<TestItemFacet> KEY;

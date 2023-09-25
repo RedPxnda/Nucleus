@@ -34,7 +34,7 @@ public abstract class ItemStackMixin implements FacetHolder {
     @Inject(method = "writeNbt", at = @At("TAIL"))
     private void nucleus$saveFacets(NbtCompound root, CallbackInfoReturnable<NbtCompound> cir) {
         if (MiscUtil.isItemEmptyIgnoringCount((ItemStack) (Object) this)) return;
-        if (!root.contains("tag")) root.put("tag", new NbtCompound());
+        // if (!root.contains("tag")) root.put("tag", new NbtCompound());
         ItemStackFacet.writeFacetsToNbt(root, this);
     }
 

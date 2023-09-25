@@ -1,11 +1,13 @@
 package com.redpxnda.nucleus.facet;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class FacetKey<T extends Facet<?>> {
     private final Identifier id;
@@ -24,8 +26,29 @@ public class FacetKey<T extends Facet<?>> {
         return getInternal(holder);
     }
 
+    public @Nullable T get(StatusEffectInstance holder) {
+        return getInternal(holder);
+    }
+
+    public @Nullable Optional<T> getOptional(Entity holder) {
+        return getOptionalInternal(holder);
+    }
+
+    public @Nullable Optional<T> getOptional(ItemStack holder) {
+        return getOptionalInternal(holder);
+    }
+
+    public @Nullable Optional<T> getOptional(StatusEffectInstance holder) {
+        return getOptionalInternal(holder);
+    }
+
+
     private @Nullable T getInternal(Object holder) {
-        return ((FacetHolder) holder).getFacets().get(this);
+        return FacetHolder.of(holder).getFacets().get(this);
+    }
+
+    private @Nullable Optional<T> getOptionalInternal(Object holder) {
+        return FacetHolder.of(holder).getFacets().getOptional(this);
     }
 
     public Identifier id() {

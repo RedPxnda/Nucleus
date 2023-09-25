@@ -8,6 +8,9 @@ public interface FacetHolder {
     default void setFacetsFromAttacher(FacetAttachmentEvent.FacetAttacher attacher) {
         attacher.facets.forEach(this::setFacet);
     }
+    default void clearFacets() {
+        getFacets().asMap().clear();
+    }
 
     static FacetHolder of(Object holder) {
         return (FacetHolder) holder;
