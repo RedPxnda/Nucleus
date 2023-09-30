@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.codec.AutoCodec;
-import com.redpxnda.nucleus.datapack.lua.LuaSetupListener;
 import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.facet.TrackingUpdateSyncer;
 import com.redpxnda.nucleus.facet.doubles.CapabilityRegistryListener;
@@ -101,7 +100,6 @@ public class Nucleus {
     }
 
     private static void packets() {
-        registerPacket(SyncLuaFilePacket.class, SyncLuaFilePacket::new);
         registerPacket(ParticleCreationPacket.class, ParticleCreationPacket::new);
         registerPacket(PlaySoundPacket.class, PlaySoundPacket::new);
         registerPacket(FacetSyncPacket.class, FacetSyncPacket::new);
@@ -208,7 +206,6 @@ public class Nucleus {
     }*/
 
     private static void reloadListeners() {
-        ReloadListenerRegistry.register(ResourceType.SERVER_DATA, new LuaSetupListener()); // works for all namespaces
         ReloadListenerRegistry.register(ResourceType.SERVER_DATA, new CapabilityRegistryListener()); // works for nucleus and addon namespaces
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(ResourceType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
     }

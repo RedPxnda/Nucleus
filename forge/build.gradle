@@ -43,9 +43,9 @@ dependencies {
     modCompileOnlyApi "top.theillusivec4.curios:curios-forge:${rootProject.curios_version}+${rootProject.minecraft_version}:api"
 
     forgeRuntimeLibrary(include('com.github.ezylang:EvalEx:3.0.4'))
-    forgeRuntimeLibrary(include('com.github.farmboy0.luaj:luaj-core:v3.0.4-farmboy0'))
+    /*forgeRuntimeLibrary(include('com.github.farmboy0.luaj:luaj-core:v3.0.4-farmboy0')) // bye bye lua
     forgeRuntimeLibrary(include('com.github.farmboy0.luaj:luaj-jse:v3.0.4-farmboy0'))
-    forgeRuntimeLibrary(include('com.github.farmboy0.luaj:luaj-jme:v3.0.4-farmboy0'))
+    forgeRuntimeLibrary(include('com.github.farmboy0.luaj:luaj-jme:v3.0.4-farmboy0'))*/
 
     annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
     forgeRuntimeLibrary(include(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}"))

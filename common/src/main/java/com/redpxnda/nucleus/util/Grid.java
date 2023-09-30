@@ -1,8 +1,5 @@
 package com.redpxnda.nucleus.util;
 
-import org.luaj.vm2.LuaFunction;
-import org.luaj.vm2.lib.jse.CoerceJavaToLua;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -58,10 +55,6 @@ public class Grid<T> {
             }
         }
         return null;
-    }
-
-    public T find(LuaFunction function) {
-        return find(t -> function.call(CoerceJavaToLua.coerce(t)).toboolean());
     }
 
     private void validateCoords(int row, int column) {

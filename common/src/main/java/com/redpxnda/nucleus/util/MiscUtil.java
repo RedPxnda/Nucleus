@@ -3,19 +3,11 @@ package com.redpxnda.nucleus.util;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.internal.LinkedTreeMap;
-import com.redpxnda.nucleus.datapack.references.storage.ResourceLocationReference;
 import com.redpxnda.nucleus.mixin.ItemStackAccessor;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
 import org.apache.commons.lang3.ArrayUtils;
-import org.luaj.vm2.LuaFunction;
-import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.lib.TwoArgFunction;
-import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -25,7 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,39 +36,13 @@ public class MiscUtil {
             .put(short.class, Short.class)
             .build();
 
-    public static <T> Predicate<T> predicateFromFunc(Class<T> clazz, LuaFunction function) {
-        return t -> function.call(CoerceJavaToLua.coerce(t)).toboolean();
-    }
-
     public static <I, R> Predicate<R> mapPredicate(Predicate<I> original, Function<R, I> mapper) {
         return r -> original.test(mapper.apply(r));
-    }
-
-    public static StatusEffect getMobEffect(ResourceLocationReference ref) {
-        return Registries.STATUS_EFFECT.getOrEmpty(ref.instance).orElse(StatusEffects.LUCK);
     }
 
     public static <T> T initialize(T obj, Consumer<T> setup) {
         setup.accept(obj);
         return obj;
-    }
-
-    public static TwoArgFunction createTwoArgConsumer(BiConsumer<LuaValue, LuaValue> setup) {
-        return new TwoArgFunction() {
-            @Override
-            public LuaValue call(LuaValue arg1, LuaValue arg2) {
-                setup.accept(arg1, arg2);
-                return LuaValue.NIL;
-            }
-        };
-    }
-    public static TwoArgFunction createTwoArgFunc(BiFunction<LuaValue, LuaValue, LuaValue> setup) {
-        return new TwoArgFunction() {
-            @Override
-            public LuaValue call(LuaValue arg1, LuaValue arg2) {
-                return setup.apply(arg1, arg2);
-            }
-        };
     }
 
     public static boolean isItemEmptyIgnoringCount(ItemStack stack) {
