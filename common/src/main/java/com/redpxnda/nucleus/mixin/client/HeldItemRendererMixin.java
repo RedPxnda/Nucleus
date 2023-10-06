@@ -18,7 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HeldItemRenderer.class)
 public abstract class HeldItemRendererMixin {
-    @Shadow protected abstract void renderArmHoldingItem(MatrixStack poseStack, VertexConsumerProvider buffer, int combinedLight, float equippedProgress, float swingProgress, Arm side);
+    @Shadow
+    protected abstract void renderArmHoldingItem(MatrixStack poseStack, VertexConsumerProvider buffer, int combinedLight, float equippedProgress, float swingProgress, Arm side);
 
     /*@WrapOperation(
             method = "renderItem",
@@ -73,15 +74,18 @@ public abstract class HeldItemRendererMixin {
     }
 
     private boolean nucleus$renderArmWithItemEvent(RenderEvents.ArmRenderStage stage,
-            AbstractClientPlayerEntity player, float partialTicks, float pitch,
-            Hand hand, float swingProgress, ItemStack stack,
-            float equippedProgress, MatrixStack poseStack, VertexConsumerProvider buffer,
-            int combinedLight
+                                                   AbstractClientPlayerEntity player, float partialTicks, float pitch,
+                                                   Hand hand, float swingProgress, ItemStack stack,
+                                                   float equippedProgress, MatrixStack poseStack, VertexConsumerProvider buffer,
+                                                   int combinedLight
     ) {
         boolean bl = hand == Hand.MAIN_HAND;
         Arm humanoidArm = bl ? player.getMainArm() : player.getMainArm().getOpposite();
 
-        ArmRenderer armRenderer = new ArmRenderer(this::renderArmHoldingItem, poseStack, buffer, combinedLight, equippedProgress, swingProgress, humanoidArm);
+        ArmRenderer armRenderer = new ArmRenderer((poseStack2, buffer2, combinedLight2, equippedProgress2, swingProgress2, side2) -> {
+            HeldItemRenderer heldItemRenderer = (HeldItemRenderer) (Object) this;
+            ((HeldItemRendererAccessor) heldItemRenderer).callRenderArmHoldingItem(poseStack2, buffer2, combinedLight2, equippedProgress2, swingProgress2, side2);
+        }, poseStack, buffer, combinedLight, equippedProgress, swingProgress, humanoidArm);
         EventResult eventResult = RenderEvents.RENDER_ARM_WITH_ITEM.invoker().render(
                 stage, armRenderer, player, poseStack, buffer, stack, hand, partialTicks, pitch, swingProgress, equippedProgress, combinedLight
         );
