@@ -19,6 +19,7 @@ import com.redpxnda.nucleus.pose.ServerPoseFacet;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
 import com.redpxnda.nucleus.util.MiscUtil;
+import com.redpxnda.nucleus.util.Operation;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
 import dev.architectury.event.events.common.LifecycleEvent;
@@ -62,6 +63,7 @@ public class Nucleus {
         ReloadSyncPackets.init();
         TrackingUpdateSyncer.init();
         Wrappers.init();
+        Operation.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
