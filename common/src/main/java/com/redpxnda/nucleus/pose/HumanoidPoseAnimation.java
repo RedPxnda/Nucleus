@@ -6,6 +6,7 @@ import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -184,6 +185,38 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         @Override
         public void additionalSetup() {
             if (rotation != EMPTY_VEC) MathUtil.mapVector3f(rotation, MathUtil::radians);
+        }
+
+        public Matrix4f generateMatrix() {
+            Matrix4f translationMatrix = new Matrix4f().translate(position);
+
+            Matrix4f rotationMatrix = new Matrix4f()
+                    .rotateX(rotation.x)
+                    .rotateY(rotation.y)
+                    .rotateZ(rotation.z);
+
+            Matrix4f scaleMatrix = new Matrix4f().scale(scale);
+
+            return new Matrix4f()
+                    .mul(translationMatrix)
+                    .mul(rotationMatrix)
+                    .mul(scaleMatrix);
+        }
+
+        public Matrix4f generateMatrix(FrameMultiplier multiplier) {
+            Matrix4f translationMatrix = new Matrix4f().translate(position.x*multiplier.position.x, position.y*multiplier.position.y, position.z*multiplier.position.z);
+
+            Matrix4f rotationMatrix = new Matrix4f()
+                    .rotateX(rotation.x*multiplier.rotation.x)
+                    .rotateY(rotation.y*multiplier.rotation.y)
+                    .rotateZ(rotation.z*multiplier.rotation.z);
+
+            Matrix4f scaleMatrix = new Matrix4f().scale(scale.x*multiplier.scale.x, scale.y*multiplier.scale.y, scale.z*multiplier.scale.z);
+
+            return new Matrix4f()
+                    .mul(translationMatrix)
+                    .mul(rotationMatrix)
+                    .mul(scaleMatrix);
         }
     }
 }

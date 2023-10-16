@@ -22,7 +22,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,25 +200,11 @@ public class PoseAnimationResourceListener extends JsonDataLoader {
     @Environment(EnvType.CLIENT)
     public static void positionMatricesToState(@Nullable HumanoidPoseAnimation.FrameMultiplier leftHandMult, HumanoidPoseAnimation.PartState rel, HumanoidPoseAnimation.PartState exact, MatrixStack matrices) {
         if (leftHandMult == null) {
-            matrices.translate(rel.position.x, rel.position.y, rel.position.z);
-            matrices.translate(exact.position.x, exact.position.y, exact.position.z);
-
-            Quaternionf quat = new Quaternionf();
-            matrices.multiply(quat.rotationXYZ(rel.rotation.x, rel.rotation.y, rel.rotation.z));
-            matrices.multiply(quat.rotationXYZ(exact.rotation.x, exact.rotation.y, exact.rotation.z));
-
-            matrices.scale(rel.scale.x, rel.scale.y, rel.scale.z);
-            matrices.scale(exact.scale.x, exact.scale.y, exact.scale.z);
+            matrices.multiplyPositionMatrix(exact.generateMatrix());
+            matrices.multiplyPositionMatrix(rel.generateMatrix());
         } else {
-            matrices.translate(rel.position.x*leftHandMult.position.x, rel.position.y*leftHandMult.position.y, rel.position.z*leftHandMult.position.z);
-            matrices.translate(exact.position.x*leftHandMult.position.x, exact.position.y*leftHandMult.position.y, exact.position.z*leftHandMult.position.z);
-
-            Quaternionf quat = new Quaternionf();
-            matrices.multiply(quat.rotationXYZ(rel.rotation.x*leftHandMult.rotation.x, rel.rotation.y*leftHandMult.rotation.y, rel.rotation.z*leftHandMult.rotation.z));
-            matrices.multiply(quat.rotationXYZ(exact.rotation.x*leftHandMult.rotation.x, exact.rotation.y*leftHandMult.rotation.y, exact.rotation.z*leftHandMult.rotation.z));
-
-            matrices.scale(rel.scale.x*leftHandMult.scale.x, rel.scale.y*leftHandMult.scale.y, rel.scale.z*leftHandMult.scale.z);
-            matrices.scale(exact.scale.x*leftHandMult.scale.x, exact.scale.y*leftHandMult.scale.y, exact.scale.z*leftHandMult.scale.z);
+            matrices.multiplyPositionMatrix(exact.generateMatrix(leftHandMult));
+            matrices.multiplyPositionMatrix(rel.generateMatrix(leftHandMult));
         }
     }
 
