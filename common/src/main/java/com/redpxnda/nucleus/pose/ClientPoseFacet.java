@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 @Environment(EnvType.CLIENT)
 public class ClientPoseFacet extends ServerPoseFacet {
     public static FacetKey<ClientPoseFacet> KEY;
-    public static final Identifier loc = Nucleus.loc("client_pose");
+    public static final Identifier loc = Nucleus.loc("entity_pose_client");
 
     public ClientPoseFacet(Entity entity) {
         super(entity);

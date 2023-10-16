@@ -47,6 +47,28 @@ public class ServerPoseFacet implements EntityFacet<NbtCompound> {
         set(pose, time);
         setUsedHand(usedHand);
     }
+    public void set(String pose, ServerPlayerEntity facetHolder) {
+        set(pose, facetHolder.getWorld().getTime());
+        sendToTrackers(facetHolder);
+        sendToClient(facetHolder);
+    }
+    public void set(String pose, ServerPlayerEntity facetHolder, Hand usedHand) {
+        set(pose, facetHolder.getWorld().getTime(), usedHand);
+        sendToTrackers(facetHolder);
+        sendToClient(facetHolder);
+    }
+    public void reset() {
+        setPose("none");
+    }
+    public void reset(long time) {
+        setPose("none");
+        setUpdateTime(time);
+    }
+    public void reset(ServerPlayerEntity facetHolder) {
+        set("none", facetHolder.getWorld().getTime());
+        sendToTrackers(facetHolder);
+        sendToClient(facetHolder);
+    }
     public void setPose(String pose) {
         this.pose = pose;
     }

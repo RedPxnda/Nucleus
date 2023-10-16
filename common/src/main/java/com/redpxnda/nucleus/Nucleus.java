@@ -114,7 +114,7 @@ public class Nucleus {
         NumericalsFacet.KEY = FacetRegistry.register(loc("entity_numericals"), NumericalsFacet.class);
         ServerPoseFacet.KEY = FacetRegistry.register(loc("entity_pose"), ServerPoseFacet.class);
         EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
-                ClientPoseFacet.KEY = FacetRegistry.register(loc("entity_pose_client"), ClientPoseFacet.class)
+                ClientPoseFacet.KEY = FacetRegistry.register(ClientPoseFacet.loc, ClientPoseFacet.class)
         );
 
         // ItemStacks
