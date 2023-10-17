@@ -75,13 +75,13 @@ public class Nucleus {
                         double val = cap.get("nucleus:test");
                         cap.set("nucleus:test", val + amnt);
                         cap.sendToClient(player);
-                    } else if (player.getMainHandStack().isOf(Items.ALLIUM)) {
-                        ServerPoseFacet cap = ServerPoseFacet.getFor(player);
+                    } else *//*if (player.getMainHandStack().isOf(Items.ALLIUM)) {
+                        ServerPoseFacet cap = ServerPoseFacet.get(player);
                         String animation = cap.getPose().equals("none") ? "nucleus:test" : "none";
                         Hand usedHand = !player.isSneaking() ? Hand.MAIN_HAND : Hand.OFF_HAND;
                         cap.set(animation, player.getWorld().getTime(), usedHand);
                         cap.sendToClient(player);
-                    }*//*
+                    }
                     *//*if (player.getMainHandStack().isOf(Items.STICK)) {
                         ItemStack stack = player.getMainHandStack();
                         TestItemFacet cap = TestItemFacet.KEY.get(stack);
