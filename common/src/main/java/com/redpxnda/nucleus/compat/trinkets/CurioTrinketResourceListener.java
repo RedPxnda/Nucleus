@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.compat.trinkets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.registry.NucleusNamespaces;
 import com.redpxnda.nucleus.util.JsonUtil;
 import dev.architectury.platform.Platform;
 import net.minecraft.resource.JsonDataLoader;
@@ -28,7 +29,7 @@ public class CurioTrinketResourceListener extends JsonDataLoader {
         slotNames.clear();
         invalidItemCount = 0;
         object.forEach((key, value) -> {
-            if (!Nucleus.isNamespaceValid(key.getNamespace())) return;
+            if (!NucleusNamespaces.isNamespaceValid(key.getNamespace())) return;
             if (!(value instanceof JsonObject obj))
                 throw new RuntimeException("JSON data used for trinket data at '" + key + "' is not a JSON object! -> " + value);
 

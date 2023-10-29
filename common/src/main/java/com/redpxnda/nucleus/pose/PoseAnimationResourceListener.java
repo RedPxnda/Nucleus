@@ -7,6 +7,7 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.codec.MiscCodecs;
 import com.redpxnda.nucleus.event.RenderEvents;
+import com.redpxnda.nucleus.registry.NucleusNamespaces;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -41,7 +42,7 @@ public class PoseAnimationResourceListener extends JsonDataLoader {
     protected void apply(Map<Identifier, JsonElement> files, ResourceManager resourceManager, Profiler profiler) {
         animations.clear();
         files.forEach((key, value) -> {
-            if (!Nucleus.isNamespaceValid(key.getNamespace())) return;
+            if (!NucleusNamespaces.isNamespaceValid(key.getNamespace())) return;
             List<JsonObject> list = new ArrayList<>();
             if (value instanceof JsonObject object)
                 list.add(object);

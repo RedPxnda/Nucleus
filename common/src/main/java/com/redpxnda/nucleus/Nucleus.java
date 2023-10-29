@@ -18,7 +18,6 @@ import com.redpxnda.nucleus.pose.PoseAnimationResourceListener;
 import com.redpxnda.nucleus.pose.ServerPoseFacet;
 import com.redpxnda.nucleus.registry.NucleusRegistries;
 import com.redpxnda.nucleus.resolving.wrappers.Wrappers;
-import com.redpxnda.nucleus.util.MiscUtil;
 import com.redpxnda.nucleus.util.ReloadSyncPackets;
 import com.redpxnda.nucleus.util.SupporterUtil;
 import dev.architectury.event.events.common.LifecycleEvent;
@@ -33,8 +32,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -48,7 +45,6 @@ public class Nucleus {
     public static final Gson GSON = new Gson();
     public static final Logger LOGGER = LogUtils.getLogger();
     public static MinecraftServer SERVER;
-    private static final List<String> ADDON_NAMESPACES = MiscUtil.initialize(new ArrayList<>(), l -> l.add("nucleus"));
 
     public static void init() {
         reloadListeners();
@@ -210,10 +206,4 @@ public class Nucleus {
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(ResourceType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
     }
 
-    public static void addAddonNamespace(String namespace) {
-        ADDON_NAMESPACES.add(namespace);
-    }
-    public static boolean isNamespaceValid(String namespace) {
-        return ADDON_NAMESPACES.contains(namespace);
-    }
 }

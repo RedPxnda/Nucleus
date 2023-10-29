@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.registry.NucleusNamespaces;
 import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import net.minecraft.resource.JsonDataLoader;
@@ -28,7 +29,7 @@ public class CapabilityRegistryListener extends JsonDataLoader {
     @Override
     protected void apply(Map<Identifier, JsonElement> object, ResourceManager resourceManager, Profiler profilerFiller) {
         Map<String, JsonElement> map = object.entrySet().stream()
-                .filter(entry -> Nucleus.isNamespaceValid(entry.getKey().getNamespace()))
+                .filter(entry -> NucleusNamespaces.isNamespaceValid(entry.getKey().getNamespace()))
                 .map(entry -> Map.entry(entry.getKey().toString(), entry.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         fireWith(map);
