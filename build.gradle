@@ -33,6 +33,63 @@ subprojects {
     }
 }
 
+tasks.register('clean-builds') {
+    dependsOn(':forge:clean',':fabric:clean')
+    doLast {
+        println "Cleaned previous build"
+    }
+}
+
+tasks.register('buildBoth') {
+    dependsOn('clean-builds', ':fabric:build', ':forge:build')
+    doLast {
+        def modVersion = rootProject.mod_version
+        def minecraftVersion = rootProject.minecraft_version
+        def fabricBuildDir = project(':fabric').file('build/libs')
+        def forgeBuildDir = project(':forge').file('build/libs')
+        def fabricJar = fabricBuildDir.listFiles().find { it.name.endsWith("${modVersion}.jar") }
+        def forgeJar = forgeBuildDir.listFiles().find { it.name.endsWith("${modVersion}.jar") }
+
+        if (fabricJar) {
+            copy {
+                from fabricJar
+                into project.file('Merged')
+                rename { fileName ->
+                    "Truly-Modular-Arsenal-${modVersion}-${minecraftVersion}-fabric.jar"
+                }
+            }
+        }
+
+        if (forgeJar) {
+            copy {
+                from forgeJar
+                into project.file('Merged')
+                rename { fileName ->
+                    "Truly-Modular-Arsenal-${modVersion}-${minecraftVersion}-forge.jar"
+                }
+            }
+        }
+
+        println "Builds completed"
+    }
+}
+
+tasks.register('buildMerged') {
+    dependsOn('clean-builds',':fabric:build', ':forge:build')
+    doLast {
+        println "Builds completed"
+    }
+    finalizedBy ':mergeJars'
+}
+
+tasks.register('buildAll') {
+    dependsOn('buildBoth')
+    doLast {
+        println "Merging..."
+    }
+    finalizedBy ':mergeJars'
+}
+
 allprojects {
     apply plugin: "java"
     apply plugin: "architectury-plugin"
