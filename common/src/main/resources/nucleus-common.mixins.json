@@ -16,7 +16,8 @@
         "client.MatrixStackAccessor",
         "client.MouseMixin",
         "client.ParticleEngineMixin",
-        "client.WorldRendererAccessor"
+        "client.WorldRendererAccessor",
+        "client.HeldItemRendererAccessor"
     ],
     "mixins": [
         "BlockPosMixin",
@@ -30,8 +31,7 @@
         "StatusEffectInstanceMixin",
         "ThreadedAnvilChunkStorageAccessor",
         "TrackedEntityAccessor",
-        "WorldMixin",
-        "client.HeldItemRendererAccessor"
+        "WorldMixin"
     ],
     "injectors": {
         "defaultRequire": 1
