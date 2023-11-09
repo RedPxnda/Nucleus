@@ -30,24 +30,23 @@ public class FacetKey<T extends Facet<?>> {
         return getInternal(holder);
     }
 
-    public @Nullable Optional<T> getOptional(Entity holder) {
+    public Optional<T> getOptional(Entity holder) {
         return getOptionalInternal(holder);
     }
 
-    public @Nullable Optional<T> getOptional(ItemStack holder) {
+    public Optional<T> getOptional(ItemStack holder) {
         return getOptionalInternal(holder);
     }
 
-    public @Nullable Optional<T> getOptional(StatusEffectInstance holder) {
+    public Optional<T> getOptional(StatusEffectInstance holder) {
         return getOptionalInternal(holder);
     }
-
 
     private @Nullable T getInternal(Object holder) {
         return FacetHolder.of(holder).getFacets().get(this);
     }
 
-    private @Nullable Optional<T> getOptionalInternal(Object holder) {
+    private Optional<T> getOptionalInternal(Object holder) {
         return FacetHolder.of(holder).getFacets().getOptional(this);
     }
 
