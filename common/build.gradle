@@ -1,5 +1,7 @@
 architectury {
-    common(rootProject.enabled_platforms.split(","))
+    common(rootProject.enabled_platforms.split(",")) {
+        it.platformPackage "neoforge", "forge" // set ExpectPlatform's neoforge extension as the forge package
+    }
 }
 
 loom {
@@ -18,12 +20,9 @@ dependencies {
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
     implementation('com.github.ezylang:EvalEx:3.0.4')
-    /*implementation('com.github.farmboy0.luaj:luaj-core:v3.0.4-farmboy0') // bye bye lua
-    implementation('com.github.farmboy0.luaj:luaj-jse:v3.0.4-farmboy0')
-    implementation('com.github.farmboy0.luaj:luaj-jme:v3.0.4-farmboy0')*/
 
-    annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
-    implementation(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
+//    annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}") // arch broken w/ mixinextras
+//    implementation(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
 }
 
 publishing {

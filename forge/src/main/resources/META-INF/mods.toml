@@ -33,3 +33,6 @@ mandatory = true
 versionRange = "[9.0.8,)"
 ordering = "AFTER"
 side = "BOTH"
+
+[[mixins]]
+config = "nucleus.mixins.json"
