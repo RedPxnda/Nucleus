@@ -16,6 +16,9 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
       - name: Read Gradle Properties
         uses: BrycensRanch/read-properties-action@v1
         id: properties
@@ -23,25 +26,15 @@ jobs:
           file: gradle.properties
           all: true
 
-      - name: Read changelog.md
-        id: changelog
-        uses: jaywcjlove/github-action-read-file@main
-        with:
-          path: changelog.md
-
       - name: Build with Gradle
         run: ./gradlew build
         
       - name: Create Github Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
-          release_name: Nucleus Release v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
-          draft: false
-          prerelease: false
-          body: ${{ steps.changelog.outputs.content }}
+          bodyFile: changelog.md
+          tag: v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+          name: Nucleus Release v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
 
       - name: Upload Fabric Jar to Github Release
         uses: svenstaro/upload-release-action@v2
