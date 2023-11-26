@@ -19,12 +19,21 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Read Gradle Properties
-        uses: BrycensRanch/read-properties-action@v1
-        id: properties
+      - name: Read Gradle Properties Minecraft Version
+        uses: madhead/read-java-properties@v2
+        id: mc_ver
         with:
           file: gradle.properties
-          all: true
+          property: minecraft_version
+          default: COULD_NOT_READ
+          
+      - name: Read Gradle Properties Minecraft Version
+        uses: madhead/read-java-properties@v2
+        id: mod_ver
+        with:
+          file: gradle.properties
+          property: mod_version
+          default: COULD_NOT_READ
 
       - name: Build with Gradle
         run: ./gradlew build
@@ -33,30 +42,30 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           bodyFile: changelog.md
-          tag: v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
-          name: Nucleus Release v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+          tag: v${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}
+          name: Nucleus Release v${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}
 
       - name: Upload Fabric Jar to Github Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}.jar
-          tag: v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+          file: build/${{ steps.mod_ver.outputs.value }}/nucleus-fabric-${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}.jar
+          tag: v${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}
           overwrite: true
 
       - name: Upload Forge Jar to Github Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}.jar
-          tag: v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+          file: build/${{ steps.mod_ver.outputs.value }}/nucleus-forge-${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}.jar
+          tag: v${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}
           overwrite: true
 
       - name: Upload Common Jar to Github Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}.jar
-          tag: v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+          file: build/${{ steps.mod_ver.outputs.value }}/nucleus-common-${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}.jar
+          tag: v${{ steps.mc_ver.outputs.value }}+${{ steps.mod_ver.outputs.value }}
           overwrite: true
       
