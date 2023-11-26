@@ -58,7 +58,7 @@ subprojects {
     }
 }
 
-tasks.register('clean-builds') {
+/*tasks.register('clean-builds') {
     dependsOn(':forge:clean',':fabric:clean')
     doLast {
         println "Cleaned previous build"
@@ -97,4 +97,4 @@ tasks.register('buildBoth') {
 
         println "Builds completed"
     }
-}
+}*/

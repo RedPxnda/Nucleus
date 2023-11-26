@@ -37,9 +37,6 @@ dependencies {
         modCompileOnlyApi("dev.emi:trinkets:${rootProject.trinkets_version}")
 
     implementation(include('com.github.ezylang:EvalEx:3.0.4'))
-    /*implementation(include('com.github.farmboy0.luaj:luaj-core:v3.0.4-farmboy0')) // bye bye lua
-    implementation(include('com.github.farmboy0.luaj:luaj-jse:v3.0.4-farmboy0'))
-    implementation(include('com.github.farmboy0.luaj:luaj-jme:v3.0.4-farmboy0'))*/
 
     annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
     implementation(include(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}"))
@@ -68,6 +65,9 @@ remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
     archiveClassifier = null
+
+    archiveFileName = "nucleus-fabric-${rootProject.minecraft_version}+${rootProject.mod_version}.jar"
+    destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}"))
 }
 
 jar {
