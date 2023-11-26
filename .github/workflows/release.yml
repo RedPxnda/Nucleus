@@ -28,7 +28,7 @@ jobs:
 
       - name: Read changelog.md
         id: changelog
-        uses: jaywcjlove/github-action-read-file@v1
+        uses: jaywcjlove/github-action-read-file@main
         with:
           path: changelog.md
 
