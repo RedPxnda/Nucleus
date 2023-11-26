@@ -36,10 +36,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class Nucleus {
-    public static final ExpressionConfiguration EXPRESSION_CONFIG = ExpressionConfiguration.defaultConfiguration().withAdditionalFunctions(
-            Map.entry("LIST_HAS", new ListContains()),
-            Map.entry("SWITCH", new Switch())
-    );
+//    public static final ExpressionConfiguration EXPRESSION_CONFIG = ExpressionConfiguration.defaultConfiguration().withAdditionalFunctions(
+//            Map.entry("LIST_HAS", new ListContains()),
+//            Map.entry("SWITCH", new Switch())
+//    );
     public static final String MOD_ID = "nucleus";
     public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();

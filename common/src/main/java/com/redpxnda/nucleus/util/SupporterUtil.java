@@ -23,7 +23,7 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * {@link SupporterUtil} is the main class used to manage Modding Magnificence supporters.
  */
 public class SupporterUtil {
-    private static Map<UUID, Integer> supporters = new HashMap<>();
+    private static final Map<UUID, Integer> supporters = new HashMap<>();
 
     public static int getTier(PlayerEntity player) {
         return getTier(player.getUuid());
@@ -60,9 +60,9 @@ public class SupporterUtil {
     }
 
     public static void init() {
-        PlayerEvent.PLAYER_JOIN.register(p -> {
-            int t = getTier(p);
-            LOGGER.info("Saved supporter tier data for " + p.getEntityName() + "(UUID: " + p.getUuidAsString() + "). Tier: " + t);
-        });
+//        PlayerEvent.PLAYER_JOIN.register(p -> {
+//            int t = getTier(p);
+//            LOGGER.info("Saved supporter tier data for " + p.getEntityName() + "(UUID: " + p.getUuidAsString() + "). Tier: " + t);
+//        });
     }
 }
