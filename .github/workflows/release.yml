@@ -20,7 +20,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Read Gradle Properties Minecraft Version
-        uses: madhead/read-java-properties@v2
+        uses: madhead/read-java-properties@2
         id: mc_ver
         with:
           file: gradle.properties
@@ -28,7 +28,7 @@ jobs:
           default: COULD_NOT_READ
           
       - name: Read Gradle Properties Minecraft Version
-        uses: madhead/read-java-properties@v2
+        uses: madhead/read-java-properties@2
         id: mod_ver
         with:
           file: gradle.properties
