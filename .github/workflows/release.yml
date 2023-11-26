@@ -20,7 +20,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Read Gradle Properties
-        uses: BrycensRanch/read-properties-action@latest
+        uses: BrycensRanch/read-properties-action@v1
         id: properties
         with:
           file: gradle.properties
@@ -28,7 +28,7 @@ jobs:
 
       - name: Read changelog.md
         id: changelog
-        uses: jaywcjlove/github-action-read-file@main
+        uses: jaywcjlove/github-action-read-file@v1
         with:
           path: changelog.md
 
