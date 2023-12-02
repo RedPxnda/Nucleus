@@ -1,6 +1,5 @@
 package com.redpxnda.nucleus;
 
-import com.ezylang.evalex.config.ExpressionConfiguration;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.client.Rendering;
@@ -9,8 +8,6 @@ import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.facet.TrackingUpdateSyncer;
 import com.redpxnda.nucleus.facet.doubles.CapabilityRegistryListener;
 import com.redpxnda.nucleus.facet.doubles.NumericalsFacet;
-import com.redpxnda.nucleus.math.evalex.ListContains;
-import com.redpxnda.nucleus.math.evalex.Switch;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.*;
 import com.redpxnda.nucleus.pose.ClientPoseFacet;
@@ -32,7 +29,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
-import java.util.Map;
 import java.util.function.Function;
 
 public class Nucleus {

@@ -68,6 +68,24 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     @SafeVarargs
+    static <T> PrioritizedEvent<T> createBoolean(T... typeGetter) {
+        if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
+        return createBoolean((Class<T>) typeGetter.getClass().getComponentType());
+    }
+    static <T> PrioritizedEvent<T> createBoolean(Class<T> cls) {
+        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+            @Override
+            protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
+                for (T listener : listeners.keySet()) {
+                    boolean result = Objects.requireNonNull(Impl.invokeMethod(listener, method, args));
+                    if (!result) return false;
+                }
+                return EventResult.pass();
+            }
+        }));
+    }
+
+    @SafeVarargs
     static <T> PrioritizedEvent<T> createCompoundEventResult(T... typeGetter) {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createCompoundEventResult((Class<T>) typeGetter.getClass().getComponentType());
