@@ -24,7 +24,7 @@ dependencies {
 }
 
 remapJar {
-    archiveFileName = "nucleus-common-${rootProject.minecraft_version}+${rootProject.mod_version}.jar"
+    archiveFileName = "nucleus-common-${rootProject.minecraft_version}-${rootProject.mod_version}.jar"
     destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}"))
 }
 
