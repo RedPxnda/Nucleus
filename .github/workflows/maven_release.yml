@@ -40,7 +40,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -48,7 +48,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -56,7 +56,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -64,7 +64,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -72,7 +72,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -80,7 +80,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -88,7 +88,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -96,7 +96,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
 
@@ -104,6 +104,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/repository/com/${{ steps.all.outputs.github }}/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
+          file: build/repository/com/RedPxnda/Nucleus/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
           tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
           overwrite: true
