@@ -32,6 +32,15 @@ remapSourcesJar {
     destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/common"))
 }
 
+tasks.register('githubPublish') {
+    finalizedBy ':common:publish'
+    group = 'publishing'
+
+    doLast {
+        publishing.publications.mavenCommon.groupId = "com.${rootProject.github}"
+    }
+}
+
 publishing {
     publications {
         mavenCommon(MavenPublication) {

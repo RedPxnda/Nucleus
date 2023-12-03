@@ -96,6 +96,15 @@ components.java {
     }
 }
 
+tasks.register('githubPublish') {
+    finalizedBy ':forge:publish'
+    group = 'publishing'
+
+    doLast {
+        publishing.publications.mavenForge.groupId = "com.${rootProject.github}"
+    }
+}
+
 publishing {
     publications {
         mavenForge(MavenPublication) {

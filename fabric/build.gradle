@@ -90,6 +90,15 @@ components.java {
     }
 }
 
+tasks.register('githubPublish') {
+    finalizedBy ':fabric:publish'
+    group = 'publishing'
+
+    doLast {
+        publishing.publications.mavenFabric.groupId = "com.${rootProject.github}"
+    }
+}
+
 publishing {
     publications {
         mavenFabric(MavenPublication) {
