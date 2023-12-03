@@ -66,8 +66,12 @@ remapJar {
     dependsOn shadowJar
     archiveClassifier = null
 
-    archiveFileName = "nucleus-fabric-${rootProject.minecraft_version}-${rootProject.mod_version}.jar"
-    destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}"))
+    archiveFileName = "nucleus-${project.name}-${rootProject.minecraft_version}-${rootProject.mod_version}.jar"
+    destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/fabric"))
+}
+remapSourcesJar {
+    archiveFileName = "nucleus-${project.name}-${rootProject.minecraft_version}-${rootProject.mod_version}-sources.jar"
+    destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/fabric"))
 }
 
 jar {
@@ -90,12 +94,16 @@ publishing {
     publications {
         mavenFabric(MavenPublication) {
             artifactId = rootProject.archives_base_name + "-" + project.name
+            version = rootProject.minecraft_version + "-" + rootProject.mod_version
+
             from components.java
         }
     }
 
     // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
     repositories {
-        // Add repositories to publish to here.
+        maven {
+            url uri(file("$rootDir/build/repository"))
+        }
     }
 }

@@ -1,0 +1,109 @@
+name: Maven Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Read Gradle Properties
+        uses: BrycensRanch/read-properties-action@v1
+        id: all
+        with:
+          file: gradle.properties
+          all: true
+
+      - name: Build with Gradle
+        run: ./gradlew publish
+        
+      - name: Create Github Release
+        uses: ncipollo/release-action@v1
+        with:
+          bodyFile: changelog.md
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          name: Nucleus Maven Release v${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+
+      - name: Upload Fabric Jar to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Fabric Sources Jar to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Fabric Pom to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-fabric/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-fabric-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Forge Jar to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Forge Sources Jar to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Forge Pom to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-forge/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-forge-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Common Jar to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.jar
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Common Sources Jar to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}-sources.jar
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
+
+      - name: Upload Common Pom to Github Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/repository/com/redpxnda/nucleus-common/${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}/nucleus-common-${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}.pom
+          tag: ${{ steps.all.outputs.minecraft_version }}-${{ steps.all.outputs.mod_version }}
+          overwrite: true
