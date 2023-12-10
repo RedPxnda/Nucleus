@@ -31,6 +31,9 @@ public class PriorityMap<K> extends LinkedHashMap<K, Float> {
         return hasBeenSorted;
     }
 
+    /**
+     * Sort the map so that the LOWEST value is first and the HIGHEST value is last
+     */
     public void sort() {
         LinkedHashMap<K, Float> map = entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
@@ -44,14 +47,14 @@ public class PriorityMap<K> extends LinkedHashMap<K, Float> {
     }
 
     /**
-     * @return the first entry(the one with the highest value, if sorted), or null if this is empty.
+     * @return the first entry(the one with the lowest value, if sorted), or null if this is empty.
      */
     public Map.Entry<K, Float> first() {
         return entrySet().stream().findFirst().orElse(null);
     }
 
     /**
-     * @return the last entry(the one with the lowest value, if sorted), or null if this is empty.
+     * @return the last entry(the one with the highest value, if sorted), or null if this is empty.
      */
     public Map.Entry<K, Float> last() {
         if (size() == 0) return null;
