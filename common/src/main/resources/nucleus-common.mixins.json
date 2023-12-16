@@ -17,6 +17,7 @@
     "client.MatrixStackAccessor",
     "client.MouseMixin",
     "client.ParticleEngineMixin",
+    "client.TranslationStorageMixin",
     "client.WorldRendererAccessor"
   ],
   "mixins": [

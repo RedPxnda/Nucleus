@@ -19,8 +19,8 @@ dependencies {
 
     implementation('com.github.ezylang:EvalEx:3.0.4')
 
-    annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
-    implementation(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
+    implementation("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
 }
 
 remapJar {

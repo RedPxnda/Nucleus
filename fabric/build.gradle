@@ -38,8 +38,8 @@ dependencies {
 
     implementation(include('com.github.ezylang:EvalEx:3.0.4'))
 
-    annotationProcessor(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}")
-    implementation(include(group: 'com.github.LlamaLad7', name: 'MixinExtras', version: "${rootProject.mixin_extras_version}"))
+    annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}")
+    implementation(include("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"))
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }

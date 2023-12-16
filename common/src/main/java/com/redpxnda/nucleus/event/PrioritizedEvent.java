@@ -50,6 +50,24 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     @SafeVarargs
+    static <T> PrioritizedEvent<T> createObject(T... typeGetter) { // return null to pass, return something else to not
+        if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
+        return createObject((Class<T>) typeGetter.getClass().getComponentType());
+    }
+    static <T> PrioritizedEvent<T> createObject(Class<T> cls) {
+        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+            @Override
+            protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
+                for (T listener : listeners.keySet()) {
+                    Object result = Impl.invokeMethod(listener, method, args);
+                    if (result != null) return result;
+                }
+                return null;
+            }
+        }));
+    }
+
+    @SafeVarargs
     static <T> PrioritizedEvent<T> createEventResult(T... typeGetter) {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createEventResult((Class<T>) typeGetter.getClass().getComponentType());
