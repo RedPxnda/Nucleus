@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.codec.AutoCodec;
+import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.facet.TrackingUpdateSyncer;
 import com.redpxnda.nucleus.facet.doubles.CapabilityRegistryListener;
@@ -32,10 +33,6 @@ import org.slf4j.Logger;
 import java.util.function.Function;
 
 public class Nucleus {
-//    public static final ExpressionConfiguration EXPRESSION_CONFIG = ExpressionConfiguration.defaultConfiguration().withAdditionalFunctions(
-//            Map.entry("LIST_HAS", new ListContains()),
-//            Map.entry("SWITCH", new Switch())
-//    );
     public static final String MOD_ID = "nucleus";
     public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();
@@ -47,13 +44,14 @@ public class Nucleus {
         packets();
         events();
         capabilities();
-        SupporterUtil.init();
         AutoCodec.init();
+        SupporterUtil.init();
         NucleusRegistries.init();
         EnvExecutor.runInEnv(Env.CLIENT, () -> Rendering::init);
         ReloadSyncPackets.init();
         TrackingUpdateSyncer.init();
         Wrappers.init();
+        ConfigManager.init();
 
         LifecycleEvent.SERVER_BEFORE_START.register(server -> SERVER = server);
 
@@ -98,6 +96,7 @@ public class Nucleus {
         registerPacket(DoublesFacetSyncPacket.class, DoublesFacetSyncPacket::new);
         registerPacket(PoseFacetSyncPacket.class, PoseFacetSyncPacket::new);
         registerPacket(SyncCapabilitiesJsonPacket.class, SyncCapabilitiesJsonPacket::new); // todo redo this guy
+        registerPacket(ConfigSyncPacket.class, ConfigSyncPacket::new);
     }
     private static void events() {
     }

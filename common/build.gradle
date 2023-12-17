@@ -17,7 +17,7 @@ dependencies {
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
-    implementation('com.github.ezylang:EvalEx:3.0.4')
+    // implementation("blue.endless:jankson:${rootProject.jankson_version}")
 
     annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
     implementation("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")

@@ -32,26 +32,26 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
 /**
  * {@link AutoCodec}s are comparable to {@link Gson}. They automatically generate a codec from some class,
  * scanning fields to add as parameters. Inevitably, as auto-generation tends to be, {@link AutoCodec}s can
- * be very unstable. They require classes to either:
+ * be very unstable. They require classes to either: <br>
  * 1. {@code Override} {@link AutoCodec} reading by either being present within the {@link AutoCodec#inheritOverrides}
- * map or by using the {@link AutoCodec.Override} annotation.
- * 2. An available nullary constructor (no arguments) for use in {@link AutoCodec}-ception. ({@link AutoCodec}s
+ * map or by using the {@link AutoCodec.Override} annotation. <br>
+ * 2. Have an available nullary constructor (no arguments) for use in {@link AutoCodec}-ception. ({@link AutoCodec}s
  * generate more {@link AutoCodec}s, if needed.) This is the case because creating object instances without
- * constructors is incredibly dangerous. (See {@link sun.misc.Unsafe})
+ * constructors is incredibly dangerous. (See {@link sun.misc.Unsafe}) <br>
  * If neither of these conditions are met, errors will be thrown. So be wary. If you want to use a class in
  * your {@link AutoCodec} that doesn't meet these conditions, you can either add the class to the {@link AutoCodec#inheritOverrides},
  * or you can use {@link AutoCodec.Override} on a field to specify a separate static codec field to use for
- * that field.
+ * that field. <br>
  * Try to avoid using Wildcards and Type parameters with {@link AutoCodec}s, especially for {@link Collection}s and {@link Map}s.
  * Be extremely careful when using {@link Map}s of {@link Map}s. As long as your keys and values are directly {@link Map}s,
  * you should be fine. (For example: {@code Map<Map<String>, Map<Integer>>} will work. However, {@code Map<HashMap<String>, HashMap<Integer>>}
  * will not work since you are enforcing HashMap rather than allowing general Maps.) This is hard to fix, since performance becomes
  * an issue incredibly quickly when trying to translate maps into the form you desire.
  * Use {@link AutoCodec#of(Class)} in order to create a new {@link AutoCodec}. Then use {@link AutoCodec#codec()} to
- * obtain the Codec object for encoding and decoding.
+ * obtain the Codec object for encoding and decoding. <br>
  * IMPORTANT NOTE: {@link AutoCodec}s should not be used in favor of the {@link RecordCodecBuilder} for complex structures.
  * {@link RecordCodecBuilder}s were made for a reason, and that reason still persists even with the existence of the
- * {@link AutoCodec}. {@link AutoCodec}s are only intended for simple structures that don't contain deeply nested formats.
+ * {@link AutoCodec}. {@link AutoCodec}s are only intended for simple structures that don't contain deeply nested formats. <br>
  * IMPORTANT NOTE: {@link AutoCodec}s aren't directly codecs, but rather are {@link MapCodec}s. To get the actual codec
  * object, use {@link AutoCodec#codec()}.
  *
@@ -80,7 +80,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, String.class, Codec.STRING);
         addInherit(map, Identifier.class, Identifier.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        addInherit(map, ParticleEffect.class, ParticleTypes.TYPE_CODEC);
+        addInherit(map, ParticleEffect.class, ParticleTypes.TYPE_CODEC); // comment when testing, cuz minecraft boostraps stuff like this
         addInherit(map, Text.class, Codecs.TEXT);
         addInherit(map, Color.class, Color.CODEC);
         addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
@@ -161,11 +161,11 @@ public class AutoCodec<C> extends MapCodec<C> {
     protected Codec<?> getCodec(FieldCallback callback, Type fieldType, boolean allowFieldSearching) {
         if (fieldType instanceof TypeVariable<?>) {
             LOGGER.error("Field's Type for AutoCodec cannot contain or be a TypeVariable!");
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Field's Type for AutoCodec cannot contain or be a TypeVariable!");
         }
         if (fieldType instanceof WildcardType) {
             LOGGER.error("Field's Type for AutoCodec cannot contain or be a Wildcard!");
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Field's Type for AutoCodec cannot contain or be a Wildcard!");
         }
 
         Class<?> cls = null;
@@ -236,6 +236,11 @@ public class AutoCodec<C> extends MapCodec<C> {
         // class override
         if (cls.isAnnotationPresent(Override.class)) {
             Override override = cls.getAnnotation(Override.class);
+            if (override.auto()) {
+                Codec<?> codec = createAutoCodecWith(cls, errorMsg).codec();
+                inheritOverrides.putIfAbsent(cls, CodecGetter.of(codec));
+                return codec;
+            }
             try {
                 Field field = cls.getField(override.value());
                 field.setAccessible(true);
@@ -247,7 +252,10 @@ public class AutoCodec<C> extends MapCodec<C> {
                     inheritOverrides.putIfAbsent(cls, CodecGetter.of(codec));
                     return codec;
                 }
-                return ((CodecGetter<?>) obj).getCodec(params);
+
+                CodecGetter<?> codec = ((CodecGetter<?>) obj);
+                inheritOverrides.putIfAbsent(cls, codec);
+                return codec.getCodec(params);
             } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
                 LOGGER.error("Field mentioned in AutoCodec.Override annotation for class '{}' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)! -> {}", cls.getSimpleName(), e);
             }
@@ -273,9 +281,16 @@ public class AutoCodec<C> extends MapCodec<C> {
             }
 
         // autocodec inception
-        return new AutoCodec<>(cls, errorMsg).codec();
+        Codec<?> codec = createAutoCodecWith(cls, errorMsg).codec();
+        inheritOverrides.putIfAbsent(cls, CodecGetter.of(codec));
+        return codec;
     }
-    private static Codec<?> getFieldOverride(Field field) {
+
+    protected <T> AutoCodec<T> createAutoCodecWith(Class<T> cls, String errorMsg) {
+        return new AutoCodec<>(cls, errorMsg);
+    }
+
+    protected static Codec<?> getFieldOverride(Field field) {
         Override override = field.getAnnotation(Override.class);
         try {
             Field codecField = field.getDeclaringClass().getField(override.value());
@@ -285,11 +300,14 @@ public class AutoCodec<C> extends MapCodec<C> {
             throw new RuntimeException(e);
         }
     }
-    private static Object createClassInstance(Class<?> cls) {
-        if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers())) {
+    protected C createCInstance(Class<C> cls) {
+        return (C) createClassInstance(cls);
+    }
+    protected static Object createClassInstance(Class<?> cls) {
+        if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || cls.isAnnotation()) {
             LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! Cannot instantiate interfaces/abstract classes.\n" +
                     "Please override the codec for this class.", cls.getSimpleName());
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Cannot instantiate interfaces/abstract classes.");
         }
 
         try {
@@ -299,34 +317,38 @@ public class AutoCodec<C> extends MapCodec<C> {
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException ignored) {}
         //sun.misc.Unsafe? for now, no.
         LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! No available nullary constructor.", cls.getSimpleName());
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("No available nullary constructor!");
     }
-    private static Collection<?> createCollection(Type type, Class<?> cls) {
+    protected static Collection<?> createCollection(Type type, Class<?> cls) {
         Collection<?> collection = MiscUtil.createCollection(type, (Class) cls);
         if (!cls.isAssignableFrom(collection.getClass())) {
             LOGGER.error("Failed to create Collection instance for class '{}' during AutoCodec deserialization! Unsupported collection type?", cls);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Unsupported collection type?");
         }
 
         return collection;
     }
-    private static Map<?, ?> createMap(Type type, Class<?> cls) {
+    protected static Map<?, ?> createMap(Type type, Class<?> cls) {
         Map<?, ?> map = MiscUtil.createMap(type, (Class) cls);
         if (!cls.isAssignableFrom(map.getClass())) {
             LOGGER.error("Failed to create Map instance for class '{}' during AutoCodec deserialization! Unsupported map type?", cls);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Unsupported map type?");
         }
 
         return map;
     }
 
+    protected boolean isFieldOptional(String key, AutoCodecField field, Object instance, boolean encoding) {
+        return field.isDefaulted;
+    }
+
     @java.lang.Override
     public <T> DataResult<C> decode(DynamicOps<T> ops, MapLike<T> map) {
-        Object instance = createClassInstance(cls);
+        Object instance = createCInstance(cls);
         fields.forEach((key, field) -> {
             T entry = map.get(key);
             Object value;
-            if (field.isDefaulted && entry == null)
+            if (isFieldOptional(key, field, instance, false) && (entry == null || entry == ops.empty()))
                 value = null;
             else if (entry == null) {
                 LOGGER.error("Failed to find field '{}' in AutoCodec decoding! -> {}", key, errorMsg);
@@ -377,18 +399,22 @@ public class AutoCodec<C> extends MapCodec<C> {
 
                 value = toSet;
             }
-            try {
-                Field f = instance.getClass().getField(key);
-                f.setAccessible(true);
-                if (value != null)
-                    f.set(instance, value);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                LOGGER.error("Failed to set field '{}' in '{}' during AutoCodec decoding!", key, instance.getClass());
-                throw new RuntimeException(e);
-            }
+            setFieldVal(key, value, instance);
         });
         if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
         return DataResult.success((C) instance);
+    }
+
+    protected void setFieldVal(String key, @Nullable Object value, Object classInstance) {
+        try {
+            Field f = classInstance.getClass().getField(key);
+            f.setAccessible(true);
+            if (value != null)
+                f.set(classInstance, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            LOGGER.error("Failed to set field '{}' in '{}' during AutoCodec decoding!", key, classInstance.getClass());
+            throw new RuntimeException(e);
+        }
     }
 
     @java.lang.Override
@@ -402,11 +428,15 @@ public class AutoCodec<C> extends MapCodec<C> {
                 if (field.isPrimitiveArray) val = MiscUtil.arrayToNonPrimitive(val);
 
                 // collections inherently supported because of my collection codec
-
                 // maps inherently supported because of Mojang's unbounded map codec
 
-                T serialized = ((Codec<Object>) field.codec).encodeStart(ops, val)
-                        .getOrThrow(false, s -> LOGGER.error("Failed to encode field '{}' in AutoCodec encoding! -> {}", key, s));
+                T serialized;
+                if (isFieldOptional(key, field, input, true) && val == null)
+                    serialized = ops.empty();
+                else
+                    serialized = ((Codec<Object>) field.codec).encodeStart(ops, val)
+                            .getOrThrow(false, s -> LOGGER.error("Failed to encode field '{}' in AutoCodec encoding! -> {}", key, s));
+                adjustSerializedObject(key, serialized, val, f, input);
                 map.add(key, serialized);
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 LOGGER.error("Failed to get field '{}' in '{}' during AutoCodec encoding!", key, input.getClass());
@@ -414,6 +444,10 @@ public class AutoCodec<C> extends MapCodec<C> {
             }
         });
         return map;
+    }
+
+    protected <T> void adjustSerializedObject(String key, T serialized, Object original, Field field, C holder) {
+
     }
 
     @java.lang.Override
@@ -472,11 +506,13 @@ public class AutoCodec<C> extends MapCodec<C> {
     /**
      * Marks that this field or class should use a separate specific codec for AutoCodecs.
      * The {@code value} is the static field containing the separated codec
+     * {@code auto} determines whether the codec for this object should be another autocodec
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.TYPE})
     public @interface Override {
         String value() default "CODEC";
+        boolean auto() default false;
     }
 
     /**
@@ -506,10 +542,10 @@ public class AutoCodec<C> extends MapCodec<C> {
             this.field = field;
         }
     }
-    private record AutoCodecField(Codec<?> codec, Type type, Class<?> clazz, boolean isPrimitiveArray, int collectionLevel, int mapLevel, boolean isDefaulted) {}
+    protected record AutoCodecField(Codec<?> codec, Type type, Class<?> clazz, boolean isPrimitiveArray, int collectionLevel, int mapLevel, boolean isDefaulted) {}
 
     /*private static class TestVessel {
-        int i; double d; String s; ArrayList<List<Set<String>>> strings; Map<String, Integer> map;
+        public int i; public double d; public String s; public ArrayList<List<Set<String>>> strings; public @Optional Map<String, Integer> map;
 
         @java.lang.Override
         public String toString() {
@@ -549,10 +585,10 @@ public class AutoCodec<C> extends MapCodec<C> {
         vessel.d=23.5;
         vessel.s="now this, is epic";
         vessel.strings=new ArrayList<>(List.of(List.of(Set.of("a", "b, and", "c"))));
-        vessel.map=new HashMap<>(){{
-            put("key", 5);
-            put("key2", 3);
-        }};
+//        vessel.map=new HashMap<>(){{
+//            put("key", 5);
+//            put("key2", 3);
+//        }};
 
         System.out.println(codec.encodeStart(JsonOps.INSTANCE, vessel));
     }*/
