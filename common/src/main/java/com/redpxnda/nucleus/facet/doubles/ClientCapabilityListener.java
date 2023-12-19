@@ -6,7 +6,7 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.InterfaceDispatcher;
 import com.redpxnda.nucleus.codec.MiscCodecs;
 import com.redpxnda.nucleus.math.InterpolateMode;
-import com.redpxnda.nucleus.util.JsonUtil;
+import com.redpxnda.nucleus.util.json.JsonUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 

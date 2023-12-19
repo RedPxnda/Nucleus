@@ -4,7 +4,12 @@ import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.util.Comment;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
+
 public class NucleusConfig {
+    public static void ifPresent(Consumer<NucleusConfig> action) {
+        if (INSTANCE != null) action.accept(INSTANCE);
+    }
     public static @Nullable NucleusConfig INSTANCE;
 
     @AutoCodec.Name("watch_changes")

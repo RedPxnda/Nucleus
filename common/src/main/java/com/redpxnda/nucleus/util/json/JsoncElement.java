@@ -2,7 +2,7 @@ package com.redpxnda.nucleus.util.json;
 
 public abstract class JsoncElement {
     public static final String INDENT = " ".repeat(4);
-    protected String comment;
+    protected String comment = "";
 
     public void writeComments(StringBuilder builder, int depth) {
         String[] comments = getCommentLines();

@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.codec.InterfaceDispatcher;
-import com.redpxnda.nucleus.util.JsonUtil;
+import com.redpxnda.nucleus.util.json.JsonUtil;
 import net.minecraft.util.dynamic.Codecs;
 
 import java.util.HashMap;

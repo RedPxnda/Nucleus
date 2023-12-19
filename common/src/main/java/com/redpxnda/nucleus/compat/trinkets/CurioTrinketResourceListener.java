@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.registry.NucleusNamespaces;
-import com.redpxnda.nucleus.util.JsonUtil;
+import com.redpxnda.nucleus.util.json.JsonUtil;
 import dev.architectury.platform.Platform;
 import net.minecraft.resource.JsonDataLoader;
 import net.minecraft.resource.ResourceManager;
