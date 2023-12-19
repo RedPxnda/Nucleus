@@ -17,7 +17,7 @@ public class JsoncPrimitive extends JsoncElement {
         return value instanceof Boolean;
     }
 
-    public boolean asBoolean() {
+    public boolean getAsBoolean() {
         if (isBoolean()) {
             return (Boolean) value;
         }
@@ -44,12 +44,13 @@ public class JsoncPrimitive extends JsoncElement {
     }
 
     @Override
-    public JsoncElement copy() {
+    public JsoncPrimitive copy() {
         return this;
     }
 
     @Override
     public String toString(int depth) {
+        if (isBoolean()) return getAsBoolean() ? "true" : "false";
         if (isString()) return '"' + getAsString() + '"';
         return getAsString();
     }

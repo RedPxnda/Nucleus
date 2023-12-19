@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class JsoncOps  implements DynamicOps<JsoncElement> {
+public class JsoncOps implements DynamicOps<JsoncElement> {
     public static final JsoncOps INSTANCE = new JsoncOps();
 
     protected JsoncOps() {}
@@ -49,6 +49,16 @@ public class JsoncOps  implements DynamicOps<JsoncElement> {
     @Override
     public JsoncElement createNumeric(Number i) {
         return new JsoncPrimitive(i);
+    }
+
+    @Override
+    public DataResult<Boolean> getBooleanValue(JsoncElement input) {
+        return input instanceof JsoncPrimitive prim && prim.isBoolean() ? DataResult.success(prim.getAsBoolean()) : DataResult.error(() -> "Not a boolean: " + input);
+    }
+
+    @Override
+    public JsoncElement createBoolean(boolean value) {
+        return new JsoncPrimitive(value);
     }
 
     @Override

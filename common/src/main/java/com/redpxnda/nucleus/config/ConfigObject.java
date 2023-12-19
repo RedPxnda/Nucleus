@@ -18,13 +18,14 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ConfigObject<T> {
-    private final Path path;
-    private final String name;
-    private final ConfigType type;
-    private final Codec<T> codec;
-    private final Supplier<T> defaultCreator;
-    private final @Nullable Consumer<T> onUpdate;
-    private @Nullable T instance;
+    public final Path path;
+    public final String name;
+    public final ConfigType type;
+    public final Codec<T> codec;
+    public final Supplier<T> defaultCreator;
+    public final @Nullable Consumer<T> onUpdate;
+    public final boolean watch;
+    protected @Nullable T instance;
 
     /**
      * @param path           the path to the config
@@ -33,15 +34,17 @@ public class ConfigObject<T> {
      * @param codec          the codec used to (de)serialize the config
      * @param defaultCreator a supplier to create the default/empty version of this config
      * @param onUpdate       handler for when the config is updated
+     * @param watch
      * @param instance       handler instance, null before first read
      */
-    public ConfigObject(Path path, String name, ConfigType type, Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate, @Nullable T instance) {
+    public ConfigObject(Path path, String name, ConfigType type, Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate, boolean watch, @Nullable T instance) {
         this.path = path;
         this.name = name;
         this.type = type;
         this.codec = codec;
         this.defaultCreator = defaultCreator;
         this.onUpdate = onUpdate;
+        this.watch = watch;
         this.instance = instance;
     }
 
@@ -69,6 +72,7 @@ public class ConfigObject<T> {
         } catch (Exception e) {
             Nucleus.LOGGER.warn("Failed to read manually inputted data for config '" + name + "'!", e);
             instance = defaultCreator.get();
+            if (onUpdate != null) onUpdate.accept(instance);
         }
     }
 
@@ -98,8 +102,12 @@ public class ConfigObject<T> {
                 }
 
                 instance = defaultCreator.get();
+                if (onUpdate != null) onUpdate.accept(instance);
             }
-        } else instance = defaultCreator.get();
+        } else {
+            instance = defaultCreator.get();
+            if (onUpdate != null) onUpdate.accept(instance);
+        }
         return null;
     }
 
@@ -114,30 +122,6 @@ public class ConfigObject<T> {
         } catch (Exception e) {
             Nucleus.LOGGER.warn("Failed to save data for config '" + name + "'. Ignoring...", e);
         }
-    }
-
-    public Path path() {
-        return path;
-    }
-
-    public String name() {
-        return name;
-    }
-
-    public ConfigType type() {
-        return type;
-    }
-
-    public Codec<T> codec() {
-        return codec;
-    }
-
-    public Supplier<T> defaultCreator() {
-        return defaultCreator;
-    }
-
-    public @Nullable Consumer<T> onUpdate() {
-        return onUpdate;
     }
 
     public @Nullable T instance() {

@@ -1,18 +1,23 @@
 package com.redpxnda.nucleus.config;
 
+import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.JsoncOps;
 import com.redpxnda.nucleus.network.clientbound.ConfigSyncPacket;
-import com.redpxnda.nucleus.util.Comment;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
+import dev.architectury.platform.Platform;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
+import net.fabricmc.api.EnvType;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class ConfigManager {
     private static final Map<String, ConfigObject<?>> configs = new HashMap<>();
@@ -22,12 +27,12 @@ public class ConfigManager {
      */
     public static <T> ConfigObject<T> register(ConfigBuilder<T> builder) {
         ConfigObject<T> obj = builder.build();
-        configs.put(obj.name(), obj);
+        configs.put(obj.name, obj);
         return obj;
     }
 
     public static <T> ConfigObject<T> register(ConfigObject<T> config) {
-        configs.put(config.name(), config);
+        configs.put(config.name, config);
         return config;
     }
 
@@ -45,47 +50,109 @@ public class ConfigManager {
         return (ConfigObject<T>) configs.get(name);
     }
 
-    public static class TestConfig {
-        @Comment("This integer does stuff")
-        public int someCoolInteger = 5;
-
-        @Comment("So, this is a string")
-        public String stringConfigSetting = "default value!";
-
-        @Comment("""
-                some random item
-                with a multiline comment
-                """)
-        public Item someItem = Items.ICE;
-    }
-
     /**
      * do not call, this is for internal purposes
      */
     public static void init() {
-        register(ConfigBuilder.create(TestConfig.class).name("nucleus-test").creator(TestConfig::new).type(ConfigType.SERVER_CLIENT_SYNCED).forClass(TestConfig.class));
+        register(ConfigBuilder.create(NucleusConfig.class)
+                .name("nucleus")
+                .creator(NucleusConfig::new)
+                .type(ConfigType.COMMON)
+                .auto()
+                .updateListener(config -> NucleusConfig.INSTANCE = config)
+        );
 
-        LifecycleEvent.SETUP.register(() -> setupConfigs(ConfigType.COMMON));
-        LifecycleEvent.SERVER_STARTING.register(s -> setupConfigs(ConfigType.SERVER_ONLY, ConfigType.SERVER_CLIENT_SYNCED));
-        PlayerEvent.PLAYER_JOIN.register(sp -> configs.forEach((name, config) -> {
-            if (config.type() != ConfigType.SERVER_CLIENT_SYNCED) return;
-            new ConfigSyncPacket(name, config.serialize(JsoncOps.INSTANCE).toString()).send(sp);
-        }));
+        LifecycleEvent.SETUP.register(() -> {
+            setupConfigs(ConfigType.COMMON);
 
+            if (NucleusConfig.INSTANCE != null && NucleusConfig.INSTANCE.watchChanges)
+                setupFileWatching();
+        });
+        LifecycleEvent.SERVER_STARTING.register(s -> setupConfigs(t -> t == ConfigType.SERVER_ONLY || t == ConfigType.SERVER_CLIENT_SYNCED));
+        PlayerEvent.PLAYER_JOIN.register(sp -> configs.forEach((name, config) -> syncConfigWithPlayer(config, sp)));
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ClientLifecycleEvent.CLIENT_SETUP.register(s -> setupConfigs(ConfigType.CLIENT_ONLY)));
     }
 
-    private static void setupConfigs(ConfigType type) {
-        configs.forEach((name, config) -> {
-            if (config.type() != type) return;
-            config.load();
-            config.save();
+    private static void setupFileWatching() {
+        Thread thread = new Thread(() -> {
+            try {
+                Path configs = Platform.getConfigFolder();
+                WatchService service = FileSystems.getDefault().newWatchService();
+                configs.register(
+                        service,
+                        StandardWatchEventKinds.ENTRY_MODIFY
+                );
+
+                while (true) {
+                    WatchKey key = service.take();
+
+                    Thread.sleep(50); // Sleep to prevent picking up multiple of the same event
+                    for (WatchEvent<?> event : key.pollEvents()) {
+                        WatchEvent.Kind<?> kind = event.kind();
+                        if (kind != StandardWatchEventKinds.ENTRY_MODIFY) return;
+                        Path path = (Path) event.context();
+
+                        if (path.toString().endsWith(".jsonc")) {
+                            if (Platform.getEnv() == EnvType.CLIENT && MinecraftClient.getInstance() != null)
+                                MinecraftClient.getInstance().execute(() -> {
+                                    String fileName = path.getFileName().toString();
+                                    String configName = fileName.substring(0, fileName.length()-6);
+                                    ConfigObject<?> config = ConfigManager.getConfigObject(configName);
+                                    if (config != null && config.watch && config.type.clientCanControl()) {
+                                        Nucleus.LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
+                                        config.load();
+                                        //config.save();
+                                    }
+                                });
+
+                            if (Nucleus.SERVER != null)
+                                Nucleus.SERVER.execute(() -> {
+                                    String fileName = path.getFileName().toString();
+                                    String configName = fileName.substring(0, fileName.length()-6);
+                                    ConfigObject<?> config = ConfigManager.getConfigObject(configName);
+                                    if (config != null && config.watch && config.type.serverCanControl()) {
+                                        Nucleus.LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
+                                        config.load();
+                                        //config.save();
+
+                                        if (config.type == ConfigType.SERVER_CLIENT_SYNCED)
+                                            syncConfigWithAllPlayers(config, Nucleus.SERVER);
+                                    }
+                                });
+                        }
+                    }
+
+                    boolean valid = key.reset(); // Reset the key
+                    if (!valid) {
+                        break; // The watch key is no longer valid, break the loop
+                    }
+                }
+            } catch (Exception e) {
+                Nucleus.LOGGER.warn("Failed to setup config file watching!", e);
+            }
         });
+        thread.start();
+
+        Nucleus.LOGGER.info("Successfully created file watcher (and thread) for config folder. ({})", Platform.getConfigFolder());
     }
 
-    private static void setupConfigs(ConfigType type, ConfigType type2) {
+    public static void syncConfigWithAllPlayers(ConfigObject<?> config, MinecraftServer server) {
+        if (config.type != ConfigType.SERVER_CLIENT_SYNCED) return;
+        new ConfigSyncPacket(config.name, config.serialize(JsoncOps.INSTANCE).toString()).send(server);
+    }
+
+    public static void syncConfigWithPlayer(ConfigObject<?> config, ServerPlayerEntity sp) {
+        if (config.type != ConfigType.SERVER_CLIENT_SYNCED) return;
+        new ConfigSyncPacket(config.name, config.serialize(JsoncOps.INSTANCE).toString()).send(sp);
+    }
+
+    private static void setupConfigs(ConfigType type) {
+        setupConfigs(t -> t == type);
+    }
+
+    private static void setupConfigs(Predicate<ConfigType> condition) {
         configs.forEach((name, config) -> {
-            if (config.type() != type && config.type() != type2) return;
+            if (!condition.test(config.type)) return;
             config.load();
             config.save();
         });

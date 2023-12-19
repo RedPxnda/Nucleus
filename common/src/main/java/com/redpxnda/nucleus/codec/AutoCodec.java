@@ -5,6 +5,7 @@ import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.MiscUtil;
+import net.minecraft.entity.EntityType;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
@@ -81,6 +82,7 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, Identifier.class, Identifier.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
         addInherit(map, ParticleEffect.class, ParticleTypes.TYPE_CODEC); // comment when testing, cuz minecraft boostraps stuff like this
+        addInherit(map, EntityType.class, (Codec) Registries.ENTITY_TYPE.createEntryCodec()); // comment when testing, cuz minecraft boostraps stuff like this
         addInherit(map, Text.class, Codecs.TEXT);
         addInherit(map, Color.class, Color.CODEC);
         addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
@@ -148,7 +150,8 @@ public class AutoCodec<C> extends MapCodec<C> {
             else
                 codec = getCodec(callback, fieldType, true);
 
-            fields.put(field.getName(), new AutoCodecField(codec, fieldType, field.getType(), callback.makePrimitive, callback.collectionLevel, callback.mapLevel, callback.makeDefaulted));
+            Name name = field.getAnnotation(Name.class);
+            fields.put(name == null ? field.getName() : name.value(), new AutoCodecField(field.getName(), codec, fieldType, field.getType(), callback.makePrimitive, callback.collectionLevel, callback.mapLevel, callback.makeDefaulted));
         }
     }
     public static <T> AutoCodec<T> of(Class<T> cls) {
@@ -357,7 +360,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                 value = field.codec.parse(
                         ops,
                         entry
-                ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", key, s));
+                ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", field.fieldName, s));
             }
             if (field.isPrimitiveArray) value = MiscUtil.arrayToPrimitive(value);
             if (field.collectionLevel > 0) {
@@ -366,7 +369,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                 Collection<?> toAdd = (Collection<?>) field.codec.parse(
                         ops,
                         entry
-                ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", key, s));
+                ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", field.fieldName, s));
 
                 Stream<?> stream = toAdd.stream();
                 ParameterizedType pt = (ParameterizedType) field.type;
@@ -391,7 +394,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                 Map<?, ?> toAdd = (Map<?, ?>) field.codec.parse(
                         ops,
                         entry
-                ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", key, s));
+                ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", field.fieldName, s));
 
                 //todo maps of maps?
 
@@ -399,7 +402,7 @@ public class AutoCodec<C> extends MapCodec<C> {
 
                 value = toSet;
             }
-            setFieldVal(key, value, instance);
+            setFieldVal(field.fieldName, value, instance);
         });
         if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
         return DataResult.success((C) instance);
@@ -421,7 +424,7 @@ public class AutoCodec<C> extends MapCodec<C> {
     public <T> RecordBuilder<T> encode(C input, DynamicOps<T> ops, RecordBuilder<T> map) {
         fields.forEach((key, field) -> {
             try {
-                Field f = input.getClass().getField(key);
+                Field f = input.getClass().getField(field.fieldName);
                 f.setAccessible(true);
                 Object val = f.get(input);
 
@@ -510,9 +513,18 @@ public class AutoCodec<C> extends MapCodec<C> {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.TYPE})
-    public @interface Override {
+    public @interface Override { // todo create 'global' overrides
         String value() default "CODEC";
         boolean auto() default false;
+    }
+
+    /**
+     * Marks that this field should have a different name in serialized form
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface Name {
+        String value();
     }
 
     /**
@@ -542,7 +554,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             this.field = field;
         }
     }
-    protected record AutoCodecField(Codec<?> codec, Type type, Class<?> clazz, boolean isPrimitiveArray, int collectionLevel, int mapLevel, boolean isDefaulted) {}
+    protected record AutoCodecField(String fieldName, Codec<?> codec, Type type, Class<?> clazz, boolean isPrimitiveArray, int collectionLevel, int mapLevel, boolean isDefaulted) {}
 
     /*private static class TestVessel {
         public int i; public double d; public String s; public ArrayList<List<Set<String>>> strings; public @Optional Map<String, Integer> map;

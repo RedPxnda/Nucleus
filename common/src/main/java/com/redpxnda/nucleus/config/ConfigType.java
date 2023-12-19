@@ -22,5 +22,21 @@ public enum ConfigType {
     /**
      * Both the client and server have "access". The config is evaluated on each individually, leaving potentially out-of-sync values.
      */
-    COMMON
+    COMMON;
+
+    public boolean clientCanControl() {
+        return this == COMMON || this == CLIENT_ONLY;
+    }
+
+    public boolean serverCanControl() {
+        return this == COMMON || this == SERVER_ONLY || this == SERVER_CLIENT_SYNCED;
+    }
+
+    public boolean serverCanAccess() {
+        return serverCanControl();
+    }
+
+    public boolean clientCanAccess() {
+        return clientCanControl() || this == SERVER_CLIENT_SYNCED;
+    }
 }

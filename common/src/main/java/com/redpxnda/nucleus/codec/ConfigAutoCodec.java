@@ -48,7 +48,7 @@ public class ConfigAutoCodec<C> extends AutoCodec<C> {
     protected boolean isFieldOptional(String key, AutoCodecField field, Object instance, boolean encoding) {
         if (!encoding)
             try {
-                if (instance.getClass().getField(key).get(instance) != null) return true;
+                if (instance.getClass().getField(field.fieldName()).get(instance) != null) return true;
             } catch (NoSuchFieldException | IllegalAccessException ignored) {}
         return super.isFieldOptional(key, field, instance, encoding);
     }

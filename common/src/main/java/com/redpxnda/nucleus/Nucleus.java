@@ -28,6 +28,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.function.Function;
@@ -37,7 +38,7 @@ public class Nucleus {
     public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static MinecraftServer SERVER;
+    public static @Nullable MinecraftServer SERVER;
 
     public static void init() {
         reloadListeners();

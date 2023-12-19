@@ -11,20 +11,24 @@ import java.util.function.Supplier;
 
 public class ConfigBuilder<T> {
     private Path path = Platform.getConfigFolder();
+    private final Class<T> cls;
     private String name;
     private ConfigType type;
     private Codec<T> codec;
     private Supplier<T> creator;
     private @Nullable Consumer<T> onUpdate;
+    private boolean watch = true;
 
     /**
      * Create a new config builder. The {@code cls} is just for generics.
      */
     public static <T> ConfigBuilder<T> create(Class<T> cls) {
-        return new ConfigBuilder<>();
+        return new ConfigBuilder<>(cls);
     }
 
-    public ConfigBuilder() {}
+    public ConfigBuilder(Class<T> cls) {
+        this.cls = cls;
+    }
 
     /**
      * Builds the config
@@ -32,7 +36,7 @@ public class ConfigBuilder<T> {
     public ConfigObject<T> build() {
         if (name == null || type == null || codec == null || creator == null)
             throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
-        return new ConfigObject<>(path, name, type, codec, creator, onUpdate, null);
+        return new ConfigObject<>(path, name, type, codec, creator, onUpdate, watch, null);
     }
 
     /**
@@ -68,7 +72,7 @@ public class ConfigBuilder<T> {
 
     /**
      * Defines the codec to determine how your config will be serialized and deserialized.
-     * Normally, you can use the {@link ConfigAutoCodec} via {@link ConfigBuilder#forClass(Class) forClass}
+     * Normally, you can use the {@link ConfigAutoCodec} via {@link ConfigBuilder#auto() forClass}
      */
     public ConfigBuilder<T> codec(Codec<T> codec) {
         this.codec = codec;
@@ -78,7 +82,7 @@ public class ConfigBuilder<T> {
     /**
      * Convenience method to automatically scan your config class. DEFINE THE CREATOR BEFORE DEFINING THIS!
      */
-    public ConfigBuilder<T> forClass(Class<T> cls) {
+    public ConfigBuilder<T> auto() {
         this.codec = ConfigAutoCodec.of(cls, creator).codec();
         return this;
     }
@@ -96,6 +100,14 @@ public class ConfigBuilder<T> {
      */
     public ConfigBuilder<T> updateListener(Consumer<T> onUpdate) {
         this.onUpdate = onUpdate;
+        return this;
+    }
+
+    /**
+     * Defines whether file changes should automatically update this config (default true)
+     */
+    public ConfigBuilder<T> watch(boolean watched) {
+        this.watch = watched;
         return this;
     }
 }
