@@ -54,11 +54,10 @@ public class ConfigManager {
      * do not call, this is for internal purposes
      */
     public static void init() {
-        register(ConfigBuilder.create(NucleusConfig.class)
+        register(ConfigBuilder.automatic(NucleusConfig.class)
                 .name("nucleus")
                 .creator(NucleusConfig::new)
                 .type(ConfigType.COMMON)
-                .auto()
                 .updateListener(config -> NucleusConfig.INSTANCE = config)
         );
 

@@ -130,9 +130,9 @@ public class AutoCodec<C> extends MapCodec<C> {
         }
     }
 
-    private final Class<C> cls;
-    private final String errorMsg;
-    private final Map<String, AutoCodecField> fields = new HashMap<>();
+    protected final Class<C> cls;
+    protected final String errorMsg;
+    protected final Map<String, AutoCodecField> fields = new HashMap<>();
 
     public AutoCodec(Class<C> cls, String errorMsg) {
         this.cls = cls;

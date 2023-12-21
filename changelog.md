@@ -1,2 +1,3 @@
-# 1.20.1 - 2
-- added player events
+# 1.20.1 - 5
+- added config system
+- added utility "tag list" classes

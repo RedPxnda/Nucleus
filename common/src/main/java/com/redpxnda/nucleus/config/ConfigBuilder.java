@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.config;
 
 import com.mojang.serialization.Codec;
+import com.redpxnda.nucleus.codec.AutoCodec;
 import com.redpxnda.nucleus.codec.ConfigAutoCodec;
 import dev.architectury.platform.Platform;
 import org.jetbrains.annotations.Nullable;
@@ -10,25 +11,29 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ConfigBuilder<T> {
-    private Path path = Platform.getConfigFolder();
-    private final Class<T> cls;
-    private String name;
-    private ConfigType type;
-    private Codec<T> codec;
-    private Supplier<T> creator;
-    private @Nullable Consumer<T> onUpdate;
-    private boolean watch = true;
+    protected Path path = Platform.getConfigFolder();
+    protected String name;
+    protected ConfigType type;
+    protected Codec<T> codec;
+    protected Supplier<T> creator;
+    protected @Nullable Consumer<T> onUpdate;
+    protected boolean watch = true;
 
     /**
-     * Create a new config builder. The {@code cls} is just for generics.
+     * Creates an automatic(scans the class's fields, see {@link AutoCodec} and {@link ConfigAutoCodec}) config builder.
      */
-    public static <T> ConfigBuilder<T> create(Class<T> cls) {
-        return new ConfigBuilder<>(cls);
+    public static <T> ConfigBuilder<T> automatic(Class<T> cls) {
+        return new Automatic<>(cls);
     }
 
-    public ConfigBuilder(Class<T> cls) {
-        this.cls = cls;
+    /**
+     * Create a custom config builder with the specified codec.
+     */
+    public static <T> ConfigBuilder<T> custom(Codec<T> codec) {
+        return new ConfigBuilder<T>().codec(codec);
     }
+
+    public ConfigBuilder() {}
 
     /**
      * Builds the config
@@ -71,23 +76,6 @@ public class ConfigBuilder<T> {
     }
 
     /**
-     * Defines the codec to determine how your config will be serialized and deserialized.
-     * Normally, you can use the {@link ConfigAutoCodec} via {@link ConfigBuilder#auto() forClass}
-     */
-    public ConfigBuilder<T> codec(Codec<T> codec) {
-        this.codec = codec;
-        return this;
-    }
-
-    /**
-     * Convenience method to automatically scan your config class. DEFINE THE CREATOR BEFORE DEFINING THIS!
-     */
-    public ConfigBuilder<T> auto() {
-        this.codec = ConfigAutoCodec.of(cls, creator).codec();
-        return this;
-    }
-
-    /**
      * Defines a supplier creating the default instance of this config, for when there is no file already.
      */
     public ConfigBuilder<T> creator(Supplier<T> creator) {
@@ -109,5 +97,23 @@ public class ConfigBuilder<T> {
     public ConfigBuilder<T> watch(boolean watched) {
         this.watch = watched;
         return this;
+    }
+
+    protected ConfigBuilder<T> codec(Codec<T> codec) {
+        this.codec = codec;
+        return this;
+    }
+
+    public static class Automatic<T> extends ConfigBuilder<T> {
+        public Automatic(Class<T> cls) {
+            this.codec = ConfigAutoCodec.of(cls, creator).codec();
+        }
+
+        @Override
+        public ConfigObject.Automatic<T> build() {
+            if (name == null || type == null || codec == null || creator == null)
+                throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
+            return new ConfigObject.Automatic<>(path, name, type, codec, creator, onUpdate, watch, null);
+        }
     }
 }

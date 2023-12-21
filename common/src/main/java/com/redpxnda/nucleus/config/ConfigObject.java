@@ -159,4 +159,9 @@ public class ConfigObject<T> {
                 "instance=" + instance + ']';
     }
 
+    public static class Automatic<T> extends ConfigObject<T> {
+        public Automatic(Path path, String name, ConfigType type, Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate, boolean watch, @Nullable T instance) {
+            super(path, name, type, codec, defaultCreator, onUpdate, watch, instance);
+        }
+    }
 }
