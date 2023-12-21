@@ -15,9 +15,16 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-public record TagListCodec<C, L extends TagList<C>>(BiFunction<List<C>, List<TagKey<C>>, L> creator,
-                                                    Registry<C> registry,
-                                                    RegistryKey<? extends Registry<C>> registryKey) implements Codec<L> {
+public class TagListCodec<C, L extends TagList<C>> implements Codec<L> {
+    protected final BiFunction<List<C>, List<TagKey<C>>, L> creator;
+    protected final Registry<C> registry;
+    protected final RegistryKey<? extends Registry<C>> registryKey;
+
+    public TagListCodec(BiFunction<List<C>, List<TagKey<C>>, L> creator, Registry<C> registry, RegistryKey<? extends Registry<C>> registryKey) {
+        this.creator = creator;
+        this.registry = registry;
+        this.registryKey = registryKey;
+    }
 
     @Override
     public <T> DataResult<Pair<L, T>> decode(DynamicOps<T> ops, T input) {
