@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.util.tag;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
@@ -28,5 +29,9 @@ public class BlockList extends TagList<Block> {
 
     public BlockList(List<Block> objects, List<TagKey<Block>> tags) {
         super(objects, tags, Registries.BLOCK, RegistryKeys.BLOCK);
+    }
+
+    public boolean contains(BlockState block) {
+        return contains(block.getBlock());
     }
 }

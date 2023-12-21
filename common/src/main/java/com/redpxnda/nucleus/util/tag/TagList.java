@@ -21,7 +21,7 @@ public abstract class TagList<T> {
     protected final List<T> objects;
     protected final List<TagKey<T>> tags;
 
-    protected TagList(List<T> objects, List<TagKey<T>> tags, Registry<T> registry, RegistryKey<? extends Registry<T>> registryKey) {
+    public TagList(List<T> objects, List<TagKey<T>> tags, Registry<T> registry, RegistryKey<? extends Registry<T>> registryKey) {
         this.registry = registry;
         this.registryKey = registryKey;
         this.objects = objects;

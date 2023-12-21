@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.util.tag;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.AutoCodec;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
@@ -28,5 +29,9 @@ public class ItemList extends TagList<Item> {
 
     public ItemList(List<Item> objects, List<TagKey<Item>> tags) {
         super(objects, tags, Registries.ITEM, RegistryKeys.ITEM);
+    }
+
+    public boolean contains(ItemStack stack) {
+        return contains(stack.getItem());
     }
 }
