@@ -5,7 +5,9 @@ run/
 out/
 *.iml
 .gradle/
+*.log
 output/
+.architectury-transformer/
 bin/
 libs/
 logs/
