@@ -1,5 +1,6 @@
 <h1>
     <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="banner-white.svg">
         <img src="banner.svg" alt="Nucleus">
     </picture> 
 </h1>
