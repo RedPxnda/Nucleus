@@ -1,0 +1,3 @@
+loom {
+    accessWidenerPath = project(":core:core-forge").loom.accessWidenerPath
+}
