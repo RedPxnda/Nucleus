@@ -130,7 +130,7 @@ theFacetInstance.sendToTrackers(theFacetHolder);
 This will sync the facet to all players that are tracking the facet holding entity. (Essentially any player with the entity loaded. This is the most you would need.)
 
 But another question arises: what happens if we enter another player's render distance? They too need to know our facet's data. For this, a special class
-has been made: the [TrackingUpdateSyncer](https://github.com/RedPxnda/Nucleus/blob/refactor/facet/facet-common/src/main/java/com/redpxnda/nucleus/facet/TrackingUpdateSyncer.java)
+has been made: the [TrackingUpdateSyncer](https://github.com/RedPxnda/Nucleus/blob/refactor/facet/facet-common/src/main/java/com/redpxnda/nucleus/facet/TrackingUpdateSyncer.java).
 Register your facet to it and everything will be handled for you:
 ```java
 TrackingUpdateSyncer.register(theFacetKey);
