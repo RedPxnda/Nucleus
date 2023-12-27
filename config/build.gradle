@@ -1,0 +1,1 @@
+dependOn(project, ["core", "codec"])

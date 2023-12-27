@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.redpxnda.nucleus.fabric.mixin.facet",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "nucleus-facet.refmap.json",
+  "client": [
+  ],
+  "mixins": [
+    "ItemStackMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

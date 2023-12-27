@@ -1,0 +1,13 @@
+accessWidener   v2  named
+accessible method net/minecraft/particle/DefaultParticleType <init> (Z)V
+accessible method net/minecraft/client/render/WorldRenderer spawnParticle (Lnet/minecraft/particle/ParticleEffect;ZZDDDDDD)Lnet/minecraft/client/particle/Particle;
+accessible method net/minecraft/client/util/math/MatrixStack$Entry <init> (Lorg/joml/Matrix4f;Lorg/joml/Matrix3f;)V
+accessible class net/minecraft/server/MinecraftServer$ResourceManagerHolder
+accessible method net/minecraft/client/particle/CrackParticle <init> (Lnet/minecraft/client/world/ClientWorld;DDDDDDLnet/minecraft/item/ItemStack;)V
+accessible method net/minecraft/nbt/NbtIo read (Ljava/io/DataInput;ILnet/minecraft/nbt/NbtTagSizeTracker;)Lnet/minecraft/nbt/NbtElement;
+accessible method net/minecraft/client/render/RenderLayer of (Lnet/minecraft/client/render/RenderPhase$ShaderProgram;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
+accessible class net/minecraft/client/render/item/HeldItemRenderer$HandRenderType
+accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
+#
+accessible field net/minecraft/client/particle/Particle MAX_SQUARED_COLLISION_CHECK_DISTANCE D
+accessible field net/minecraft/client/particle/Particle stopped Z

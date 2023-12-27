@@ -1,0 +1,1 @@
+dependOn(project, rootProject.enabled_modules.split(",").findAll { it != "test" })

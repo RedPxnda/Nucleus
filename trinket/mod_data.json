@@ -1,0 +1,70 @@
+{
+  "id": "nucleus-trinket",
+  "version": "${version}",
+  "name": "Nucleus (Trinket)",
+  "description": "Multiplatform Trinkets/Curios API abstraction",
+  "authors": [
+    "RedPxnda"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "mixins": [],
+  "depends": [
+    {
+      "id": "forge",
+      "mandatory": true,
+      "version": "[47,)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "forge"
+    },
+    {
+      "id": "fabric",
+      "mandatory": true,
+      "version": "*",
+      "platform": "fabric"
+    },
+    {
+      "id": "minecraft",
+      "mandatory": true,
+      "version": "[${minecraft_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    },
+    {
+      "id": "architectury",
+      "mandatory": true,
+      "version": "[${architectury_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    }
+  ],
+  "fabric": {
+    "schemaVersion": 1,
+    "entrypoints": {
+      "main": [
+        "com.redpxnda.nucleus.fabric.NucleusTrinketFabric"
+      ]
+    },
+    "custom": {
+      "modmenu": {
+        "badges": [ "library" ],
+        "parent": {
+          "id": "nucleus",
+          "name": "Nucleus",
+          "description": "A library mod focused on making multi-platform mod development easier.",
+          "badges": [ "library" ]
+        }
+      }
+    }
+  },
+  "forge": {
+    "general": {
+      "modLoader": "javafml",
+      "loaderVersion": "[47,)"
+    },
+    "mod": {}
+  }
+}

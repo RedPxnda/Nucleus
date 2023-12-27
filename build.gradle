@@ -1,0 +1,632 @@
+buildscript {
+    dependencies {
+        classpath 'org.apache.groovy:groovy-toml:4.0.12'
+        classpath 'org.apache.commons:commons-configuration2:2.9.0'
+    }
+}
+
+import groovy.json.JsonSlurper
+import groovy.json.JsonBuilder
+import groovy.toml.TomlBuilder
+import org.apache.commons.configuration2.PropertiesConfiguration
+
+import java.nio.file.Files
+
+plugins {
+    id "architectury-plugin" version "3.4-SNAPSHOT"
+    id "dev.architectury.loom" version "1.3-SNAPSHOT" apply false
+    id "com.github.johnrengelman.shadow" version "7.1.2" apply false
+}
+
+group = maven_group
+version = mod_version
+
+def props = new Properties()
+file("./gradle.properties").withInputStream { props.load(it) }
+
+tasks.register("createNewModule") {
+    group = "nucleus"
+    description = "Creates a new nucleus module"
+
+    doLast {
+        def reader = System.in.newReader()
+
+        println("What should the name of this module be?")
+        def name = reader.readLine()
+        def mod_id = "nucleus-${name}"
+
+        println("What should the description be?")
+        def description = reader.readLine()
+
+        println("Should mixins be enabled?")
+        def mixins = reader.readLine() == "yes"
+
+        def client_entrypoint = false // todo allow client entrypoint creating
+
+        def mainPath = file("./${name}").toPath()
+        Map<String, Object> paths = ["root" : mainPath]
+
+        (enabled_platforms + ",common").split(",").each {
+            def root = mainPath.resolve("${name}-${it}")
+            def src = root.resolve("src/main")
+            def java = src.resolve("java/com/redpxnda/nucleus${it != "common" ? "/${it}" : ""}")
+            def resources = src.resolve("resources")
+
+            java.toFile().mkdirs()
+            if (mixins) java.resolve("mixin/${name}").toFile().mkdirs()
+
+            resources.resolve("assets/nucleus").toFile().mkdirs()
+            resources.resolve("data/nucleus").toFile().mkdirs()
+
+            paths.put(it, [
+                    root : root,
+                    resources : resources,
+                    java : java
+            ])
+        }
+
+        mainPath.resolve("build.gradle").toFile().text = "dependOn(project, [\"core\"])"
+
+        def mainClassName = "Nucleus${name.capitalize()}"
+        paths.common.java.resolve("${mainClassName}.java").toFile().text =
+"""package com.redpxnda.nucleus;
+
+public class ${mainClassName} {
+    public static final String MOD_ID = "${mod_id}";
+    
+    public static void init() {
+        
+    }
+}
+"""
+
+        if (mixins)
+            paths.common.resources.resolve("${mod_id}-common.mixins.json").toFile().text =
+"""{
+  "required": true,
+  "package": "com.redpxnda.nucleus.mixin.${name}",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "${mod_id}-common.refmap.json",
+  "client": [
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+"""
+
+        def fabricClassName = "Nucleus${name.capitalize()}Fabric"
+        paths.fabric.java.resolve("${fabricClassName}.java").toFile().text =
+"""package com.redpxnda.nucleus.fabric;
+
+import com.redpxnda.nucleus.${mainClassName};
+import net.fabricmc.api.ModInitializer;
+
+public class ${fabricClassName} implements ModInitializer {
+    @Override
+    public void onInitialize() {
+        ${mainClassName}.init();
+    }
+}
+"""
+
+        if (mixins)
+            paths.fabric.resources.resolve("${mod_id}.mixins.json").toFile().text =
+"""{
+  "required": true,
+  "package": "com.redpxnda.nucleus.fabric.mixin.${name}",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "${mod_id}.refmap.json",
+  "client": [
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+"""
+
+        paths.forge.root.resolve("gradle.properties").toFile().text = "loom.platform=forge"
+
+        def forgeClassName = "Nucleus${name.capitalize()}Forge"
+        paths.forge.java.resolve("${forgeClassName}.java").toFile().text =
+"""package com.redpxnda.nucleus.forge;
+
+import com.redpxnda.nucleus.${mainClassName};
+import dev.architectury.platform.forge.EventBuses;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+@Mod(${mainClassName}.MOD_ID)
+public class ${forgeClassName} {
+    public ${forgeClassName}() {
+        EventBuses.registerModEventBus(${mainClassName}.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
+        ${mainClassName}.init();
+    }
+}
+"""
+
+        if (mixins)
+            paths.forge.resources.resolve("${mod_id}.mixins.json").toFile().text =
+"""{
+  "required": true,
+  "package": "com.redpxnda.nucleus.forge.mixin.${name}",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "${mod_id}.refmap.json",
+  "client": [
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+"""
+
+        mainPath.resolve("mod_data.json").toFile().text =
+"""{
+  "id": "${mod_id}",
+  "version": "\${version}",
+  "name": "Nucleus (${name.capitalize()})",
+  "description": "${description}",
+  "authors": [
+    "RedPxnda"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "mixins": ${mixins ? """[
+    "${mod_id}.mixins.json",
+    "${mod_id}-common.mixins.json"
+  ]""" : "[]"},
+  "depends": [
+    {
+      "id": "forge",
+      "mandatory": true,
+      "version": "[47,)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "forge"
+    },
+    {
+      "id": "fabric",
+      "mandatory": true,
+      "version": "*",
+      "platform": "fabric"
+    },
+    {
+      "id": "minecraft",
+      "mandatory": true,
+      "version": "[\${minecraft_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    },
+    {
+      "id": "architectury",
+      "mandatory": true,
+      "version": "[\${architectury_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    }
+  ],
+  "fabric": {
+    "schemaVersion": 1,
+    "entrypoints": {
+      "main": [
+        "com.redpxnda.nucleus.fabric.${fabricClassName}"
+      ]
+    },
+    "custom": {
+      "modmenu": {
+        "badges": [ "library" ],
+        "parent": {
+          "id": "nucleus",
+          "name": "Nucleus",
+          "description": "A library mod focused on making multi-platform mod development easier.",
+          "badges": [ "library" ]
+        }
+      }
+    }
+  },
+  "forge": {
+    "general": {
+      "modLoader": "javafml",
+      "loaderVersion": "[47,)"
+    },
+    "mod": {}
+  }
+}
+"""
+
+        PropertiesConfiguration config = new PropertiesConfiguration()
+        config.read(new FileReader("gradle.properties"))
+
+        def modules = config.getString("enabled_modules")
+        config.setProperty("enabled_modules", "${modules},${name}")
+
+        config.write(new FileWriter("gradle.properties"))
+
+        println("Done!")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
+subprojects { Project subproject ->
+    if (subproject.parent == rootProject) {
+        ext {
+            mod_data = new JsonSlurper().parse(file("./mod_data.json"))
+            if (mod_data.properties) {
+                def mod_props = new Properties()
+                file("./${mod_data.properties}").withInputStream { mod_props.load(it) }
+                property_data = mod_props
+            } else property_data = props
+        }
+
+        subproject.mod_data.version = rootProject.mod_version
+
+        architectury {
+            minecraft = rootProject.minecraft_version
+        }
+    } else {
+        def platform = subproject.name
+        def module = subproject.parent.name
+        def mod_data = subproject.parent.mod_data
+
+        /*println("configuring: " + subproject)
+        println("module: ${module}")
+        println("platfrom: ${platform}")*/
+
+        def isFabric = platform.endsWith("fabric")
+        def isForge = platform.endsWith("forge")
+        def isCommon = platform.endsWith("common")
+
+        platform = isFabric ? "fabric" : isForge ? "forge" : isCommon ? "common" : platform
+
+        if (isFabric || isForge) apply plugin: "com.github.johnrengelman.shadow"
+        apply plugin: "dev.architectury.loom"
+        apply plugin: "java"
+        apply plugin: "architectury-plugin"
+        apply plugin: "maven-publish"
+
+        archivesBaseName = rootProject.archives_base_name
+        version = rootProject.mod_version
+        group = rootProject.maven_group
+
+        architectury {
+            if (isFabric) {
+                platformSetupLoomIde()
+                fabric()
+            } else if (isForge) {
+                platformSetupLoomIde()
+                forge()
+            } else if (isCommon) {
+                common(rootProject.enabled_platforms.split(","))
+            }
+        }
+
+        loom {
+            silentMojangMappingsLicense()
+            /*mixin {
+                defaultRefmapName = "nucleus-${module}${isCommon ? "-common" : ""}.refmap.json"
+            }*/
+
+            if (isForge) {
+                forge {
+                    for (def mixin in mod_data.mixins)
+                        mixinConfig mixin
+                }
+            }
+        }
+
+        configurations {
+            if (isFabric || isForge) {
+                common
+                shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
+                compileClasspath.extendsFrom common
+                runtimeClasspath.extendsFrom common
+
+                if (isFabric)
+                    developmentFabric.extendsFrom common
+                if (isForge)
+                    developmentForge.extendsFrom common
+            }
+        }
+
+        repositories {
+            mavenCentral()
+        }
+
+        dependencies {
+            minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+            mappings "net.fabricmc:yarn:${rootProject.yarn_version}:v2"
+
+            if (isFabric) {
+                modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+                modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+                modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+
+                annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+                implementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+
+                common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
+                shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionFabric")) { transitive false }
+            } else if (isForge) {
+                forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+                modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
+
+                annotationProcessor "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
+                forgeRuntimeLibrary "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
+
+                common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
+                shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionForge")) { transitive = false }
+            } else if (isCommon) {
+                // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+                // Do NOT use other classes from fabric loader
+                modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+                modApi "dev.architectury:architectury:${rootProject.architectury_version}"
+
+                annotationProcessor "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+                implementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+            }
+        }
+
+        tasks.register("generateModMetadata") {
+            group = "other"
+            description = "Generates fabric.mod.json and mods.toml from the mod_data.json file"
+
+            if (isForge) {
+                doLast {
+                    def toml = new TomlBuilder()
+
+                    def depends = mod_data.depends.findAll { it.platform == "forge" || it.platform == "*" }.collect { entry ->
+                        return [
+                                modId       : entry.id,
+                                mandatory   : entry.mandatory ?: true,
+                                versionRange: entry.version == "*" ? "" : entry.version,
+                                ordering    : entry.ordering ?: "NONE",
+                                side        : entry.side ?: "BOTH"
+                        ]
+                    }
+
+                    def mod = [
+                            modId      : mod_data.id,
+                            version    : mod_data.version,
+                            displayName: mod_data.name,
+                            description: mod_data.description,
+                            authors    : mod_data.authors.join(", ")
+                    ]
+                    if (mod_data.icon) mod.logoFile = mod_data.icon
+
+                    mod_data.forge.mod.each { key, value ->
+                        mod."${key}" = value
+                    }
+
+                    def data = [
+                            license     : (mod_data.license ?: "MIT"),
+                            mods        : [mod],
+                            dependencies: ["${mod_data.id}": depends]
+                    ]
+                    mod_data.forge.general.each { key, value ->
+                        data."${key}" = value
+                    }
+
+                    toml data
+
+                    def path = file("./src/main/resources/META-INF")
+                    path.mkdirs()
+
+                    def file = path.toPath().resolve("mods.toml")
+                    Files.deleteIfExists(file)
+                    file.withWriter { toml.writeTo(it) }
+                }
+            } else if (isFabric) {
+                doLast {
+                    LinkedHashMap<String, Object> depends = [:]
+                    mod_data.depends.findAll { (it.platform == "fabric" || it.platform == "*") && it.mandatory }.each { entry ->
+                        def ver = entry.version
+                        def ineqVer = ""
+
+                        if (ver.isEmpty() || ver == "*") {
+                            ineqVer = "*"
+                        } else {
+                            def nums = ver.split(",")
+                            def first = nums[0].substring(1)
+                            def second = nums[1].substring(0, nums[1].length() - 1)
+
+                            if (ver.startsWith("["))
+                                ineqVer += ">="
+                            else
+                                ineqVer += ">"
+
+                            ineqVer += first
+                            if (!second.isEmpty()) {
+                                ineqVer += " "
+                                if (ver.endsWith("]"))
+                                    ineqVer += "<="
+                                else
+                                    ineqVer += "<"
+                                ineqVer += second
+                            }
+                        }
+
+                        depends.(entry.id) = ineqVer
+                    }
+
+                    def json = new JsonBuilder(mod_data.fabric + mod_data.findAll { key, value -> key != "depends" && key != "fabric" && key != "forge" && key != "properties" } + ["depends": depends])
+
+                    def path = file("./src/main/resources")
+                    path.mkdirs()
+
+                    def file = path.toPath().resolve("fabric.mod.json")
+                    Files.deleteIfExists(file)
+                    file.withWriter { json.writeTo(it) }
+                }
+            }
+        }
+
+        processResources {
+            dependsOn "generateModMetadata"
+
+            if (isFabric || isForge) {
+                inputs.properties subproject.property_data
+
+                if (isFabric)
+                    filesMatching("fabric.mod.json") {
+                        expand subproject.property_data
+                    }
+
+                if (isForge)
+                    filesMatching("META-INF/mods.toml") {
+                        expand subproject.property_data
+                    }
+            }
+        }
+
+        if (isFabric || isForge) {
+            shadowJar {
+                configurations = [project.configurations.shadowCommon]
+                archiveClassifier = "dev-shadow"
+
+                if (isForge)
+                    exclude "fabric.mod.json"
+            }
+        }
+
+        remapJar {
+            if (isFabric || isForge) {
+                //if (isFabric) injectAccessWidener = true // only needed for core
+                input.set shadowJar.archiveFile
+                dependsOn shadowJar
+                archiveClassifier = null
+            }
+
+            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}-${rootProject.mod_version}.jar"
+            destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
+        }
+
+        remapSourcesJar {
+            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}-${rootProject.mod_version}-sources.jar"
+            destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
+        }
+
+        java {
+            withSourcesJar()
+        }
+
+        if (isFabric || isForge) {
+            jar {
+                archiveClassifier = "dev"
+            }
+
+            sourcesJar {
+                def commonSources = project(":${module}:${module}-common").sourcesJar
+                dependsOn commonSources
+                from commonSources.archiveFile.map { zipTree(it) }
+            }
+
+            components.java {
+                withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+                    skip()
+                }
+            }
+        }
+
+        publishing {
+            publications {
+                if (isFabric) {
+                    mavenFabric(MavenPublication) {
+                        artifactId = "nucleus-" + module + "-" + platform
+                        version = rootProject.minecraft_version + "-" + rootProject.mod_version
+
+                        from components.java
+                    }
+                } else if (isForge) {
+                    mavenForge(MavenPublication) {
+                        artifactId = "nucleus-" + module + "-" + platform
+                        version = rootProject.minecraft_version + "-" + rootProject.mod_version
+
+                        from components.java
+                    }
+                } else if (isCommon) {
+                    mavenCommon(MavenPublication) {
+                        artifactId = "nucleus-" + module + "-" + platform
+                        version = rootProject.minecraft_version + "-" + rootProject.mod_version
+
+                        from components.java
+                    }
+                }
+            }
+
+            repositories {
+                maven {
+                    url uri(file("$rootDir/build/repository"))
+                }
+            }
+        }
+
+        tasks.withType(JavaCompile) {
+            options.encoding = "UTF-8"
+            options.release = 17
+        }
+    }
+}
+
+/*def setupAccessWideners(Project project) { // it didn work :(
+    project.subprojects { Project subproject ->
+        def platform = subproject.name
+        def module = project.name
+
+        def isFabric = platform.endsWith("fabric")
+        def isForge = platform.endsWith("forge")
+        def isCommon = platform.endsWith("common")
+
+        loom {
+            if (isCommon)
+                accessWidenerPath = file("src/main/resources/nucleus-${module}.accesswidener")
+
+            if (isFabric || isForge)
+                accessWidenerPath = project(":${project.name}:${project.name}-common").loom.accessWidenerPath
+
+            if (isForge)
+                forge {
+                    convertAccessWideners = true
+                    extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
+                }
+        }
+
+        if (isFabric || isForge)
+            shadowJar {
+                exclude "architectury.common.json"
+            }
+
+        if (isFabric)
+            remapJar {
+                injectAccessWidener = true
+            }
+    }
+}*/
+
+def dependOn(Project proj, List<String> depNames) {
+    proj.subprojects { Project subproject ->
+        dependencies {
+            def plat = subproject.name.split("-")[1]
+            depNames.each { String dep ->
+                implementation project(path: ":${dep}:${dep}-${plat}", configuration: "namedElements")
+                if (plat != "common") common(project(path: ":${dep}:${dep}-common", configuration: "namedElements")) { transitive false }
+            }
+        }
+    }
+}

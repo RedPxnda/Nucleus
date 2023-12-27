@@ -1,0 +1,21 @@
+loom {
+    accessWidenerPath = file("src/main/resources/nucleus.accesswidener")
+}
+
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
+    implementation("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
+}
+
+tasks.register("githubPublish") {
+    finalizedBy ":${parent.name}:${parent.name}-common:publish"
+    group = "publishing"
+
+    doLast {
+        publishing.publications.mavenCommon.groupId = "com.${rootProject.github}"
+    }
+}

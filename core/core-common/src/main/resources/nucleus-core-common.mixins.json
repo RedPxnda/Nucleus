@@ -1,0 +1,38 @@
+{
+  "required": true,
+  "package": "com.redpxnda.nucleus.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "plugin": "com.redpxnda.nucleus.mixin.plugin.MixinPlugin",
+  "refmap": "nucleus-core-common.refmap.json",
+  "client": [
+    "client.ClientLevelAccessor",
+    "client.ClientPlayerEntityMixin",
+    "client.DrawContextAccessor",
+    "client.GameRendererMixin",
+    "client.GuiMixin",
+    "client.HeldItemFeatureRendererMixin",
+    "client.HeldItemRendererAccessor",
+    "client.HeldItemRendererMixin",
+    "client.LivingEntityRendererMixin",
+    "client.MatrixStackAccessor",
+    "client.MouseMixin",
+    "client.ParticleEngineMixin",
+    "client.TranslationStorageMixin",
+    "client.WorldRendererAccessor"
+  ],
+  "mixins": [
+    "AbstractBlockMixin",
+    "ItemStackAccessor",
+    "LivingEntityMixin",
+    "MinecraftServerMixin",
+    "PlayerEntityMixin",
+    "ServerEntityMixin",
+    "ServerPlayerEntityMixin",
+    "ThreadedAnvilChunkStorageAccessor",
+    "TrackedEntityAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

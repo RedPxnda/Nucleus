@@ -1,0 +1,11 @@
+repositories {
+    maven { url 'https://maven.terraformersmc.com/' }
+    maven { url 'https://maven.ladysnake.org/releases' }
+}
+
+dependencies {
+    if ("${rootProject.use_trinkets}" == "true")
+        modApi("dev.emi:trinkets:${rootProject.trinkets_version}")
+    else
+        modCompileOnlyApi("dev.emi:trinkets:${rootProject.trinkets_version}")
+}

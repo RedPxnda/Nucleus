@@ -1,0 +1,73 @@
+{
+  "id": "nucleus-facet",
+  "version": "${version}",
+  "name": "Nucleus (Facet)",
+  "description": "Multiplatform object data management and storage for entities, item stacks, status effect instances, and more",
+  "authors": [
+    "RedPxnda"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "mixins": [
+    "nucleus-facet.mixins.json",
+    "nucleus-facet-common.mixins.json"
+  ],
+  "depends": [
+    {
+      "id": "forge",
+      "mandatory": true,
+      "version": "[47,)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "forge"
+    },
+    {
+      "id": "fabric",
+      "mandatory": true,
+      "version": "*",
+      "platform": "fabric"
+    },
+    {
+      "id": "minecraft",
+      "mandatory": true,
+      "version": "[${minecraft_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    },
+    {
+      "id": "architectury",
+      "mandatory": true,
+      "version": "[${architectury_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    }
+  ],
+  "fabric": {
+    "schemaVersion": 1,
+    "entrypoints": {
+      "main": [
+        "com.redpxnda.nucleus.fabric.NucleusFacetFabric"
+      ]
+    },
+    "custom": {
+      "modmenu": {
+        "badges": [ "library" ],
+        "parent": {
+          "id": "nucleus",
+          "name": "Nucleus",
+          "description": "A library mod focused on making multi-platform mod development easier.",
+          "badges": [ "library" ]
+        }
+      }
+    }
+  },
+  "forge": {
+    "general": {
+      "modLoader": "javafml",
+      "loaderVersion": "[47,)"
+    },
+    "mod": {}
+  }
+}
