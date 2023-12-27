@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-config",
+  "id": "nucleus_config",
   "version": "${version}",
   "name": "Nucleus (Config)",
   "description": "A dynamic and easy-to-use config library",

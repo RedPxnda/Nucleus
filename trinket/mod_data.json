@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-trinket",
+  "id": "nucleus_trinket",
   "version": "${version}",
   "name": "Nucleus (Trinket)",
   "description": "Multiplatform Trinkets/Curios API abstraction",

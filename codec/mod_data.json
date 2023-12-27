@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-codec",
+  "id": "nucleus_codec",
   "version": "${version}",
   "name": "Nucleus (Codec)",
   "description": "Various utilities for interaction with data, serialization, and deserialization",

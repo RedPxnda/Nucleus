@@ -15,7 +15,7 @@ import net.minecraft.resource.ResourceType;
 import static com.redpxnda.nucleus.Nucleus.loc;
 
 public class NucleusPose {
-    public static final String MOD_ID = "nucleus-pose";
+    public static final String MOD_ID = "nucleus_pose";
     
     public static void init() {
         Nucleus.registerPacket(PoseFacetSyncPacket.class, PoseFacetSyncPacket::new);

@@ -1,5 +1,5 @@
 license = 'MIT'
-mods = [{modId = 'nucleus-core', version = '5', displayName = 'Nucleus (Core)', description = 'A library mod focused on making multi-platform mod development easier.', authors = 'RedPxnda'}]
-dependencies.nucleus-core = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
+mods = [{modId = 'nucleus_core', version = '5', displayName = 'Nucleus (Core)', description = 'A library mod focused on making multi-platform mod development easier.', authors = 'RedPxnda'}]
+dependencies.nucleus_core = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
 modLoader = 'javafml'
 loaderVersion = '[47,)'

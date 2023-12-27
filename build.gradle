@@ -33,7 +33,7 @@ tasks.register("createNewModule") {
 
         println("What should the name of this module be?")
         def name = reader.readLine()
-        def mod_id = "nucleus-${name}"
+        def mod_id = "nucleus_${name}"
 
         println("What should the description be?")
         def description = reader.readLine()
@@ -299,7 +299,7 @@ subprojects { Project subproject ->
         apply plugin: "dev.architectury.loom"
         apply plugin: "java"
         apply plugin: "architectury-plugin"
-        apply plugin: "maven-publish"
+        if (module != "test") apply plugin: "maven-publish"
 
         archivesBaseName = rootProject.archives_base_name
         version = rootProject.mod_version
@@ -544,35 +544,51 @@ subprojects { Project subproject ->
             }
         }
 
-        publishing {
-            publications {
-                if (isFabric) {
-                    mavenFabric(MavenPublication) {
-                        artifactId = "nucleus-" + module + "-" + platform
-                        version = rootProject.minecraft_version + "-" + rootProject.mod_version
+        if (module != "test") {
+            publishing {
+                publications {
+                    if (isFabric) {
+                        mavenFabric(MavenPublication) {
+                            artifactId = "nucleus-" + module + "-" + platform
+                            version = rootProject.minecraft_version + "-" + rootProject.mod_version
 
-                        from components.java
+                            from components.java
+                        }
+                    } else if (isForge) {
+                        mavenForge(MavenPublication) {
+                            artifactId = "nucleus-" + module + "-" + platform
+                            version = rootProject.minecraft_version + "-" + rootProject.mod_version
+
+                            from components.java
+                        }
+                    } else if (isCommon) {
+                        mavenCommon(MavenPublication) {
+                            artifactId = "nucleus-" + module + "-" + platform
+                            version = rootProject.minecraft_version + "-" + rootProject.mod_version
+
+                            from components.java
+                        }
                     }
-                } else if (isForge) {
-                    mavenForge(MavenPublication) {
-                        artifactId = "nucleus-" + module + "-" + platform
-                        version = rootProject.minecraft_version + "-" + rootProject.mod_version
+                }
 
-                        from components.java
-                    }
-                } else if (isCommon) {
-                    mavenCommon(MavenPublication) {
-                        artifactId = "nucleus-" + module + "-" + platform
-                        version = rootProject.minecraft_version + "-" + rootProject.mod_version
-
-                        from components.java
+                repositories {
+                    maven {
+                        url uri(file("$rootDir/build/repository"))
                     }
                 }
             }
 
-            repositories {
-                maven {
-                    url uri(file("$rootDir/build/repository"))
+            tasks.register("githubPublish") {
+                finalizedBy ":${module}:${module}-${platform}:publish"
+                group = "publishing"
+
+                doLast {
+                    if (isCommon)
+                        publishing.publications.mavenCommon.groupId = "com.${rootProject.github}"
+                    else if (isFabric)
+                        publishing.publications.mavenFabric.groupId = "com.${rootProject.github}"
+                    else if (isForge)
+                        publishing.publications.mavenForge.groupId = "com.${rootProject.github}"
                 }
             }
         }

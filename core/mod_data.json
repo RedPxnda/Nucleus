@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-core",
+  "id": "nucleus_core",
   "version": "${version}",
   "name": "Nucleus (Core)",
   "description": "A library mod focused on making multi-platform mod development easier.",

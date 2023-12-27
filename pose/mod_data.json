@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-pose",
+  "id": "nucleus_pose",
   "version": "${version}",
   "name": "Nucleus (Pose)",
   "description": "Adds a simple player animation system",

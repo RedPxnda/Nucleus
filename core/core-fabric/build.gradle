@@ -20,12 +20,3 @@ shadowJar {
 remapJar {
     injectAccessWidener = true
 }
-
-tasks.register("githubPublish") {
-    finalizedBy ":${parent.name}:${parent.name}-fabric:publish"
-    group = "publishing"
-
-    doLast {
-        publishing.publications.mavenFabric.groupId = "com.${rootProject.github}"
-    }
-}

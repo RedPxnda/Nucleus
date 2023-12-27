@@ -6,7 +6,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
 public class NucleusTest {
-    public static final String MOD_ID = "nucleus-test";
+    public static final String MOD_ID = "nucleus_test";
     
     public static void init() {
         CoolEntityFacet.KEY = FacetRegistry.register(new Identifier("example", "cool_entity_facet"), CoolEntityFacet.class);

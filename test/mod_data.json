@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-test",
+  "id": "nucleus_test",
   "version": "${version}",
   "name": "Nucleus (Test)",
   "description": "Nucleus's testing unit",

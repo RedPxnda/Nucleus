@@ -1,5 +1,5 @@
 {
-  "id": "nucleus-facet",
+  "id": "nucleus_facet",
   "version": "${version}",
   "name": "Nucleus (Facet)",
   "description": "Multiplatform object data management and storage for entities, item stacks, status effect instances, and more",

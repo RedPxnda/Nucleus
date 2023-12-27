@@ -15,12 +15,3 @@ dependencies {
     annotationProcessor("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}")
     forgeRuntimeLibrary(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
 }
-
-tasks.register("githubPublish") {
-    finalizedBy ":${parent.name}:${parent.name}-forge:publish"
-    group = "publishing"
-
-    doLast {
-        publishing.publications.mavenForge.groupId = "com.${rootProject.github}"
-    }
-}
