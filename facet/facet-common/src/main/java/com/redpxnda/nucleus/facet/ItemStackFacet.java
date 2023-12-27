@@ -5,9 +5,16 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 
 public interface ItemStackFacet<F extends ItemStackFacet<F, T>, T extends NbtElement> extends Facet<T> {
+    /**
+     * Use this to update the nbt of an itemstack with this facet
+     */
     default void updateNbtOf(FacetKey<F> key, ItemStack stack) {
         stack.getOrCreateSubNbt(FacetRegistry.TAG_FACETS_ID).put(key.id().toString(), toNbt());
     }
+
+    /**
+     * Called on the *new* stack's facet when the old stack holding the old facet is copied.
+     */
     default void onCopied(F original) {
         loadNbt(original.toNbt());
     }

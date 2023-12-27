@@ -1,7 +1,7 @@
 <h1>
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="banner-white.svg">
-        <img src="banner.svg" alt="Nucleus">
+        <img src="banner.svg" alt="Nucleus Config">
     </picture> 
 </h1>
 
@@ -33,3 +33,4 @@ For a description of the available config types, see [ConfigType](https://github
 
 Planned features:
 * In game modification gui
+* Config presets

@@ -10,6 +10,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 
 public interface PlayerSendable {
+    PlayerSendable EMPTY = player -> {};
+
+    static PlayerSendable empty() {
+        return EMPTY;
+    }
+
     void send(ServerPlayerEntity player);
     default void send(Iterable<ServerPlayerEntity> players) {
         players.forEach(this::send);

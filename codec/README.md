@@ -1,7 +1,7 @@
 <h1>
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="banner-white.svg">
-        <img src="banner.svg" alt="Nucleus">
+        <img src="banner.svg" alt="Nucleus Codec">
     </picture> 
 </h1>
 
@@ -29,11 +29,11 @@ This is Nucleus's codec module. It includes utilities relating to serialization 
 Other utilities include the [CompactableMapCodec](https://github.com/RedPxnda/Nucleus/blob/refactor/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/CompactableMapCodec.java),
 which is:
 > A codec representing a map, but in two ways:
-> <code>
+> ```
 >     {
 >         "someKey": "someValue"
 >     }
-> </code>
+> ```
 > OR
 > <code>["someKey|someValue"]</code> (but it will encode as the former)
 

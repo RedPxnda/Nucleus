@@ -20,5 +20,7 @@ public interface EntityFacet<T extends NbtElement> extends Facet<T> {
     default void sendToClient(Entity capHolder, ServerPlayerEntity player) {
         createPacket(capHolder).send(player);
     }
-    PlayerSendable createPacket(Entity target);
+    default PlayerSendable createPacket(Entity target) {
+        return PlayerSendable.empty();
+    }
 }

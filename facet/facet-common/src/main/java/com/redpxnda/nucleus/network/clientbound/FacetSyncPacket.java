@@ -16,10 +16,10 @@ public class FacetSyncPacket<T extends NbtElement, C extends EntityFacet<T>> imp
     public final String facetId;
     public final T facetData;
 
-    public FacetSyncPacket(Entity target, FacetKey<C> key, C cap) {
+    public FacetSyncPacket(Entity target, FacetKey<C> key, C facet) {
         targetId = target.getId();
         facetId = key.id().toString();
-        facetData = cap.toNbt();
+        facetData = facet.toNbt();
     }
 
     public FacetSyncPacket(PacketByteBuf buf) {

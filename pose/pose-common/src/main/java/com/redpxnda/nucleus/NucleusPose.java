@@ -18,7 +18,6 @@ public class NucleusPose {
     public static final String MOD_ID = "nucleus-pose";
     
     public static void init() {
-        TrackingUpdateSyncer.register(ServerPoseFacet.KEY);
         Nucleus.registerPacket(PoseFacetSyncPacket.class, PoseFacetSyncPacket::new);
 
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
@@ -29,6 +28,8 @@ public class NucleusPose {
         EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
                 ClientPoseFacet.KEY = FacetRegistry.register(ClientPoseFacet.loc, ClientPoseFacet.class)
         );
+
+        TrackingUpdateSyncer.register(ServerPoseFacet.KEY);
 
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
             if (entity instanceof PlayerEntity) {
