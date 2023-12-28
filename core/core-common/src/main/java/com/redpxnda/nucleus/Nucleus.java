@@ -29,7 +29,6 @@ public class Nucleus {
     public static @Nullable MinecraftServer SERVER;
 
     public static void init() {
-        System.out.println("!!!!!!!!!!LOADING CORE!!!!!!!!");
         packets();
         SupporterUtil.init();
         NucleusRegistries.init();

@@ -8,7 +8,6 @@ public class NucleusFacet {
     public static final String MOD_ID = "nucleus_facet";
     
     public static void init() {
-        System.out.println("!!!!LOADING FACET!!!!!");
         TrackingUpdateSyncer.init();
         Nucleus.registerPacket(FacetSyncPacket.class, FacetSyncPacket::new);
     }

@@ -7,6 +7,10 @@ loom {
     }
 }
 
+shadowJar {
+    exclude "architectury.common.json"
+}
+
 repositories {
     maven { url 'https://jitpack.io' }
 }
@@ -14,5 +18,4 @@ repositories {
 dependencies {
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
     implementation(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
-    //forgeRuntimeLibrary(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
 }
