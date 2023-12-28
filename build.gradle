@@ -49,7 +49,7 @@ tasks.register("createNewModule") {
         (enabled_platforms + ",common").split(",").each {
             def root = mainPath.resolve("${name}-${it}")
             def src = root.resolve("src/main")
-            def java = src.resolve("java/com/redpxnda/nucleus${it != "common" ? "/${it}" : ""}")
+            def java = src.resolve("java/com/redpxnda/nucleus/${name}${it != "common" ? "/${it}" : ""}")
             def resources = src.resolve("resources")
 
             java.toFile().mkdirs()
@@ -69,7 +69,7 @@ tasks.register("createNewModule") {
 
         def mainClassName = "Nucleus${name.capitalize()}"
         paths.common.java.resolve("${mainClassName}.java").toFile().text =
-"""package com.redpxnda.nucleus;
+"""package com.redpxnda.nucleus.${name};
 
 public class ${mainClassName} {
     public static final String MOD_ID = "${mod_id}";
@@ -84,7 +84,7 @@ public class ${mainClassName} {
             paths.common.resources.resolve("${mod_id}-common.mixins.json").toFile().text =
 """{
   "required": true,
-  "package": "com.redpxnda.nucleus.mixin.${name}",
+  "package": "com.redpxnda.nucleus.${name}.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "refmap": "${mod_id}-common.refmap.json",
@@ -100,9 +100,9 @@ public class ${mainClassName} {
 
         def fabricClassName = "Nucleus${name.capitalize()}Fabric"
         paths.fabric.java.resolve("${fabricClassName}.java").toFile().text =
-"""package com.redpxnda.nucleus.fabric;
+"""package com.redpxnda.nucleus.${name}.fabric;
 
-import com.redpxnda.nucleus.${mainClassName};
+import com.redpxnda.nucleus.${name}.${mainClassName};
 import net.fabricmc.api.ModInitializer;
 
 public class ${fabricClassName} implements ModInitializer {
@@ -117,7 +117,7 @@ public class ${fabricClassName} implements ModInitializer {
             paths.fabric.resources.resolve("${mod_id}.mixins.json").toFile().text =
 """{
   "required": true,
-  "package": "com.redpxnda.nucleus.fabric.mixin.${name}",
+  "package": "com.redpxnda.nucleus.${name}.fabric.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "refmap": "${mod_id}.refmap.json",
@@ -135,9 +135,9 @@ public class ${fabricClassName} implements ModInitializer {
 
         def forgeClassName = "Nucleus${name.capitalize()}Forge"
         paths.forge.java.resolve("${forgeClassName}.java").toFile().text =
-"""package com.redpxnda.nucleus.forge;
+"""package com.redpxnda.nucleus.${name}.forge;
 
-import com.redpxnda.nucleus.${mainClassName};
+import com.redpxnda.nucleus.${name}.${mainClassName};
 import dev.architectury.platform.forge.EventBuses;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -155,7 +155,7 @@ public class ${forgeClassName} {
             paths.forge.resources.resolve("${mod_id}.mixins.json").toFile().text =
 """{
   "required": true,
-  "package": "com.redpxnda.nucleus.forge.mixin.${name}",
+  "package": "com.redpxnda.nucleus.${name}.forge.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "refmap": "${mod_id}.refmap.json",
@@ -165,6 +165,15 @@ public class ${forgeClassName} {
   ],
   "injectors": {
     "defaultRequire": 1
+  }
+}
+"""
+
+        paths.forge.resources.resolve("pack.mcmeta").toFile().text =
+"""{
+  "pack": {
+    "description": "Nucleus (${name.capitalize()})",
+    "pack_format": 9
   }
 }
 """
@@ -220,7 +229,7 @@ public class ${forgeClassName} {
     "schemaVersion": 1,
     "entrypoints": {
       "main": [
-        "com.redpxnda.nucleus.fabric.${fabricClassName}"
+        "com.redpxnda.nucleus.${name}.fabric.${fabricClassName}"
       ]
     },
     "custom": {
@@ -359,7 +368,7 @@ subprojects { Project subproject ->
                 modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
                 annotationProcessor "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
-                implementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+                modImplementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
 
                 common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionFabric")) { transitive false }
@@ -367,8 +376,8 @@ subprojects { Project subproject ->
                 forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
                 modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
-                annotationProcessor "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
-                forgeRuntimeLibrary "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
+                implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
+                implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
 
                 common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionForge")) { transitive = false }
@@ -379,7 +388,7 @@ subprojects { Project subproject ->
                 modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
                 annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
-                implementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+                modImplementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
             }
         }
 

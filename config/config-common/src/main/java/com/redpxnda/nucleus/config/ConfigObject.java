@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;
-import com.redpxnda.nucleus.codec.JsoncOps;
+import com.redpxnda.nucleus.codec.ops.JsoncOps;
 import com.redpxnda.nucleus.util.json.JsoncElement;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;

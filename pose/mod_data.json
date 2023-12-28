@@ -45,7 +45,7 @@
     "schemaVersion": 1,
     "entrypoints": {
       "main": [
-        "com.redpxnda.nucleus.fabric.NucleusPoseFabric"
+        "com.redpxnda.nucleus.pose.fabric.NucleusPoseFabric"
       ]
     },
     "custom": {

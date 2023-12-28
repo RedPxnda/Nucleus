@@ -1,5 +1,5 @@
 {
-  "id": "nucleus_core",
+  "id": "nucleus",
   "version": "${version}",
   "name": "Nucleus (Core)",
   "description": "A library mod focused on making multi-platform mod development easier.",
@@ -56,13 +56,7 @@
     },
     "custom": {
       "modmenu": {
-        "badges": [ "library" ],
-        "parent": {
-          "id": "nucleus",
-          "name": "Nucleus",
-          "description": "A library mod focused on making multi-platform mod development easier.",
-          "badges": [ "library" ]
-        }
+        "badges": [ "library" ]
       }
     }
   },

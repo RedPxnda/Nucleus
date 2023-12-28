@@ -48,7 +48,7 @@
     "schemaVersion": 1,
     "entrypoints": {
       "main": [
-        "com.redpxnda.nucleus.fabric.NucleusFacetFabric"
+        "com.redpxnda.nucleus.facet.fabric.NucleusFacetFabric"
       ]
     },
     "custom": {

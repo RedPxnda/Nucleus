@@ -1,0 +1,5 @@
+license = 'MIT'
+mods = [{modId = 'nucleus_test', version = '5', displayName = 'Nucleus (Test)', description = "Nucleus's testing unit", authors = 'RedPxnda'}]
+dependencies.nucleus_test = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
+modLoader = 'javafml'
+loaderVersion = '[47,)'

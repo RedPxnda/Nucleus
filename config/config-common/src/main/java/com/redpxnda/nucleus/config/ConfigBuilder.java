@@ -1,8 +1,8 @@
 package com.redpxnda.nucleus.config;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.codec.AutoCodec;
-import com.redpxnda.nucleus.codec.ConfigAutoCodec;
+import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import dev.architectury.platform.Platform;
 import org.jetbrains.annotations.Nullable;
 

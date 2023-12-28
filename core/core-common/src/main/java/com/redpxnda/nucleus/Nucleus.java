@@ -23,13 +23,13 @@ import java.util.function.Function;
 
 public class Nucleus {
     public static final String MOD_ID = "nucleus";
-    public static final String CORE_MOD_ID = "nucleus_core";
     public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();
     public static final Logger LOGGER = LogUtils.getLogger();
     public static @Nullable MinecraftServer SERVER;
 
     public static void init() {
+        System.out.println("!!!!!!!!!!LOADING CORE!!!!!!!!");
         packets();
         SupporterUtil.init();
         NucleusRegistries.init();

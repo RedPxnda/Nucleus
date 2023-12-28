@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.facet;
 
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
+import com.redpxnda.nucleus.facet.event.FacetAttachmentEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;

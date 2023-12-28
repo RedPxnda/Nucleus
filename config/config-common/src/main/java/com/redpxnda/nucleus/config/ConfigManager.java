@@ -1,8 +1,8 @@
 package com.redpxnda.nucleus.config;
 
 import com.redpxnda.nucleus.Nucleus;
-import com.redpxnda.nucleus.codec.JsoncOps;
-import com.redpxnda.nucleus.network.clientbound.ConfigSyncPacket;
+import com.redpxnda.nucleus.codec.ops.JsoncOps;
+import com.redpxnda.nucleus.config.network.clientbound.ConfigSyncPacket;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;

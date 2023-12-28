@@ -9,18 +9,18 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-import static com.redpxnda.nucleus.Nucleus.CORE_MOD_ID;
+import static com.redpxnda.nucleus.Nucleus.MOD_ID;
 
-@Mod(CORE_MOD_ID)
+@Mod(MOD_ID)
 public class NucleusForge {
     public NucleusForge() {
         // Submit our event bus to let architectury register our content on the right time
-        EventBuses.registerModEventBus(CORE_MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
+        EventBuses.registerModEventBus(MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
         Nucleus.init();
     }
 
     public static class ClientEvents {
-        @Mod.EventBusSubscriber(modid = CORE_MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+        @Mod.EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
         public static class ModBus {
             @SubscribeEvent
             public static void onShaderRegistration(RegisterShadersEvent event) {

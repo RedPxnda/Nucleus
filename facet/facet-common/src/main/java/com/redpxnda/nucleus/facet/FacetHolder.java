@@ -1,5 +1,7 @@
 package com.redpxnda.nucleus.facet;
 
+import com.redpxnda.nucleus.facet.event.FacetAttachmentEvent;
+
 public interface FacetHolder {
     FacetInventory getFacets();
     default void setFacet(FacetKey key, Facet val) {

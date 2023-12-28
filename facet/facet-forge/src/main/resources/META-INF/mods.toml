@@ -1,0 +1,5 @@
+license = 'MIT'
+mods = [{modId = 'nucleus_facet', version = '5', displayName = 'Nucleus (Facet)', description = 'Multiplatform object data management and storage for entities, item stacks, status effect instances, and more', authors = 'RedPxnda'}]
+dependencies.nucleus_facet = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
+modLoader = 'javafml'
+loaderVersion = '[47,)'

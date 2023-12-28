@@ -45,7 +45,7 @@
     "schemaVersion": 1,
     "entrypoints": {
       "main": [
-        "com.redpxnda.nucleus.fabric.NucleusConfigFabric"
+        "com.redpxnda.nucleus.config.fabric.NucleusConfigFabric"
       ]
     },
     "custom": {
