@@ -1,3 +1,0 @@
-loom {
-    accessWidenerPath = project(":core:core-common").loom.accessWidenerPath
-}

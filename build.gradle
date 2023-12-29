@@ -328,9 +328,10 @@ subprojects { Project subproject ->
 
         loom {
             silentMojangMappingsLicense()
-            /*mixin {
+
+            mixin { // todo find fix for forge generating refmap... temporarily, comment this out when testing on forge
                 defaultRefmapName = "nucleus-${module}${isCommon ? "-common" : ""}.refmap.json"
-            }*/
+            }
 
             if (isForge) {
                 forge {
@@ -367,8 +368,8 @@ subprojects { Project subproject ->
                 modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
                 modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
-                annotationProcessor "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
-                modImplementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+                /*annotationProcessor "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+                modImplementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"*/
 
                 common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionFabric")) { transitive false }
@@ -376,8 +377,8 @@ subprojects { Project subproject ->
                 forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
                 modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
-                implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
-                implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
+                /*implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
+                implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"*/
 
                 common(project(path: ":${module}:${module}-common", configuration: "namedElements")) { transitive false }
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionForge")) { transitive = false }
@@ -387,9 +388,18 @@ subprojects { Project subproject ->
                 modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
                 modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 
-                annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
-                modImplementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+                /*annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+                modImplementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"*/
             }
+        }
+
+        tasks.withType(JavaCompile) {
+            options.encoding = "UTF-8"
+            options.release = 17
+        }
+
+        java {
+            withSourcesJar()
         }
 
         tasks.register("generateModMetadata") {
@@ -516,7 +526,6 @@ subprojects { Project subproject ->
 
         remapJar {
             if (isFabric || isForge) {
-                //if (isFabric) injectAccessWidener = true // only needed for core
                 input.set shadowJar.archiveFile
                 dependsOn shadowJar
                 archiveClassifier = null
@@ -529,10 +538,6 @@ subprojects { Project subproject ->
         remapSourcesJar {
             archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${rootProject.mod_version}-sources.jar"
             destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
-        }
-
-        java {
-            withSourcesJar()
         }
 
         if (isFabric || isForge) {
@@ -601,18 +606,58 @@ subprojects { Project subproject ->
                 }
             }
         }
+    }
+}
 
-        tasks.withType(JavaCompile) {
-            options.encoding = "UTF-8"
-            options.release = 17
+static def includeMixinExtras(Project proj) {
+    proj.subprojects { Project subproject ->
+        def platform = subproject.name
+
+        def isFabric = platform.endsWith("fabric")
+        def isForge = platform.endsWith("forge")
+        def isCommon = platform.endsWith("common")
+
+        dependencies {
+            if (isFabric) {
+                annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}")
+                implementation(include("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"))
+            } else if (isForge) {
+                implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
+                implementation(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
+            } else if (isCommon) {
+                annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
+                implementation("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
+            }
         }
     }
 }
 
-/*def setupAccessWideners(Project project) { // it didn work :(
-    project.subprojects { Project subproject ->
+static def implementMixinExtras(Project proj) {
+    proj.subprojects { Project subproject ->
         def platform = subproject.name
-        def module = project.name
+
+        def isFabric = platform.endsWith("fabric")
+        def isForge = platform.endsWith("forge")
+        def isCommon = platform.endsWith("common")
+
+        dependencies {
+            if (isFabric) {
+                annotationProcessor "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+                modImplementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+            } else if (isForge) {
+                implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
+                implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
+            } else if (isCommon) {
+                annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+                modImplementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+            }
+        }
+    }
+}
+
+static def copyAccessWidenersFrom(Project proj, String module) {
+    proj.subprojects { Project subproject ->
+        def platform = subproject.name
 
         def isFabric = platform.endsWith("fabric")
         def isForge = platform.endsWith("forge")
@@ -620,10 +665,47 @@ subprojects { Project subproject ->
 
         loom {
             if (isCommon)
-                accessWidenerPath = file("src/main/resources/nucleus-${module}.accesswidener")
+                accessWidenerPath = project(":${module}:${module}-common").loom.accessWidenerPath
+
+            if (isFabric)
+                accessWidenerPath = project(":${module}:${module}-fabric").loom.accessWidenerPath
+
+            if (isForge) {
+                accessWidenerPath = project(":${module}:${module}-forge").loom.accessWidenerPath
+
+                forge {
+                    convertAccessWideners = true
+                    extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
+                }
+            }
+        }
+
+        if (isFabric || isForge)
+            shadowJar {
+                exclude "architectury.common.json"
+            }
+
+        if (isFabric)
+            remapJar {
+                injectAccessWidener = true
+            }
+    }
+}
+
+static def setupAccessWideners(Project proj, String path) {
+    proj.subprojects { Project subproject ->
+        def platform = subproject.name
+
+        def isFabric = platform.endsWith("fabric")
+        def isForge = platform.endsWith("forge")
+        def isCommon = platform.endsWith("common")
+
+        loom {
+            if (isCommon)
+                accessWidenerPath = file(path)
 
             if (isFabric || isForge)
-                accessWidenerPath = project(":${project.name}:${project.name}-common").loom.accessWidenerPath
+                accessWidenerPath = project(":${proj.name}:${proj.name}-common").loom.accessWidenerPath
 
             if (isForge)
                 forge {
@@ -642,9 +724,13 @@ subprojects { Project subproject ->
                 injectAccessWidener = true
             }
     }
-}*/
+}
 
-def dependOn(Project proj, List<String> depNames) {
+static def setupAccessWideners(Project proj) {
+    setupAccessWideners(proj, "src/main/resources/nucleus-${proj.name}.accesswidener")
+}
+
+static def dependOn(Project proj, List<String> depNames) {
     proj.subprojects { Project subproject ->
         def plat = subproject.name.split("-")[1]
 
@@ -671,11 +757,23 @@ def dependOn(Project proj, List<String> depNames) {
 
 tasks.register("githubPublishAll") {
     group = "nucleus"
+
     def modules = enabled_modules.split(",").findAll { it != "test" }
     def platforms = (enabled_platforms+",common").split(",").findAll { !it.isEmpty() }
     for (final def module in modules) {
         for (final def platform in platforms) {
-            dependsOn(":${module}:${module}-${platform}:githubPublish")
+            finalizedBy(":${module}:${module}-${platform}:githubPublish")
         }
     }
+
+    /*doLast {
+        def modules = enabled_modules.split(",").findAll { it != "test" }
+        def platforms = (enabled_platforms+",common").split(",").findAll { !it.isEmpty() }
+        for (final def module in modules) {
+            for (final def platform in platforms) {
+                def task = project(":${module}:${module}-${platform}").tasks.named("githubPublish").getOrNull()
+                if (task != null) task.execute() // apparently .execute() isnt a thing
+            }
+        }
+    }*/
 }

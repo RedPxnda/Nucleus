@@ -1,1 +1,3 @@
 dependOn(project, rootProject.enabled_modules.split(",").findAll { it != "test" })
+copyAccessWidenersFrom(project, "core")
+implementMixinExtras(project)

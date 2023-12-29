@@ -1,7 +1,3 @@
-loom {
-    accessWidenerPath = project(":core:core-fabric").loom.accessWidenerPath
-}
-
 repositories {
     maven { url 'https://maven.terraformersmc.com/' }
 }

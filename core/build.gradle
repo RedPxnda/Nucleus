@@ -1,1 +1,2 @@
-//setupAccessWideners(project) // it didn work :(
+setupAccessWideners(project, "src/main/resources/nucleus.accesswidener")
+includeMixinExtras(project)

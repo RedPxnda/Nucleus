@@ -6,6 +6,7 @@
   "authors": [
     "RedPxnda"
   ],
+  "icon": "icon.png",
   "contact": {},
   "license": "MIT",
   "mixins": [
