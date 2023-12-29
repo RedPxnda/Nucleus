@@ -619,14 +619,12 @@ static def includeMixinExtras(Project proj) {
 
         dependencies {
             if (isFabric) {
-                annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}")
-                implementation(include("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"))
+                include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}")))
             } else if (isForge) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
                 implementation(include("io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"))
             } else if (isCommon) {
-                annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
-                implementation("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}")
+                implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
             }
         }
     }
@@ -642,14 +640,12 @@ static def implementMixinExtras(Project proj) {
 
         dependencies {
             if (isFabric) {
-                annotationProcessor "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
-                modImplementation "io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"
+                implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.mixin_extras_version}"))
             } else if (isForge) {
                 implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
                 implementation "io.github.llamalad7:mixinextras-forge:${rootProject.mixin_extras_version}"
             } else if (isCommon) {
-                annotationProcessor "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
-                modImplementation "io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"
+                implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
             }
         }
     }
