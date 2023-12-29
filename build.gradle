@@ -648,14 +648,22 @@ def dependOn(Project proj, List<String> depNames) {
     proj.subprojects { Project subproject ->
         def plat = subproject.name.split("-")[1]
 
+        if (plat == "forge") {
+            loom {
+                mods {
+                    depNames.each { String dep ->
+                        "${dep}" {
+                            sourceSet project(":${dep}:${dep}-forge").sourceSets.main
+                        }
+                    }
+                }
+            }
+        }
+
         dependencies {
             depNames.each { String dep ->
                 implementation project(path: ":${dep}:${dep}-${plat}", configuration: "namedElements")
                 if (plat != "common") common(project(path: ":${dep}:${dep}-common", configuration: "namedElements")) { transitive false }
-                if (plat == "forge") {
-                    modImplementation project(path: ":${dep}:${dep}-common", configuration: "namedElements")
-                    modImplementation project(path: ":${dep}:${dep}-forge", configuration: "namedElements")
-                }
             }
         }
     }
