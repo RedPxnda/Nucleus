@@ -7,7 +7,7 @@
 
 **⚠️ Depends on Nucleus Core**
 
-This is Nucleus's codec module. It includes utilities relating to serialization and deserialization, such as the [AutoCodec](https://github.com/RedPxnda/Nucleus/blob/refactor/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/AutoCodec.java).
+This is Nucleus's codec module. It includes utilities relating to serialization and deserialization, such as the [AutoCodec](https://github.com/RedPxnda/Nucleus/blob/1.20.1/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/auto/AutoCodec.java).
 > AutoCodecs are comparable to Gson. They automatically generate a codec from some class, scanning fields to add as parameters. Inevitably, as auto-generation tends to be, AutoCodecs can 
 > be unstable. They require classes to either: <br>
 > 1. *Override* AutoCodec reading by either being present within the AutoCodec#inheritOverrides
@@ -26,7 +26,7 @@ This is Nucleus's codec module. It includes utilities relating to serialization 
 > Use AutoCodec#of(Class) in order to create a new AutoCodec. Then use AutoCodec#codec() to
 > obtain the Codec object for encoding and decoding. <br>
 
-Other utilities include the [CompactableMapCodec](https://github.com/RedPxnda/Nucleus/blob/refactor/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/CompactableMapCodec.java),
+Other utilities include the [CompactableMapCodec](https://github.com/RedPxnda/Nucleus/blob/1.20.1/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/misc/CompactableMapCodec.java),
 which is:
 > A codec representing a map, but in two ways:
 > ```
@@ -37,8 +37,8 @@ which is:
 > OR
 > <code>["someKey|someValue"]</code> (but it will encode as the former)
 
-[TagLists](https://github.com/RedPxnda/Nucleus/tree/refactor/codec/codec-common/src/main/java/com/redpxnda/nucleus/util/tag), a handy way of creating a list
-that allows both tags and normal entries. Tag entries begin with a *#*. [EntityTypeLists](https://github.com/RedPxnda/Nucleus/blob/refactor/codec/codec-common/src/main/java/com/redpxnda/nucleus/util/tag/EntityTypeList.java)
+[TagLists](https://github.com/RedPxnda/Nucleus/tree/1.20.1/codec/codec-common/src/main/java/com/redpxnda/nucleus/util/tag), a handy way of creating a list
+that allows both tags and normal entries. Tag entries begin with a *#*. [EntityTypeLists](https://github.com/RedPxnda/Nucleus/blob/1.20.1/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/tag/EntityTypeList.java)
 also allow entries beginning with a *$*, representing hardcoded checks. These checks are expandable, but by default will include:
 * "tamables" - for any *Tameable*(yarn) entity.
 * "animals" - for any *AnimalEntity*. (pigs, sheep, etc.)
