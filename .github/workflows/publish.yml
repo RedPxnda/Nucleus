@@ -1,4 +1,4 @@
-name: Maven Release
+name: Publish All Modules
 
 on:
   workflow_dispatch:
