@@ -1,5 +1,5 @@
 license = 'MIT'
-mods = [{modId = 'nucleus_codec', version = '5', displayName = 'Nucleus (Codec)', description = 'Various utilities for interaction with data, serialization, and deserialization', authors = 'RedPxnda'}]
+mods = [{modId = 'nucleus_codec', version = '1.0.0', displayName = 'Nucleus (Codec)', description = 'Various utilities for interaction with data, serialization, and deserialization', authors = 'RedPxnda'}]
 dependencies.nucleus_codec = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
 modLoader = 'javafml'
 loaderVersion = '[47,)'

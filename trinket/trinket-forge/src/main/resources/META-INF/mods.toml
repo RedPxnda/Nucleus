@@ -1,5 +1,5 @@
 license = 'MIT'
-mods = [{modId = 'nucleus_trinket', version = '5', displayName = 'Nucleus (Trinket)', description = 'Multiplatform Trinkets/Curios API abstraction', authors = 'RedPxnda'}]
+mods = [{modId = 'nucleus_trinket', version = '1.0.0', displayName = 'Nucleus (Trinket)', description = 'Multiplatform Trinkets/Curios API abstraction', authors = 'RedPxnda'}]
 dependencies.nucleus_trinket = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
 modLoader = 'javafml'
 loaderVersion = '[47,)'

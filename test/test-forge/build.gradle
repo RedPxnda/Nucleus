@@ -7,10 +7,3 @@ loom {
         }
     }*/
 }
-
-dependencies {
-    modImplementation project(path: ":core:core-forge", configuration: "namedElements")
-    /*implementation project(path: ":core:core-forge", configuration: "namedElements")
-    common(project(path: ":core:core-common", configuration: "namedElements")) { transitive false }
-    common(project(path: ":test:test-common", configuration: "namedElements")) { transitive false }*/
-}

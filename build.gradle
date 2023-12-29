@@ -522,12 +522,12 @@ subprojects { Project subproject ->
                 archiveClassifier = null
             }
 
-            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}-${rootProject.mod_version}.jar"
+            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${rootProject.mod_version}.jar"
             destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
         }
 
         remapSourcesJar {
-            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}-${rootProject.mod_version}-sources.jar"
+            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${rootProject.mod_version}-sources.jar"
             destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
         }
 
@@ -558,22 +558,22 @@ subprojects { Project subproject ->
                 publications {
                     if (isFabric) {
                         mavenFabric(MavenPublication) {
-                            artifactId = "nucleus-" + module + "-" + platform
-                            version = rootProject.minecraft_version + "-" + rootProject.mod_version
+                            artifactId = module + "-" + platform
+                            version = rootProject.minecraft_version + "+" + rootProject.mod_version
 
                             from components.java
                         }
                     } else if (isForge) {
                         mavenForge(MavenPublication) {
-                            artifactId = "nucleus-" + module + "-" + platform
-                            version = rootProject.minecraft_version + "-" + rootProject.mod_version
+                            artifactId = module + "-" + platform
+                            version = rootProject.minecraft_version + "+" + rootProject.mod_version
 
                             from components.java
                         }
                     } else if (isCommon) {
                         mavenCommon(MavenPublication) {
-                            artifactId = "nucleus-" + module + "-" + platform
-                            version = rootProject.minecraft_version + "-" + rootProject.mod_version
+                            artifactId = module + "-" + platform
+                            version = rootProject.minecraft_version + "+" + rootProject.mod_version
 
                             from components.java
                         }
@@ -648,17 +648,6 @@ def dependOn(Project proj, List<String> depNames) {
     proj.subprojects { Project subproject ->
         def plat = subproject.name.split("-")[1]
 
-        /*if (plat == "forge")
-            loom {
-                mods {
-                    depNames.each { String dep ->
-                        "${dep}" {
-                            sourceSet project(":${dep}:${dep}-${plat}").sourceSets.main
-                        }
-                    }
-                }
-            }*/
-
         dependencies {
             depNames.each { String dep ->
                 implementation project(path: ":${dep}:${dep}-${plat}", configuration: "namedElements")
@@ -668,6 +657,17 @@ def dependOn(Project proj, List<String> depNames) {
                     modImplementation project(path: ":${dep}:${dep}-forge", configuration: "namedElements")
                 }
             }
+        }
+    }
+}
+
+tasks.register("githubPublishAll") {
+    group = "nucleus"
+    def modules = enabled_modules.split(",").findAll { it != "test" }
+    def platforms = (enabled_platforms+",common").split(",").findAll { !it.isEmpty() }
+    for (final def module in modules) {
+        for (final def platform in platforms) {
+            dependsOn(":${module}:${module}-${platform}:githubPublish")
         }
     }
 }
