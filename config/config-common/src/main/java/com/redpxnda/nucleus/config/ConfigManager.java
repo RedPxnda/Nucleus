@@ -16,10 +16,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.nio.file.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 public class ConfigManager {
+    protected static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
     private static final Map<String, ConfigObject<?>> configs = new HashMap<>();
 
     /**
@@ -27,11 +30,13 @@ public class ConfigManager {
      */
     public static <T> ConfigObject<T> register(ConfigBuilder<T> builder) {
         ConfigObject<T> obj = builder.build();
-        configs.put(obj.name, obj);
-        return obj;
+        return register(obj);
     }
 
     public static <T> ConfigObject<T> register(ConfigObject<T> config) {
+        ConfigObject<?> old = configs.get(config.name);
+        if (old != null) throw new IllegalStateException("Two configs cannot be registered under the same name!\nOld: " + old + "\nNew: " + config);
+
         configs.put(config.name, config);
         return config;
     }
@@ -82,43 +87,50 @@ public class ConfigManager {
                         StandardWatchEventKinds.ENTRY_MODIFY
                 );
 
-                while (true) {
+                whileBlock: while (true) {
                     WatchKey key = service.take();
 
                     Thread.sleep(50); // Sleep to prevent picking up multiple of the same event
-                    for (WatchEvent<?> event : key.pollEvents()) {
-                        WatchEvent.Kind<?> kind = event.kind();
-                        if (kind != StandardWatchEventKinds.ENTRY_MODIFY) return;
-                        Path path = (Path) event.context();
+                    List<WatchEvent<?>> events = key.pollEvents();
+                    if (!skipNextWatch.get()) {
+                        for (WatchEvent<?> event : events) {
+                            WatchEvent.Kind<?> kind = event.kind();
+                            if (kind != StandardWatchEventKinds.ENTRY_MODIFY) return;
+                            Path path = (Path) event.context();
 
-                        if (path.toString().endsWith(".jsonc")) {
-                            if (Platform.getEnv() == EnvType.CLIENT && MinecraftClient.getInstance() != null)
-                                MinecraftClient.getInstance().execute(() -> {
-                                    String fileName = path.getFileName().toString();
-                                    String configName = fileName.substring(0, fileName.length()-6);
-                                    ConfigObject<?> config = ConfigManager.getConfigObject(configName);
-                                    if (config != null && config.watch && config.type.clientCanControl()) {
-                                        Nucleus.LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
-                                        config.load();
-                                        //config.save();
-                                    }
-                                });
+                            if (path.toString().endsWith(".jsonc")) {
+                                if (Platform.getEnv() == EnvType.CLIENT && MinecraftClient.getInstance() != null)
+                                    MinecraftClient.getInstance().execute(() -> {
+                                        String fileName = path.getFileName().toString();
+                                        String configName = fileName.substring(0, fileName.length() - 6);
+                                        ConfigObject<?> config = ConfigManager.getConfigObject(configName);
+                                        if (config != null && config.watch && config.type.clientCanControl()) {
+                                            Nucleus.LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
+                                            config.load();
+                                            config.save();
+                                            skipNextWatch.set(true);
+                                        }
+                                    });
 
-                            if (Nucleus.SERVER != null)
-                                Nucleus.SERVER.execute(() -> {
-                                    String fileName = path.getFileName().toString();
-                                    String configName = fileName.substring(0, fileName.length()-6);
-                                    ConfigObject<?> config = ConfigManager.getConfigObject(configName);
-                                    if (config != null && config.watch && config.type.serverCanControl()) {
-                                        Nucleus.LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
-                                        config.load();
-                                        //config.save();
+                                if (Nucleus.SERVER != null)
+                                    Nucleus.SERVER.execute(() -> {
+                                        String fileName = path.getFileName().toString();
+                                        String configName = fileName.substring(0, fileName.length() - 6);
+                                        ConfigObject<?> config = ConfigManager.getConfigObject(configName);
+                                        if (config != null && config.watch && config.type.serverCanControl()) {
+                                            Nucleus.LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
+                                            config.load();
+                                            config.save();
+                                            skipNextWatch.set(true);
 
-                                        if (config.type == ConfigType.SERVER_CLIENT_SYNCED)
-                                            syncConfigWithAllPlayers(config, Nucleus.SERVER);
-                                    }
-                                });
+                                            if (config.type == ConfigType.SERVER_CLIENT_SYNCED)
+                                                syncConfigWithAllPlayers(config, Nucleus.SERVER);
+                                        }
+                                    });
+                            }
                         }
+                    } else {
+                        skipNextWatch.set(false);
                     }
 
                     boolean valid = key.reset(); // Reset the key

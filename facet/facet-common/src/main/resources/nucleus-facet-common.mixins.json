@@ -3,7 +3,6 @@
   "package": "com.redpxnda.nucleus.facet.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "refmap": "nucleus-facet-common.refmap.json",
   "client": [
   ],
   "mixins": [

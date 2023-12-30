@@ -89,7 +89,6 @@ public class ${mainClassName} {
   "package": "com.redpxnda.nucleus.${name}.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "refmap": "${mod_id}-common.refmap.json",
   "client": [
   ],
   "mixins": [
@@ -122,7 +121,6 @@ public class ${fabricClassName} implements ModInitializer {
   "package": "com.redpxnda.nucleus.${name}.fabric.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "refmap": "${mod_id}.refmap.json",
   "client": [
   ],
   "mixins": [
@@ -160,7 +158,6 @@ public class ${forgeClassName} {
   "package": "com.redpxnda.nucleus.${name}.forge.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "refmap": "${mod_id}.refmap.json",
   "client": [
   ],
   "mixins": [
@@ -333,7 +330,7 @@ subprojects { Project subproject ->
         loom {
             silentMojangMappingsLicense()
 
-            mixin { // todo find fix for forge generating refmap... temporarily, comment this out when testing on forge
+            mixin {
                 defaultRefmapName = "nucleus-${module}${isCommon ? "-common" : ""}.refmap.json"
             }
 

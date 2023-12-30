@@ -25,10 +25,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -137,7 +134,7 @@ public class AutoCodec<C> extends MapCodec<C> {
 
     protected final Class<C> cls;
     protected final String errorMsg;
-    protected final Map<String, AutoCodecField> fields = new HashMap<>();
+    protected final Map<String, AutoCodecField> fields = new LinkedHashMap<>();
 
     public AutoCodec(Class<C> cls, String errorMsg) {
         this.cls = cls;

@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "plugin": "com.redpxnda.nucleus.mixin.plugin.MixinPlugin",
-  "refmap": "nucleus-core.refmap.json",
   "client": [
     "ParticleEngineAccessor"
   ],

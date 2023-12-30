@@ -3,11 +3,13 @@ package com.redpxnda.nucleus.config;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
+import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import dev.architectury.platform.Platform;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ConfigBuilder<T> {
@@ -17,6 +19,7 @@ public class ConfigBuilder<T> {
     protected Codec<T> codec;
     protected Supplier<T> creator;
     protected @Nullable Consumer<T> onUpdate;
+    protected @Nullable Function<T, ConfigPreset<T, ?>> presetGetter;
     protected boolean watch = true;
 
     /**
@@ -41,7 +44,7 @@ public class ConfigBuilder<T> {
     public ConfigObject<T> build() {
         if (name == null || type == null || codec == null || creator == null)
             throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
-        return new ConfigObject<>(path, name, type, codec, creator, onUpdate, watch, null);
+        return new ConfigObject<>(path, name, type, codec, creator, onUpdate, presetGetter, watch, null);
     }
 
     /**
@@ -92,6 +95,14 @@ public class ConfigBuilder<T> {
     }
 
     /**
+     * Defines a way to obtain a {@link ConfigPreset preset} from this config
+     */
+    public ConfigBuilder<T> presetGetter(Function<T, ConfigPreset<T, ?>> presetGetter) {
+        this.presetGetter = presetGetter;
+        return this;
+    }
+
+    /**
      * Defines whether file changes should automatically update this config (default true)
      */
     public ConfigBuilder<T> watch(boolean watched) {
@@ -113,7 +124,7 @@ public class ConfigBuilder<T> {
         public ConfigObject.Automatic<T> build() {
             if (name == null || type == null || codec == null || creator == null)
                 throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
-            return new ConfigObject.Automatic<>(path, name, type, codec, creator, onUpdate, watch, null);
+            return new ConfigObject.Automatic<>(path, name, type, codec, creator, onUpdate, presetGetter, watch, null);
         }
     }
 }
