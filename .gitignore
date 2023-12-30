@@ -12,6 +12,8 @@ bin/
 libs/
 logs/
 
+publish.bat
+
 .classpath
 .project
 .idea/

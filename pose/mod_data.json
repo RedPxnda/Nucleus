@@ -1,6 +1,6 @@
 {
   "id": "nucleus_pose",
-  "version": "${version}",
+  "version": "1.0.0",
   "name": "Nucleus (Pose)",
   "description": "Adds a simple player animation system",
   "authors": [

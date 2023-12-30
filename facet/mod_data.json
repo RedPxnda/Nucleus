@@ -1,6 +1,6 @@
 {
   "id": "nucleus_facet",
-  "version": "${version}",
+  "version": "1.0.0",
   "name": "Nucleus (Facet)",
   "description": "Multiplatform object data management and storage for entities, item stacks, status effect instances, and more",
   "authors": [

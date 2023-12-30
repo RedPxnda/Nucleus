@@ -19,21 +19,21 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2.4.2
 
-      - name: Read Gradle Properties
-        uses: BrycensRanch/read-properties-action@v1
-        id: all
-        with:
-          file: gradle.properties
-          all: true
-
-      - run: chmod +x ./gradlew
-      - name: Build with Gradle
-        run: ./gradlew githubPublishAll
-
-      - name: Create Github Release
-        uses: ncipollo/release-action@v1
-        with:
-          bodyFile: changelog.md
-          tag: ${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
-          name: Nucleus Maven Release v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
-          artifacts: "build/repository/com/RedPxnda/Nucleus/**.jar,build/repository/com/RedPxnda/Nucleus/**.pom"
+#      - name: Read Gradle Properties
+#        uses: BrycensRanch/read-properties-action@v1
+#        id: all
+#        with:
+#          file: gradle.properties
+#          all: true
+#
+#      - run: chmod +x ./gradlew
+#      - name: Build with Gradle
+#        run: ./gradlew githubPublishAll
+#
+#      - name: Create Github Release
+#        uses: ncipollo/release-action@v1
+#        with:
+#          bodyFile: changelog.md
+#          tag: ${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+#          name: Nucleus Maven Release v${{ steps.all.outputs.minecraft_version }}+${{ steps.all.outputs.mod_version }}
+#          artifacts: "build/repository/com/RedPxnda/Nucleus/**.jar,build/repository/com/RedPxnda/Nucleus/**.pom"

@@ -1,6 +1,6 @@
 {
   "id": "nucleus_test",
-  "version": "${version}",
+  "version": "1.0.0",
   "name": "Nucleus (Test)",
   "description": "Nucleus's testing unit",
   "authors": [

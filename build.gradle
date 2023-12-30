@@ -21,6 +21,8 @@ plugins {
 group = maven_group
 version = mod_version
 
+def ENV = System.getenv()
+
 def props = new Properties()
 file("./gradle.properties").withInputStream { props.load(it) }
 
@@ -181,7 +183,7 @@ public class ${forgeClassName} {
         mainPath.resolve("mod_data.json").toFile().text =
 """{
   "id": "${mod_id}",
-  "version": "\${version}",
+  "version": "1.0.0",
   "name": "Nucleus (${name.capitalize()})",
   "description": "${description}",
   "authors": [
@@ -284,7 +286,7 @@ subprojects { Project subproject ->
             } else property_data = props
         }
 
-        subproject.mod_data.version = rootProject.mod_version
+        if (subproject.mod_data.version == '${version}') subproject.mod_data.version = rootProject.mod_version
 
         architectury {
             minecraft = rootProject.minecraft_version
@@ -293,6 +295,8 @@ subprojects { Project subproject ->
         def platform = subproject.name
         def module = subproject.parent.name
         def mod_data = subproject.parent.mod_data
+
+        def ver = mod_data.version
 
         /*println("configuring: " + subproject)
         println("module: ${module}")
@@ -311,7 +315,7 @@ subprojects { Project subproject ->
         if (module != "test") apply plugin: "maven-publish"
 
         archivesBaseName = rootProject.archives_base_name
-        version = rootProject.mod_version
+        version = ver
         group = rootProject.maven_group
 
         architectury {
@@ -403,7 +407,7 @@ subprojects { Project subproject ->
         }
 
         tasks.register("generateModMetadata") {
-            group = "other"
+            group = "nucleus"
             description = "Generates fabric.mod.json and mods.toml from the mod_data.json file"
 
             if (isForge) {
@@ -455,17 +459,17 @@ subprojects { Project subproject ->
                 doLast {
                     LinkedHashMap<String, Object> depends = [:]
                     mod_data.depends.findAll { (it.platform == "fabric" || it.platform == "*") && it.mandatory }.each { entry ->
-                        def ver = entry.version
+                        def v = entry.version
                         def ineqVer = ""
 
-                        if (ver.isEmpty() || ver == "*") {
+                        if (v.isEmpty() || v == "*") {
                             ineqVer = "*"
                         } else {
-                            def nums = ver.split(",")
+                            def nums = v.split(",")
                             def first = nums[0].substring(1)
                             def second = nums[1].substring(0, nums[1].length() - 1)
 
-                            if (ver.startsWith("["))
+                            if (v.startsWith("["))
                                 ineqVer += ">="
                             else
                                 ineqVer += ">"
@@ -473,7 +477,7 @@ subprojects { Project subproject ->
                             ineqVer += first
                             if (!second.isEmpty()) {
                                 ineqVer += " "
-                                if (ver.endsWith("]"))
+                                if (v.endsWith("]"))
                                     ineqVer += "<="
                                 else
                                     ineqVer += "<"
@@ -531,13 +535,13 @@ subprojects { Project subproject ->
                 archiveClassifier = null
             }
 
-            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${rootProject.mod_version}.jar"
-            destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
+            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${ver}.jar"
+            destinationDirectory.set(file("$rootDir/build/${ver}/${platform}"))
         }
 
         remapSourcesJar {
-            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${rootProject.mod_version}-sources.jar"
-            destinationDirectory.set(file("$rootDir/build/${rootProject.mod_version}/${platform}"))
+            archiveFileName = "nucleus-${module}-${platform}-${rootProject.minecraft_version}+${ver}-sources.jar"
+            destinationDirectory.set(file("$rootDir/build/${ver}/${platform}"))
         }
 
         if (isFabric || isForge) {
@@ -564,21 +568,24 @@ subprojects { Project subproject ->
                     if (isFabric) {
                         mavenFabric(MavenPublication) {
                             artifactId = module + "-" + platform
-                            version = rootProject.minecraft_version + "+" + rootProject.mod_version
+                            version = rootProject.minecraft_version + "+" + ver
+                            groupId = rootProject.maven_group + ".nucleus"
 
                             from components.java
                         }
                     } else if (isForge) {
                         mavenForge(MavenPublication) {
                             artifactId = module + "-" + platform
-                            version = rootProject.minecraft_version + "+" + rootProject.mod_version
+                            version = rootProject.minecraft_version + "+" + ver
+                            groupId = rootProject.maven_group + ".nucleus"
 
                             from components.java
                         }
                     } else if (isCommon) {
                         mavenCommon(MavenPublication) {
                             artifactId = module + "-" + platform
-                            version = rootProject.minecraft_version + "+" + rootProject.mod_version
+                            version = rootProject.minecraft_version + "+" + ver
+                            groupId = rootProject.maven_group + ".nucleus"
 
                             from components.java
                         }
@@ -589,10 +596,23 @@ subprojects { Project subproject ->
                     maven {
                         url uri(file("$rootDir/build/repository"))
                     }
+
+                    def loc = ENV.MAVEN_UPLOAD_URL
+                    def user = ENV.MAVEN_UPLOAD_USERNAME
+                    def code = ENV.MAVEN_UPLOAD_PASSWORD
+                    if (loc) {
+                        maven {
+                            url = loc
+                            credentials {
+                                username = user
+                                password = code
+                            }
+                        }
+                    }
                 }
             }
 
-            tasks.register("githubPublish") {
+            /*tasks.register("githubPublish") {
                 finalizedBy ":${module}:${module}-${platform}:publish"
                 group = "publishing"
 
@@ -604,7 +624,7 @@ subprojects { Project subproject ->
                     else if (isForge)
                         publishing.publications.mavenForge.groupId = "com.${rootProject.github}"
                 }
-            }
+            }*/
         }
     }
 }
@@ -751,7 +771,19 @@ static def dependOn(Project proj, List<String> depNames) {
     }
 }
 
-tasks.register("githubPublishAll") {
+tasks.register("publishAll") {
+    group = "nucleus"
+
+    def modules = enabled_modules.split(",").findAll { it != "test" }
+    def platforms = (enabled_platforms+",common").split(",").findAll { !it.isEmpty() }
+    for (final def module in modules) {
+        for (final def platform in platforms) {
+            finalizedBy(":${module}:${module}-${platform}:publish")
+        }
+    }
+}
+
+/*tasks.register("githubPublishAll") {
     group = "nucleus"
 
     def modules = enabled_modules.split(",").findAll { it != "test" }
@@ -761,15 +793,4 @@ tasks.register("githubPublishAll") {
             finalizedBy(":${module}:${module}-${platform}:githubPublish")
         }
     }
-
-    /*doLast {
-        def modules = enabled_modules.split(",").findAll { it != "test" }
-        def platforms = (enabled_platforms+",common").split(",").findAll { !it.isEmpty() }
-        for (final def module in modules) {
-            for (final def platform in platforms) {
-                def task = project(":${module}:${module}-${platform}").tasks.named("githubPublish").getOrNull()
-                if (task != null) task.execute() // apparently .execute() isnt a thing
-            }
-        }
-    }*/
-}
+}*/

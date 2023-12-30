@@ -1,6 +1,6 @@
 {
   "id": "nucleus_trinket",
-  "version": "${version}",
+  "version": "1.0.0",
   "name": "Nucleus (Trinket)",
   "description": "Multiplatform Trinkets/Curios API abstraction",
   "authors": [
