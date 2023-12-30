@@ -593,9 +593,9 @@ subprojects { Project subproject ->
                 }
 
                 repositories {
-                    maven {
+                    /*maven {
                         url uri(file("$rootDir/build/repository"))
-                    }
+                    }*/
 
                     def loc = ENV.MAVEN_UPLOAD_URL
                     def user = ENV.MAVEN_UPLOAD_USERNAME
@@ -767,18 +767,6 @@ static def dependOn(Project proj, List<String> depNames) {
                 implementation project(path: ":${dep}:${dep}-${plat}", configuration: "namedElements")
                 if (plat != "common") common(project(path: ":${dep}:${dep}-common", configuration: "namedElements")) { transitive false }
             }
-        }
-    }
-}
-
-tasks.register("publishAll") {
-    group = "nucleus"
-
-    def modules = enabled_modules.split(",").findAll { it != "test" }
-    def platforms = (enabled_platforms+",common").split(",").findAll { !it.isEmpty() }
-    for (final def module in modules) {
-        for (final def platform in platforms) {
-            finalizedBy(":${module}:${module}-${platform}:publish")
         }
     }
 }
