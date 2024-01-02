@@ -35,7 +35,7 @@ include(modApi("com.redpxnda.nucleus:<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VE
 include(modApi("com.redpxnda.nucleus:core-fabric:1.20.1+1.0.0"))\
 */
 ```
-On ForgeGradle(and possibly NeoGradle):
+On NeoGradle(might need an extra fg.deobf on ForgeGradle):
 ```groovy
 implementation(jarJar("com.redpxnda.nucleus:<MODULE>-<PLATFORM>:<MINECRAFT_VERSION>+<VERSION>")) {
     jarJar.ranged(it, "[<VERSION>,)")

@@ -33,4 +33,4 @@ For a description of the available config types, see [ConfigType](https://github
 
 Planned features:
 * In game modification gui
-* Config presets
+* ~~Config presets~~ DONE

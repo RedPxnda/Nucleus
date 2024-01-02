@@ -5,15 +5,27 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.codec.ops.JsoncOps;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
+import com.redpxnda.nucleus.config.screen.ConfigComponent;
+import com.redpxnda.nucleus.config.screen.ConfigComponentType;
+import com.redpxnda.nucleus.config.screen.ConfigScreen;
 import com.redpxnda.nucleus.util.json.JsoncElement;
+import dev.architectury.platform.Platform;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -36,11 +48,15 @@ public class ConfigObject<T> {
      * @param codec          the codec used to (de)serialize the config
      * @param defaultCreator a supplier to create the default/empty version of this config
      * @param onUpdate       handler for when the config is updated
-     * @param presetGetter
-     * @param watch
+     * @param presetGetter   a getter for a preset
+     * @param watch          if this config should be file-watched
      * @param instance       handler instance, null before first read
      */
-    public ConfigObject(Path path, String name, ConfigType type, Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate, @Nullable Function<T, ConfigPreset<T, ?>> presetGetter, boolean watch, @Nullable T instance) {
+    public ConfigObject(
+            Path path, String name, ConfigType type,
+            Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate,
+            @Nullable Function<T, ConfigPreset<T, ?>> presetGetter, boolean watch, @Nullable T instance
+    ) {
         this.path = path;
         this.name = name;
         this.type = type;
@@ -49,6 +65,10 @@ public class ConfigObject<T> {
         this.onUpdate = onUpdate;
         this.presetGetter = presetGetter;
         this.watch = watch;
+        this.instance = instance;
+    }
+
+    public void setInstance(T instance) {
         this.instance = instance;
     }
 
@@ -137,12 +157,13 @@ public class ConfigObject<T> {
         try {
             JsoncElement json = serialize(JsoncOps.INSTANCE);
             FileUtils.write(getFile(), json.toString(), StandardCharsets.UTF_8);
+            ConfigManager.skipNextWatch.set(true);
         } catch (Exception e) {
             Nucleus.LOGGER.warn("Failed to save data for config '" + name + "'. Ignoring...", e);
         }
     }
 
-    public @Nullable T instance() {
+    public @Nullable T getInstance() {
         return instance;
     }
 
@@ -165,15 +186,39 @@ public class ConfigObject<T> {
                 "path=" + path + ", " +
                 "name=" + name + ", " +
                 "type=" + type + ", " +
-                "codec=" + codec + ", " +
-                "defaultCreator=" + defaultCreator + ", " +
-                "onUpdate=" + onUpdate + ", " +
                 "instance=" + instance + ']';
     }
 
     public static class Automatic<T> extends ConfigObject<T> {
-        public Automatic(Path path, String name, ConfigType type, Codec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate, @Nullable Function<T, ConfigPreset<T, ?>> presetGetter, boolean watch, @Nullable T instance) {
-            super(path, name, type, codec, defaultCreator, onUpdate, presetGetter, watch, instance);
+        protected @Environment(EnvType.CLIENT) Function<Object, Object> screenCreator; // forge is weird, @OnlyIn doesn't work on fields so: Object - should always be a screen -> screen function
+
+        public Automatic(
+                Path path, String name, ConfigType type,
+                AutoCodec<T> codec, Supplier<T> defaultCreator, @Nullable Consumer<T> onUpdate,
+                @Nullable Function<T, ConfigPreset<T, ?>> presetGetter, boolean watch, @Nullable T instance,
+                @Nullable Map<String, Field> fieldMap
+        ) {
+            super(path, name, type, codec.codec(), defaultCreator, onUpdate, presetGetter, watch, instance);
+            if (fieldMap != null && Platform.getEnv() == EnvType.CLIENT) {
+                setupScreenSupplier(fieldMap);
+            }
+        }
+
+        @Environment(EnvType.CLIENT)
+        protected void setupScreenSupplier(Map<String, Field> fieldMap) {
+            Map<String, Pair<Field, Supplier<? extends ConfigComponent<?>>>> map = new LinkedHashMap<>();
+            for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+                var supplier = ConfigComponentType.getFor(entry.getValue());
+                if (supplier != null)
+                    map.put(entry.getKey(), new Pair<>(entry.getValue(), supplier));
+            }
+
+            screenCreator = scr -> new ConfigScreen<>((Screen) scr, map, this);
+        }
+
+        @Environment(EnvType.CLIENT)
+        public Screen getScreen(Screen parent) {
+            return (Screen) screenCreator.apply(parent);
         }
     }
 }

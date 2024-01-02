@@ -5,6 +5,7 @@ import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import dev.architectury.platform.Platform;
+import net.fabricmc.api.EnvType;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
@@ -116,15 +117,19 @@ public class ConfigBuilder<T> {
     }
 
     public static class Automatic<T> extends ConfigBuilder<T> {
+        protected final Class<T> cls;
+        protected final AutoCodec<T> codec;
+
         public Automatic(Class<T> cls) {
-            this.codec = ConfigAutoCodec.of(cls, creator).codec();
+            this.codec = ConfigAutoCodec.of(cls, creator);
+            this.cls = cls;
         }
 
         @Override
         public ConfigObject.Automatic<T> build() {
             if (name == null || type == null || codec == null || creator == null)
                 throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
-            return new ConfigObject.Automatic<>(path, name, type, codec, creator, onUpdate, presetGetter, watch, null);
+            return new ConfigObject.Automatic<>(path, name, type, codec, creator, onUpdate, presetGetter, watch, null, Platform.getEnv() == EnvType.CLIENT ? ConfigAutoCodec.performFieldSearch(cls) : null);
         }
     }
 }

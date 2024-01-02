@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 public class ConfigManager {
-    protected static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
+    public static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
     private static final Map<String, ConfigObject<?>> configs = new HashMap<>();
 
     /**
@@ -45,7 +45,7 @@ public class ConfigManager {
      * Use this carefully, it casts unsafely.
      */
     public static <T> T getConfig(String name) {
-        return (T) configs.get(name).instance();
+        return (T) configs.get(name).getInstance();
     }
 
     /**
@@ -87,7 +87,7 @@ public class ConfigManager {
                         StandardWatchEventKinds.ENTRY_MODIFY
                 );
 
-                whileBlock: while (true) {
+                while (true) {
                     WatchKey key = service.take();
 
                     Thread.sleep(50); // Sleep to prevent picking up multiple of the same event
@@ -108,7 +108,6 @@ public class ConfigManager {
                                             Nucleus.LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
                                             config.load();
                                             config.save();
-                                            skipNextWatch.set(true);
                                         }
                                     });
 
@@ -121,7 +120,6 @@ public class ConfigManager {
                                             Nucleus.LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
                                             config.load();
                                             config.save();
-                                            skipNextWatch.set(true);
 
                                             if (config.type == ConfigType.SERVER_CLIENT_SYNCED)
                                                 syncConfigWithAllPlayers(config, Nucleus.SERVER);

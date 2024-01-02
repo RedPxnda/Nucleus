@@ -1,0 +1,19 @@
+{
+  "nucleus.config_screen.title": "Editing: %s",
+  "nucleus.config_screen.discard": "Discard Changes",
+  "nucleus.config_screen.save": "Save Changes",
+  "nucleus.config_screen.save_fail": "Failed to Save Changes!",
+  "nucleus.config_screen.save_fail.description": "Make sure your entries are valid.",
+  "nucleus.config_screen.invalid_entry": "This field has an invalid entry!",
+  "nucleus.config_screen.integer": "This is a number field. Decimals are not allowed.",
+  "nucleus.config_screen.double": "This is a number field. Decimals are allowed.",
+  "nucleus.config_screen.boolean.on": "ON",
+  "nucleus.config_screen.boolean.off": "OFF",
+  "nucleus.config_screen.boolean.description": "This is a boolean field. It can either be ON(true) or OFF(false).",
+  "nucleus.config_screen.text.description": "This is a text(string) field. Enter any text.",
+  "nucleus.config_screen.collection.description": "This field is a collection of values. Press the [>] button to maximize it. Press the [×] button to remove an entry. Press the [+] button to add an entry. Hold shift to move elements down, hold control to move elements up.",
+  "nucleus.config_screen.map.description": "This field is a map of keys to values. Press the [>] button to maximize it. Press the [×] button to remove an entry. Press the [+] button to add an entry. Hold shift to move elements down, hold control to move elements up.",
+  "nucleus.config_screen.dropdown.description": "This field can be one of several values. Click the arrow to open a dropdown to select the value you want.",
+  "nucleus.config_screen.preset.description": "This field is a preset for this config. Click the arrow to open a dropdown to select the preset you want ('none' being no preset/custom settings). NOTE: Setting a preset will override all other set values.",
+  "nucleus.config_screen.preset.warning": "A preset has been set, meaning that all other values will be overridden when you save this config."
+}

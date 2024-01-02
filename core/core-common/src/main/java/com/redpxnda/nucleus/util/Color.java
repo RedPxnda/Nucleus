@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.util;
 
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Vector4f;
@@ -23,6 +24,19 @@ public class Color extends Vector4i {
     public static final Color RED = new Color(255, 0, 0, 255);
     public static final Color GREEN = new Color(0, 255, 0, 255);
     public static final Color BLUE = new Color(0, 0, 255, 255);
+
+    public static final Color TEXT_DARK_GRAY = fromRgbInt(Formatting.DARK_GRAY.getColorValue());
+    public static final Color TEXT_GRAY = fromRgbInt(Formatting.GRAY.getColorValue());
+
+    protected Integer cachedArgb = null;
+    protected String cachedHex = null;
+
+    public static Color fromRgbInt(int rgb) {
+        int r = (rgb & 0xFF0000) >> 16;
+        int g = (rgb & 0xFF00) >> 8;
+        int b = (rgb & 0xFF);
+        return new Color(r, g, b, 255);
+    }
 
     public Color(float r, float g, float b, float a) {
         this.x = (int)(r * 255);
@@ -58,6 +72,7 @@ public class Color extends Vector4i {
         z = ColorHelper.Argb.getBlue(argb);
         y = ColorHelper.Argb.getGreen(argb);
         w = ColorHelper.Argb.getAlpha(argb);
+        cachedArgb = argb;
     }
 
     public Color(String hex) {
@@ -66,9 +81,10 @@ public class Color extends Vector4i {
 
         String alpha = "FF";
         if (hex.length() == 8) {
+            cachedHex = hex;
             alpha = hex.substring(6, 8);
             hex = hex.substring(0, 6);
-        }
+        } else cachedHex = hex + alpha;
         int hexInt = Integer.parseInt(hex, 16);
 
         x = (hexInt >> 16) & 0xFF;
@@ -142,17 +158,23 @@ public class Color extends Vector4i {
     }
 
     public int argb() {
-        return ColorHelper.Argb.getArgb(w, x, y, z);
+        if (cachedArgb != null) return cachedArgb;
+        cachedArgb = ColorHelper.Argb.getArgb(w, x, y, z);
+        return cachedArgb;
     }
     public int abgr() {
-        return ColorHelper.Argb.getArgb(w, z, y, x);
+        return ColorHelper.Abgr.getAbgr(w, z, y, x);
     }
 
     public String hex() {
-        return String.format("%02x%02x%02x", x, y, z);
+        if (cachedHex != null) return cachedHex;
+        cachedHex = String.format("%02x%02x%02x", x, y, z);
+        return cachedHex;
     }
     public String hexWithPrefix() {
-        return String.format("#%02x%02x%02x", x, y, z);
+        if (cachedHex != null) return "#" + cachedHex;
+        cachedHex = String.format("%02x%02x%02x", x, y, z);
+        return "#" + cachedHex;
     }
     public int hexInt() {
         int rgb = x;

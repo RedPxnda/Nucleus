@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,6 +44,44 @@ public class MiscUtil {
     public static <T> T initialize(T obj, Consumer<T> setup) {
         setup.accept(obj);
         return obj;
+    }
+
+    public static <T> Supplier<T> createSupplier(Supplier<T> supplier) {
+        return supplier;
+    }
+
+    public static <T> T evaluateSupplier(Supplier<T> supplier) {
+        return supplier.get();
+    }
+
+    public static <T> void moveListElementDown(List<T> list, T element) {
+        int i = list.indexOf(element);
+        if (i != -1 && i != list.size()-1)
+            Collections.rotate(list.subList(i, i+2), 1);
+    }
+
+    public static <T> void moveListElementUp(List<T> list, T element) {
+        int i = list.indexOf(element);
+        if (i != -1 && i != 0)
+            Collections.rotate(list.subList(i-1, i+1), -1);
+    }
+
+    public static <K, V> void moveMapKeyDown(Map<K, V> map, K key) {
+        List<K> keys = map.keySet().stream().collect(Collectors.toList());
+        moveListElementDown(keys, key);
+        for (K k : keys) {
+            V val = map.remove(k);
+            map.put(k, val);
+        }
+    }
+
+    public static <K, V> void moveMapKeyUp(Map<K, V> map, K key) {
+        List<K> keys = map.keySet().stream().collect(Collectors.toList());
+        moveListElementUp(keys, key);
+        for (K k : keys) {
+            V val = map.remove(k);
+            map.put(k, val);
+        }
     }
 
     public static boolean isItemEmptyIgnoringCount(ItemStack stack) {
@@ -133,10 +172,10 @@ public class MiscUtil {
         return pt.getActualTypeArguments();
     }
 
-    public static <T> Collection<T> createCollection(final Type type, Class<? extends Collection<T>> raw) {
+    public static <T> Collection<T> createCollection(Class<? extends Collection<T>> raw) {
         //todo make this extendable
         if (SortedSet.class.isAssignableFrom(raw)) {
-            return new TreeSet<T>();
+            return new TreeSet<>();
         } else if (Set.class.isAssignableFrom(raw)) {
             return new LinkedHashSet<>();
         } else if (Queue.class.isAssignableFrom(raw)) {

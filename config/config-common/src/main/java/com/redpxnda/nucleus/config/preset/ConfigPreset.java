@@ -7,6 +7,7 @@ import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -64,5 +65,18 @@ public class ConfigPreset<C, E extends Enum<E> & ConfigProvider<C>> {
         C result = entry == null ? null : entry.getInstance();
         entry = null;
         return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConfigPreset<?, ?> that = (ConfigPreset<?, ?>) o;
+        return Objects.equals(entry, that.entry);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(entry);
     }
 }

@@ -6,6 +6,7 @@ import com.redpxnda.nucleus.util.json.JsoncElement;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -14,6 +15,10 @@ import java.util.function.Supplier;
 public class ConfigAutoCodec<C> extends AutoCodec<C> {
     protected final @Nullable Supplier<C> creator;
 
+    public ConfigAutoCodec(Class<C> cls, String errorMsg, Map<String, Field> fieldMap, @Nullable Supplier<C> creator) {
+        super(cls, errorMsg, fieldMap);
+        this.creator = creator;
+    }
     public ConfigAutoCodec(Class<C> cls, String errorMsg, @Nullable Supplier<C> creator) {
         super(cls, errorMsg);
         this.creator = creator;

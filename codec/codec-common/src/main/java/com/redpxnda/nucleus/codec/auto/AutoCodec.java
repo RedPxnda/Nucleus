@@ -1,12 +1,15 @@
 package com.redpxnda.nucleus.codec.auto;
 
 import com.google.gson.Gson;
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.codec.misc.CollectionCodec;
 import com.redpxnda.nucleus.codec.misc.DoubleSupplier;
 import com.redpxnda.nucleus.codec.misc.MiscCodecs;
 import com.redpxnda.nucleus.math.InterpolateMode;
+import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.entity.EntityType;
@@ -20,12 +23,11 @@ import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -63,7 +65,33 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * @see Settings
  * @param <C> The type this {@link AutoCodec} represents
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class AutoCodec<C> extends MapCodec<C> {
+    private static final Map<Class<? extends Annotation>, AnnotationCodecGetter<?>> overridingAnnotations = MiscUtil.initialize(new HashMap<>(), map -> {
+        registerOverrider(map, IntegerRange.class, (annot, field, cls, rawFieldType, typeParams) -> {
+            if (cls.equals(int.class) || cls.equals(Integer.class)) {
+                if (annot.failHard()) return Codec.intRange(annot.min(), annot.max());
+                else return Codec.INT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
+            }
+            return null;
+        });
+
+        registerOverrider(map, DoubleRange.class, (annot, field, cls, rawFieldType, typeParams) -> {
+            if (cls.equals(double.class) || cls.equals(Double.class)) {
+                if (annot.failHard()) return Codec.doubleRange(annot.min(), annot.max());
+                else return Codec.DOUBLE.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
+            }
+            return null;
+        });
+
+        registerOverrider(map, FloatRange.class, (annot, field, cls, rawFieldType, typeParams) -> {
+            if (cls.equals(float.class) || cls.equals(Float.class)) {
+                if (annot.failHard()) return Codec.floatRange(annot.min(), annot.max());
+                else return Codec.FLOAT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
+            }
+            return null;
+        });
+    });
     private static final Map<Class<?>, CodecGetter<?>> inheritOverrides = MiscUtil.initialize(new HashMap<>(), map -> {
         addInherit(map, Integer.class, Codec.INT);
         addInherit(map, int.class, Codec.INT);
@@ -82,17 +110,33 @@ public class AutoCodec<C> extends MapCodec<C> {
         addInherit(map, String.class, Codec.STRING);
         addInherit(map, Identifier.class, Identifier.CODEC);
         addInherit(map, DoubleSupplier.Instance.class, DoubleSupplier.CODEC);
-        addInherit(map, ParticleEffect.class, ParticleTypes.TYPE_CODEC); // comment when testing, cuz minecraft boostraps stuff like this
-        addInherit(map, EntityType.class, (Codec) Registries.ENTITY_TYPE.createEntryCodec()); // comment when testing, cuz minecraft boostraps stuff like this
+        addInherit(map, ParticleEffect.class, ParticleTypes.TYPE_CODEC); // comment when testing, cuz minecraft bootstraps stuff like this
+        addInherit(map, EntityType.class, (Codec) Registries.ENTITY_TYPE.createEntryCodec()); // comment when testing, cuz minecraft bootstraps stuff like this
         addInherit(map, Text.class, Codecs.TEXT);
         addInherit(map, Color.class, MiscCodecs.COLOR);
         addInherit(map, InterpolateMode.class, InterpolateMode.codec);
         addInherit(map, Vector3f.class, MiscCodecs.VECTOR_3F);
+        addInherit(map, Pair.class, (CodecGetter) CodecGetter.ofDynamic((func, params) -> { // todo replacement for mojank's pair codec?
+            if (params == null) return null;
+            return Codec.pair(func.apply(params[0]), func.apply(params[1]));
+        }));
+        addInherit(map, Either.class, (CodecGetter) CodecGetter.ofDynamic((func, params) -> {
+            if (params == null) return null;
+            return Codec.either(func.apply(params[0]), func.apply(params[1]));
+        }));
     });
 
-    public static <T> Codec<T> getOverride(Class<T> cls, Type[] typeParams) {
+    public static <T extends Annotation> void registerOverrider(Map<Class<? extends Annotation>, AnnotationCodecGetter<?>> map, Class<T> cls, AnnotationCodecGetter<T> codec) {
+        map.put(cls, codec);
+    }
+
+    public static <T extends Annotation> void registerOverrider(Class<T> cls, AnnotationCodecGetter<T> codec) {
+        overridingAnnotations.put(cls, codec);
+    }
+
+    public static <T> Codec<T> getOverride(Function<Type, Codec<?>> recursiveGetter, Class<T> cls, Type[] typeParams) {
         CodecGetter<?> sup = inheritOverrides.get(cls);
-        return sup == null ? null : (Codec<T>) sup.getCodec(typeParams);
+        return sup == null ? null : (Codec<T>) sup.getCodecDynamic(recursiveGetter, typeParams);
     }
     public static <T> CodecGetter<T> getOverride(Class<T> cls) {
         return (CodecGetter<T>) inheritOverrides.get(cls);
@@ -110,6 +154,10 @@ public class AutoCodec<C> extends MapCodec<C> {
     // a little unsafe, make sure you use this correctly.
     public static <T> void addInherit(Class<T> cls, Supplier<Codec<?>> codec) {
         inheritOverrides.put(cls, CodecGetter.ofSupplier(codec));
+    }
+
+    public static <T> void addInherit(Map<Class<?>, CodecGetter<?>> map, Class<T> cls, CodecGetter<T> getter) {
+        map.put(cls, getter);
     }
 
     public static <T> void addInherit(Map<Class<?>, CodecGetter<?>> map, Class<T> cls, Codec<T> codec) {
@@ -132,28 +180,47 @@ public class AutoCodec<C> extends MapCodec<C> {
         }
     }
 
-    protected final Class<C> cls;
-    protected final String errorMsg;
-    protected final Map<String, AutoCodecField> fields = new LinkedHashMap<>();
-
-    public AutoCodec(Class<C> cls, String errorMsg) {
-        this.cls = cls;
-        this.errorMsg = errorMsg;
+    public static Map<String, Field> performFieldSearch(Class<?> cls) {
+        Map<String, Field> result = new LinkedHashMap<>();
 
         for (Field field : cls.getFields()) {
             field.setAccessible(true);
             int modifiers = field.getModifiers();
             if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
+            Name nameAnnotation = field.getAnnotation(Name.class);
+            String name = nameAnnotation == null ? field.getName() : nameAnnotation.value();
+            result.put(name, field);
+        }
+
+        return result;
+    }
+
+    protected final Class<C> cls;
+    protected final String errorMsg;
+    public final Map<String, AutoCodecField> fields = new LinkedHashMap<>();
+
+    public AutoCodec(Class<C> cls, String errorMsg) {
+        this(cls, errorMsg, performFieldSearch(cls));
+    }
+
+    public AutoCodec(Class<C> cls, String errorMsg, Map<String, Field> fieldMap) {
+        this.cls = cls;
+        this.errorMsg = errorMsg;
+
+        for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+            String name = entry.getKey();
+            Field field = entry.getValue();
+
             Codec<?> codec;
             Type fieldType = field.getGenericType();
             FieldCallback callback = new FieldCallback(field);
+
             if (field.isAnnotationPresent(Override.class))
                 codec = getFieldOverride(field);
             else
                 codec = getCodec(callback, fieldType, true);
 
-            Name name = field.getAnnotation(Name.class);
-            fields.put(name == null ? field.getName() : name.value(), new AutoCodecField(field.getName(), codec, fieldType, field.getType(), callback.makePrimitive, callback.collectionLevel, callback.mapLevel, callback.makeDefaulted));
+            fields.put(name, new AutoCodecField(field.getName(), codec, fieldType, field.getType(), callback.makePrimitive, callback.collectionLevel, callback.mapLevel, callback.makeDefaulted));
         }
     }
     public static <T> AutoCodec<T> of(Class<T> cls) {
@@ -184,6 +251,15 @@ public class AutoCodec<C> extends MapCodec<C> {
 
         assert cls != null : "Class type for Nucleus AutoCodec found null.";
         boolean paramsSet = params != null;
+
+        if (callback.field != null)
+            for (Annotation annotation : callback.field.getAnnotations()) {
+                AnnotationCodecGetter getter = overridingAnnotations.get(annotation.annotationType());
+                if (getter != null) {
+                    Codec<?> result = getter.getCodecFor(annotation, callback.field, cls, fieldType, params);
+                    if (result != null) return result;
+                }
+            }
 
         Settings settings = getSettings(this.cls);
 
@@ -223,19 +299,21 @@ public class AutoCodec<C> extends MapCodec<C> {
         if (cls.equals(Supplier.class) && paramsSet && params[0].equals(Double.class))
             return DoubleSupplier.CODEC;
 
-        // hardcoding optionals because yes
-        if (
-                callback.field.isAnnotationPresent(Optional.class) ||
-                (settings != null && settings.optionalByDefault() && !callback.field.isAnnotationPresent(Mandatory.class))
-        )
-            callback.makeDefaulted = true;
+        // hardcoding optional(nullable) values because yes
+        if (callback.field != null)
+            if (
+                    callback.field.isAnnotationPresent(Optional.class) ||
+                    (settings != null && settings.optionalByDefault() && !callback.field.isAnnotationPresent(Mandatory.class))
+            )
+                callback.makeDefaulted = true;
 
         // hardcoding Enums because yes
         if (cls.isEnum())
             return MiscCodecs.ofEnum((Class<? extends Enum>) cls);
 
         // global override
-        Codec<?> c = getOverride(cls, params);
+        Function<Type, Codec<?>> recursiveGetter = type -> getCodec(new FieldCallback(null), type, allowFieldSearching);
+        Codec<?> c = getOverride(recursiveGetter, cls, params);
         if (c != null) return c;
 
         // class override
@@ -260,7 +338,7 @@ public class AutoCodec<C> extends MapCodec<C> {
 
                 CodecGetter<?> codec = ((CodecGetter<?>) obj);
                 inheritOverrides.putIfAbsent(cls, codec);
-                return codec.getCodec(params);
+                return codec.getCodecDynamic(recursiveGetter, params);
             } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
                 LOGGER.error("Field mentioned in AutoCodec.Override annotation for class '{}' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)! -> {}", cls.getSimpleName(), e);
             }
@@ -324,8 +402,8 @@ public class AutoCodec<C> extends MapCodec<C> {
         LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! No available nullary constructor.", cls.getSimpleName());
         throw new IllegalArgumentException("No available nullary constructor!");
     }
-    protected static Collection<?> createCollection(Type type, Class<?> cls) {
-        Collection<?> collection = MiscUtil.createCollection(type, (Class) cls);
+    protected static Collection<?> createCollection(Class<?> cls) {
+        Collection<?> collection = MiscUtil.createCollection((Class) cls);
         if (!cls.isAssignableFrom(collection.getClass())) {
             LOGGER.error("Failed to create Collection instance for class '{}' during AutoCodec deserialization! Unsupported collection type?", cls);
             throw new IllegalArgumentException("Unsupported collection type?");
@@ -366,7 +444,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             }
             if (field.isPrimitiveArray) value = MiscUtil.arrayToPrimitive(value);
             if (field.collectionLevel > 0) {
-                Collection<?> toSet = createCollection(field.type, field.clazz);
+                Collection<?> toSet = createCollection(field.clazz);
 
                 Collection<?> toAdd = (Collection<?>) field.codec.parse(
                         ops,
@@ -380,7 +458,7 @@ public class AutoCodec<C> extends MapCodec<C> {
 
                     final ParameterizedType finalPt = pt;
                     stream = MiscUtil.recursiveStreamMap(stream, i, l -> {
-                        Collection<?> toReplace = createCollection(finalPt, (Class<?>) finalPt.getRawType());
+                        Collection<?> toReplace = createCollection((Class<?>) finalPt.getRawType());
                         toReplace.addAll((Collection) l);
                         return toReplace;
                     });
@@ -475,8 +553,24 @@ public class AutoCodec<C> extends MapCodec<C> {
         static CodecGetter<?> ofSupplier(Supplier<Codec<?>> codec) {
             return p -> (Codec<Object>) codec.get();
         }
+        static <T> CodecGetter<T> ofDynamic(BiFunction<Function<Type, Codec<?>>, @Nullable Type[], Codec<T>> consumer) {
+            return new CodecGetter<T>() {
+                @java.lang.Override
+                public Codec<T> getCodec(@Nullable Type[] typeParams) {
+                    return null;
+                }
+
+                @java.lang.Override
+                public Codec<T> getCodecDynamic(Function<Type, Codec<?>> getter, @Nullable Type[] typeParams) {
+                    return consumer.apply(getter, typeParams);
+                }
+            };
+        }
 
         Codec<T> getCodec(@Nullable Type[] typeParams);
+        default Codec<T> getCodecDynamic(Function<Type, Codec<?>> getter, @Nullable Type[] typeParams) {
+            return getCodec(typeParams);
+        }
     }
 
     /**
@@ -515,7 +609,7 @@ public class AutoCodec<C> extends MapCodec<C> {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.TYPE})
-    public @interface Override { // todo create 'global' overrides
+    public @interface Override {
         String value() default "CODEC";
         boolean auto() default false;
     }
@@ -545,45 +639,35 @@ public class AutoCodec<C> extends MapCodec<C> {
         return cls.getAnnotation(Settings.class);
     }
 
-    private static final class FieldCallback {
-        private int collectionLevel = 0;
-        private int mapLevel = 0;
-        private boolean makePrimitive = false;
-        private boolean makeDefaulted = false;
-        private final Field field;
+    public interface AnnotationCodecGetter<T> {
+        @Nullable Codec<?> getCodecFor(T annotation, Field field, Class<?> cls, Type rawFieldType, Type[] typeParams);
+    }
 
-        private FieldCallback(Field field) {
+    public static final class FieldCallback {
+        public int collectionLevel = 0;
+        public int mapLevel = 0;
+        public boolean makePrimitive = false;
+        public boolean makeDefaulted = false;
+        public final @Nullable Field field;
+
+        public FieldCallback(@Nullable Field field) {
             this.field = field;
         }
     }
-    protected record AutoCodecField(String fieldName, Codec<?> codec, Type type, Class<?> clazz, boolean isPrimitiveArray, int collectionLevel, int mapLevel, boolean isDefaulted) {}
+    public record AutoCodecField(String fieldName, Codec<?> codec, Type type, Class<?> clazz, boolean isPrimitiveArray, int collectionLevel, int mapLevel, boolean isDefaulted) {}
 
     /*private static class TestVessel {
-        public int i; public double d; public String s; public ArrayList<List<Set<String>>> strings; public @Optional Map<String, Integer> map;
-
-        @java.lang.Override
-        public String toString() {
-            return "TestVessel{" +
-                    "i=" + i +
-                    ", d=" + d +
-                    ", s='" + s + '\'' +
-                    ", strings=" + strings +
-                    ", map=" + map +
-                    '}';
-        }
+        @IntegerRange(min = 0, max = 10)
+        public int i;
+        public Either<String, Integer> either;
+        //public Pair<String, Integer> pair;
     }
 
     public static void main(String[] args) {
         String json = """
                 {
-                    "i": 1,
-                    "d": 2.4,
-                    "s": "coolness",
-                    "strings": [ [["a and b"], ["yz"]], [["c and d"]] ],
-                    "map": {
-                        "key1": 3,
-                        "key2": 2
-                    }
+                    "i": 15,
+                    "either": 10
                 }
                 """;
         Gson g = new Gson();
@@ -592,18 +676,15 @@ public class AutoCodec<C> extends MapCodec<C> {
         Codec<TestVessel> codec = AutoCodec.of(TestVessel.class).codec();
         java.util.Optional<TestVessel> v = codec.parse(JsonOps.INSTANCE, el).result();
         System.out.println(v);
-        v.ifPresent(testVessel -> System.out.println(testVessel.strings.get(1).get(0).getClass()));
+        v.ifPresent(testVessel -> {
+            System.out.println(testVessel.i);
+            System.out.println(testVessel.either);
+            //System.out.println(testVessel.pair);
+        });
 
         TestVessel vessel = new TestVessel();
-        vessel.i=4;
-        vessel.d=23.5;
-        vessel.s="now this, is epic";
-        vessel.strings=new ArrayList<>(List.of(List.of(Set.of("a", "b, and", "c"))));
-//        vessel.map=new HashMap<>(){{
-//            put("key", 5);
-//            put("key2", 3);
-//        }};
-
+        vessel.i=-1;
+        vessel.either=Either.left("adad");
         System.out.println(codec.encodeStart(JsonOps.INSTANCE, vessel));
     }*/
 }
