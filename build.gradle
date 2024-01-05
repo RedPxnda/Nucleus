@@ -564,7 +564,7 @@ subprojects { Project subproject ->
                 publications {
                     if (isFabric) {
                         mavenFabric(MavenPublication) {
-                            artifactId = module + "-" + platform
+                            artifactId = "nucleus-" + module + "-" + platform
                             version = rootProject.minecraft_version + "+" + ver
                             groupId = rootProject.maven_group + ".nucleus"
 
@@ -572,7 +572,7 @@ subprojects { Project subproject ->
                         }
                     } else if (isForge) {
                         mavenForge(MavenPublication) {
-                            artifactId = module + "-" + platform
+                            artifactId = "nucleus-" + module + "-" + platform
                             version = rootProject.minecraft_version + "+" + ver
                             groupId = rootProject.maven_group + ".nucleus"
 
@@ -580,7 +580,7 @@ subprojects { Project subproject ->
                         }
                     } else if (isCommon) {
                         mavenCommon(MavenPublication) {
-                            artifactId = module + "-" + platform
+                            artifactId = "nucleus-" + module + "-" + platform
                             version = rootProject.minecraft_version + "+" + ver
                             groupId = rootProject.maven_group + ".nucleus"
 
