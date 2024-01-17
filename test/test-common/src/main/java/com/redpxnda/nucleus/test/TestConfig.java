@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.test;
 
+import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.config.preset.ConfigProvider;
 import com.redpxnda.nucleus.util.Comment;
@@ -48,11 +49,21 @@ public class TestConfig {
 
     public Map<String, Integer> map = new HashMap<>();
 
+    public InnerConfig inner = new InnerConfig();
+
     @Comment("This field is an integer.")
     public int someKoolInteger = 5;
 
     @Comment("here's a comment on a string field")
     public String string = "aggggh!";
+
+    @ConfigAutoCodec.ConfigClassMarker
+    public static class InnerConfig {
+        @Comment("inner config, inner integer")
+        public int more = 5;
+
+        public String innerValues = "aggggh!";
+    }
 
     /*@Comment("This is a list of entity types, or entity type tags!")
     public EntityTypeList entities = EntityTypeList.of();

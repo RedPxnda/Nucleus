@@ -5,6 +5,8 @@ import com.redpxnda.nucleus.util.Comment;
 import com.redpxnda.nucleus.util.json.JsoncElement;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -66,6 +68,11 @@ public class ConfigAutoCodec<C> extends AutoCodec<C> {
 
     @java.lang.Override
     public String toString() {
-        return super.toString() + " (Commentable)";
+        return "Config" + super.toString();
+    }
+
+    // marks that this class should be treated as a config (used for GUI support for inner configs)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface ConfigClassMarker {
     }
 }

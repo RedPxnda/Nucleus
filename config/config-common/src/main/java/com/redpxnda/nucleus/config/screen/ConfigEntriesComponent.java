@@ -33,12 +33,22 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
     protected @Nullable ConfigComponent<?> parent;
     protected T value;
 
-    public ConfigEntriesComponent(Map<String, Pair<Field, ConfigComponent<?>>> components, TextRenderer textRenderer, int x, int y, int width, int height) {
+    public ConfigEntriesComponent(Map<String, Pair<Field, ConfigComponent<?>>> components, TextRenderer textRenderer, int x, int y, int width, int height) { // todo horiz scroll and minimizing
         super(x, y, width, height, Text.empty());
         this.components = components;
         this.textRenderer = textRenderer;
 
         components.forEach((k, c) -> c.getRight().setParent(this));
+    }
+
+    @Override
+    public boolean overflows() {
+        return parent == null && super.overflows();
+    }
+
+    @Override
+    public InlineMode getInlineMode() {
+        return InlineMode.DRAW_LINE;
     }
 
     public void performPositionUpdate() {
@@ -49,8 +59,13 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
             else comp.setX(getX() + 38);
             comp.setY(contentHeight - (int) getScrollY());
             comp.performPositionUpdate();
+            int newWidth;
+            if (parent != null && (newWidth = comp.getX() + comp.getWidth()) > width) width = newWidth;
             contentHeight += comp.getHeight() + 8;
         });
+        if (!components.isEmpty()) contentHeight-=8; // last element should not increase height
+        if (parent != null)
+            height = contentHeight-getY();
     }
 
     @Override
@@ -60,18 +75,15 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
     }
 
     @Override
-    public boolean overflows() {
-        return super.overflows();
-    }
-
-    @Override
     public void invalidateChild(ConfigComponent<?> child) {
-        invalids.add(child);
+        if (parent != null) invalids.add(child);
+        else ConfigComponent.super.invalidateChild(child);
     }
 
     @Override
     public void validateChild(ConfigComponent<?> child) {
-        invalids.remove(child);
+        if (parent != null) invalids.remove(child);
+        else ConfigComponent.super.validateChild(child);
     }
 
     @Override
@@ -86,8 +98,10 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
 
     @Override
     protected void setScrollY(double scrollY) {
-        super.setScrollY(scrollY);
-        performPositionUpdate();
+        if (parent == null) {
+            super.setScrollY(scrollY);
+            performPositionUpdate();
+        } else super.setScrollY(0);
     }
 
     @Override
@@ -121,7 +135,7 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
                 textOffset += commentWidth;
             }
 
-            context.drawText(textRenderer, key, getX() + 20 + textOffset, y + 6, Color.WHITE.argb(), true);
+            context.drawText(textRenderer, key, getX() + 20 + textOffset, y + 6, Color.WHITE.argb(), true); // todo key translations
             if (component.getInlineMode() == InlineMode.DRAW_LINE)
                 context.drawVerticalLine(getX()+30, y+24, y+component.getHeight(), Color.WHITE.argb());
             component.render(context, mouseX, mouseY, delta);

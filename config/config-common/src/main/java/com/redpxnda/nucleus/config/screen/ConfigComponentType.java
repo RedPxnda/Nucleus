@@ -1,16 +1,22 @@
 package com.redpxnda.nucleus.config.screen;
 
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.util.MiscUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
@@ -53,6 +59,17 @@ public interface ConfigComponentType<T> {
         l.add((field, cls, raw, params) -> {
             if (cls.isEnum())
                 return () -> new DropdownComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, cls);
+            return null;
+        });
+
+        l.add((field, cls, raw, params) -> {
+            if (cls.isAnnotationPresent(ConfigAutoCodec.ConfigClassMarker.class)) {
+                Screen screen = MinecraftClient.getInstance().currentScreen;
+                return () -> new ConfigEntriesComponent(ConfigAutoCodec.performFieldSearch(cls).entrySet().stream().map(entry -> {
+                    return Map.entry(entry.getKey(), new Pair<>(entry.getValue(), getFor(entry.getValue()).get()));
+                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)), MinecraftClient.getInstance().textRenderer, 0, 0, screen == null ? 200 : screen.width,
+                20); // height updated later
+            }
             return null;
         });
     });
