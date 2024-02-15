@@ -1,14 +1,13 @@
 package com.redpxnda.nucleus.test;
 
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
+import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.config.preset.ConfigProvider;
+import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TestConfig {
     public static TestConfig INSTANCE = null;
@@ -51,16 +50,24 @@ public class TestConfig {
 
     public InnerConfig inner = new InnerConfig();
 
-    @Comment("This field is an integer.")
-    public int someKoolInteger = 5;
+    @Comment("This field is an optional integer.")
+    @CodecBehavior.Optional
+    public Integer someKoolInteger = 5;
 
-    @Comment("here's a comment on a string field")
+    @Comment("here's a comment on an OPTIONAL string field")
+    @CodecBehavior.Optional
     public String string = "aggggh!";
+
+    @CodecBehavior.Optional
+    public List<String> optionalList = List.of();
+
+    public Color color = new Color();
 
     @ConfigAutoCodec.ConfigClassMarker
     public static class InnerConfig {
         @Comment("inner config, inner integer")
-        public int more = 5;
+        @CodecBehavior.Optional
+        public Integer more = 5;
 
         public String innerValues = "aggggh!";
     }

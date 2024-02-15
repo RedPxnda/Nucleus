@@ -1,7 +1,9 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.redpxnda.nucleus.config.screen.widget.EmptyButtonWidget;
+import com.redpxnda.nucleus.config.screen.widget.SelectableOptionsWidget;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
 import com.redpxnda.nucleus.util.MiscUtil;
@@ -19,7 +21,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DropdownComponent<E> extends TextFieldWidget implements ConfigComponent<E> {
+public class DropdownComponent<E> extends TextFieldWidget implements ConfigComponent<E> { // todo colored when invalid
     public static final Text OPEN_TEXT = Text.literal("∨");
     public static final Text CLOSED_TEXT = Text.literal(">");
     public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.dropdown.description");

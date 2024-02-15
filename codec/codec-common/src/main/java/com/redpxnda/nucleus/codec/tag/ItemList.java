@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.codec.tag;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -10,7 +10,7 @@ import net.minecraft.registry.tag.TagKey;
 
 import java.util.List;
 
-@AutoCodec.Override()
+@CodecBehavior.Override()
 public class ItemList extends TagList<Item> {
     public static final Codec<ItemList> CODEC = getCodec(ItemList::new, Registries.ITEM, RegistryKeys.ITEM);
 

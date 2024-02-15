@@ -6,13 +6,13 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
-import com.redpxnda.nucleus.codec.misc.ColorCodec;
-import com.redpxnda.nucleus.codec.misc.PolyCodec;
+import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +43,22 @@ public class MiscCodecs {
     }
     public static <T> Codec<T[]> array(Codec<T> codec, Class<T> cls) {
         return codec.listOf().xmap(l -> l.toArray(i -> (T[]) Array.newInstance(cls, i)), Arrays::asList);
+    }
+
+    public static Codec primitiveArray(Codec<?> codec, Class cls) {
+        return codec.listOf().xmap(l -> {
+            Object array = MiscUtil.arrayToPrimitive(Array.newInstance(cls, l.size()));
+            for (int i = 0; i < l.size(); i++) {
+                Array.set(array, i, l.get(i));
+            }
+            return array;
+        }, obj -> {
+            List list = new ArrayList<>();
+            for (int i = 0; i < Array.getLength(obj); i++) {
+                list.add(Array.get(obj, i));
+            }
+            return list;
+        });
     }
 
     public static <T> T quickParse(JsonElement element, Codec<T> codec, Consumer<String> ifFailed) {

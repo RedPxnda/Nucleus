@@ -1,19 +1,25 @@
 package com.redpxnda.nucleus.util;
 
 import com.mojang.serialization.Codec;
+import com.redpxnda.nucleus.Nucleus;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtTagSizeTracker;
 import net.minecraft.network.PacketByteBuf;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.redpxnda.nucleus.Nucleus.LOGGER;
-
 public class ByteBufUtil {
+    private static final Logger LOGGER = Nucleus.getLogger();
+
     public static <T> void writeWithCodec(PacketByteBuf buf, T instance, Codec<T> codec) {
         NbtElement tag = codec.encodeStart(NbtOps.INSTANCE, instance).getOrThrow(false, s ->
                 LOGGER.error("Failed to encode {} into a FriendlyByteBuf using codec -> {}", instance, s)

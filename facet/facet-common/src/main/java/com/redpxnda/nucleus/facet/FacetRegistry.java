@@ -8,11 +8,13 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class FacetRegistry {
+    private static final Logger LOGGER = Nucleus.getLogger();
     private static final Map<Identifier, FacetKey<?>> REGISTERED_FACETS = new HashMap<>();
     public static final String TAG_FACETS_ID = "nucleus:facets";
 
@@ -35,7 +37,7 @@ public class FacetRegistry {
             try {
                 ((Facet) facet).loadNbt(element);
             } catch (ClassCastException ex) {
-                Nucleus.LOGGER.error("NBT data mismatch for Facet '{}'! Tried to give '{}', but it expected something different.", key, element);
+                LOGGER.error("NBT data mismatch for Facet '{}'! Tried to give '{}', but it expected something different.", key, element);
                 throw new RuntimeException("Facet received unexpected NBT type during NBT load. Check logger error above.", ex);
             }
     }

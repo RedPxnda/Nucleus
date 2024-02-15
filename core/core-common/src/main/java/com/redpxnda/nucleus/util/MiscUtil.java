@@ -3,11 +3,13 @@ package com.redpxnda.nucleus.util;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.internal.LinkedTreeMap;
+import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.mixin.ItemStackAccessor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MiscUtil {
+    private static final Logger LOGGER = Nucleus.getLogger();
     public static final ImmutableBiMap<Class<?>, Class<?>> primitiveToNon = new ImmutableBiMap.Builder<Class<?>, Class<?>>()
             .put(int.class, Integer.class)
             .put(double.class, Double.class)
@@ -173,36 +176,46 @@ public class MiscUtil {
     }
 
     public static <T> Collection<T> createCollection(Class<? extends Collection<T>> raw) {
-        //todo make this extendable
-        if (SortedSet.class.isAssignableFrom(raw)) {
-            return new TreeSet<>();
-        } else if (Set.class.isAssignableFrom(raw)) {
-            return new LinkedHashSet<>();
-        } else if (Queue.class.isAssignableFrom(raw)) {
-            return new ArrayDeque<>();
-        } else {
-            return new ArrayList<>();
+        Collection<T> result;
+        if (SortedSet.class.isAssignableFrom(raw))
+            result = new TreeSet<>();
+        else if (Set.class.isAssignableFrom(raw))
+            result = new LinkedHashSet<>();
+        else if (Queue.class.isAssignableFrom(raw))
+            result = new ArrayDeque<>();
+        else
+            result = new ArrayList<>();
+
+        if (!raw.isAssignableFrom(result.getClass())) {
+            LOGGER.error("Failed to create Collection instance for class '{}'! Unsupported collection type?", raw);
+            throw new IllegalArgumentException("Unsupported collection type? See logger error above.");
         }
+
+        return result;
     }
 
     public static <K, V> Map<K, V> createMap(final Type type, Class<? extends Map<K, V>> raw) {
-        //todo make this extendable
-        if (ConcurrentNavigableMap.class.isAssignableFrom(raw)) {
-            return new ConcurrentSkipListMap<>();
-        } else if (ConcurrentMap.class.isAssignableFrom(raw)) {
-            return new ConcurrentHashMap<>();
-        } else if (SortedMap.class.isAssignableFrom(raw)) {
-            return new TreeMap<>();
-        } else if (type instanceof ParameterizedType && !(String.class.isAssignableFrom(
-                com.google.gson.reflect.TypeToken.get(((ParameterizedType) type).getActualTypeArguments()[0]).getRawType()))) {
-            return new LinkedHashMap<>();
+        Map<K, V> result;
+        if (ConcurrentNavigableMap.class.isAssignableFrom(raw))
+            result = new ConcurrentSkipListMap<>();
+        else if (ConcurrentMap.class.isAssignableFrom(raw))
+            result = new ConcurrentHashMap<>();
+        else if (SortedMap.class.isAssignableFrom(raw))
+            result = new TreeMap<>();
+        else if (type instanceof ParameterizedType && !(String.class.isAssignableFrom(
+                com.google.gson.reflect.TypeToken.get(((ParameterizedType) type).getActualTypeArguments()[0]).getRawType())))
+            result = new LinkedHashMap<>();
+        else if (HashMap.class.isAssignableFrom(raw)) // modification from original Gson code
+            result = new HashMap<>();
+        else
+            result = new LinkedTreeMap<>();
 
-        } else if (HashMap.class.isAssignableFrom(raw)) { // modification from original Gson code
-            return new HashMap<>();
-
-        } else {
-            return new LinkedTreeMap<>();
+        if (!raw.isAssignableFrom(result.getClass())) {
+            LOGGER.error("Failed to create Map instance for class '{}'! Unsupported map type?", raw);
+            throw new IllegalArgumentException("Unsupported map type? See logger error above.");
         }
+
+        return result;
     }
 
     public static Stream<?> recursiveStreamMap(Stream<?> stream, int lvl, Function<?, ?> mapper) {

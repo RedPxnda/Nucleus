@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.widget;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -9,7 +9,7 @@ public class EmptyButtonWidget extends ButtonWidget {
     public final int hoveredColor;
     public final int textColor;
 
-    protected EmptyButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, int hoveredColor, int textColor) {
+    public EmptyButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, int hoveredColor, int textColor) {
         super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         this.hoveredColor = hoveredColor;
         this.textColor = textColor;

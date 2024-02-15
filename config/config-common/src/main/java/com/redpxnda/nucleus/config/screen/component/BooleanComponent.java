@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -16,7 +16,7 @@ public class BooleanComponent extends ButtonWidget implements ConfigComponent<Bo
     public boolean checked = false;
 
     public BooleanComponent(int x, int y, int width, int height) {
-        super(x, y, width, height, ON_TEXT, wid -> {}, DEFAULT_NARRATION_SUPPLIER);
+        super(x, y, width, height, OFF_TEXT, wid -> {}, DEFAULT_NARRATION_SUPPLIER);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -17,7 +17,7 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
     public final Text infoText;
     public final String hashtag;
     public final int hashtagWidth;
-    public boolean isValid = false;
+    public boolean isValid = true;
 
     public NumberFieldComponent(TextRenderer textRenderer, int x, int y, int width, int height, NumberParser<N> parser, boolean allowDecimals) {
         super(textRenderer, x, y, width, height, Text.empty());
@@ -37,15 +37,17 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
     }
 
     public void updateValidity() {
-        //setWidth(hashtagWidth+textRenderer.getWidth(getText()));
         if (widget != null) {
             if (getText().isEmpty()) {
-                widget.invalidateChild(this);
-                isValid = false;
-            }
-            else {
-                widget.validateChild(this);
-                isValid = true;
+                if (isValid) {
+                    widget.invalidateChild(this);
+                    isValid = false;
+                }
+            } else {
+                if (!isValid) {
+                    widget.validateChild(this);
+                    isValid = true;
+                }
             }
         }
     }
@@ -83,16 +85,13 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        if (!isActive()) {
-            return false;
+    public void write(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            char chr = text.charAt(i);
+            if (!((chr >= '0' && chr <= '9') || (allowDecimals && chr == '.' && !getText().contains(".")))) return;
         }
-        if ((chr >= '0' && chr <= '9') || (allowDecimals && chr == '.' && !getText().contains("."))) {
-            this.write(Character.toString(chr));
-            updateValidity();
-            return true;
-        }
-        return false;
+        super.write(text);
+        updateValidity();
     }
 
     @Override

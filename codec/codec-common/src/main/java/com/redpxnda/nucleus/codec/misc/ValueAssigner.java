@@ -4,14 +4,14 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.redpxnda.nucleus.Nucleus;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
 /**
  * {@link ValueAssigner}s are great tools to (de)serialize modifications to specific objects.
@@ -31,6 +31,8 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * @param <T> The type of object this ValueAssigner assigns to.
  */
 public class ValueAssigner<T> {
+    private static final Logger LOGGER = Nucleus.getLogger();
+
     private final Map<String, Instruction<T, ?>> instructions;
 
     public ValueAssigner(Map<String, Instruction<T, ?>> instructions) {

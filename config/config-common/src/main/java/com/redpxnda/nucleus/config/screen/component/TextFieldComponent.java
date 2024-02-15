@@ -1,12 +1,12 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
+import com.redpxnda.nucleus.config.screen.component.ConfigComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-import org.joml.Vector4i;
 
 @Environment(EnvType.CLIENT)
 public class TextFieldComponent extends TextFieldWidget implements ConfigComponent<String> {

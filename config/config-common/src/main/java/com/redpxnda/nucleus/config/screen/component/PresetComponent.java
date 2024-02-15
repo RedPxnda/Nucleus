@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;

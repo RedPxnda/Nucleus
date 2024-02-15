@@ -7,39 +7,50 @@ import com.mojang.serialization.*;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.util.Collection;
-import java.util.Objects;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class CollectionCodec<A> implements Codec<Collection<A>> {
-    private final Codec<A> elementCodec;
+public class CollectionCodec<E, C extends Collection<E>> implements Codec<C> {
+    protected final Codec<E> elementCodec;
+    protected final Function<List<E>, C> collectionCreator;
 
-    protected CollectionCodec(Codec<A> elementCodec) {
+    protected CollectionCodec(Codec<E> elementCodec, Function<List<E>, C> collectionCreator) {
         this.elementCodec = elementCodec;
+        this.collectionCreator = collectionCreator;
     }
-    public static <T> CollectionCodec<T> of(Codec<T> codec) {
-        return new CollectionCodec<>(codec);
+    public static <E, C extends Collection<E>> CollectionCodec<E, C> of(Codec<E> codec, Function<List<E>, C> creator) {
+        return new CollectionCodec<>(codec, creator);
+    }
+    public static <E, C extends Collection<E>> CollectionCodec<E, C> of(Codec<E> codec, Supplier<C> creator) {
+        return new CollectionCodec<>(codec, list -> {
+            C c = creator.get();
+            c.addAll(list);
+            return c;
+        });
     }
 
     @Override
-    public <T> DataResult<T> encode(final Collection<A> input, final DynamicOps<T> ops, final T prefix) {
-        final ListBuilder<T> builder = ops.listBuilder();
+    public <T> DataResult<T> encode(C input, DynamicOps<T> ops, T prefix) {
+        ListBuilder<T> builder = ops.listBuilder();
 
-        for (final A a : input) {
-            builder.add(elementCodec.encodeStart(ops, a));
+        for (E e : input) {
+            builder.add(elementCodec.encodeStart(ops, e));
         }
 
         return builder.build(prefix);
     }
 
     @Override
-    public <T> DataResult<Pair<Collection<A>, T>> decode(final DynamicOps<T> ops, final T input) {
+    public <T> DataResult<Pair<C, T>> decode(DynamicOps<T> ops, T input) {
         return ops.getList(input).setLifecycle(Lifecycle.stable()).flatMap(stream -> {
-            final ImmutableList.Builder<A> read = ImmutableList.builder();
-            final Stream.Builder<T> failed = Stream.builder();
-            final MutableObject<DataResult<Unit>> result = new MutableObject<>(DataResult.success(Unit.INSTANCE, Lifecycle.stable()));
+            ImmutableList.Builder<E> read = ImmutableList.builder();
+            Stream.Builder<T> failed = Stream.builder();
+            MutableObject<DataResult<Unit>> result = new MutableObject<>(DataResult.success(Unit.INSTANCE, Lifecycle.stable()));
 
             stream.accept(t -> {
-                final DataResult<Pair<A, T>> element = elementCodec.decode(ops, t);
+                DataResult<Pair<E, T>> element = elementCodec.decode(ops, t);
                 element.error().ifPresent(e -> failed.add(t));
                 result.setValue(result.getValue().apply2stable((r, v) -> {
                     read.add(v.getFirst());
@@ -47,30 +58,13 @@ public class CollectionCodec<A> implements Codec<Collection<A>> {
                 }, element));
             });
 
-            final ImmutableList<A> elements = read.build();
-            final T errors = ops.createList(failed.build());
+            ImmutableList<E> elements = read.build();
+            T errors = ops.createList(failed.build());
 
-            final Pair<Collection<A>, T> pair = Pair.of(elements, errors);
+            Pair<C, T> pair = Pair.of(collectionCreator.apply(elements), errors);
 
             return result.getValue().map(unit -> pair).setPartial(pair);
         });
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final CollectionCodec<?> other = (CollectionCodec<?>) o;
-        return Objects.equals(elementCodec, other.elementCodec);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(elementCodec);
     }
 
     @Override

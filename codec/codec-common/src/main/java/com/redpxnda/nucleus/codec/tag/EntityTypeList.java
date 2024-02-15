@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.codec.tag;
 
 import com.mojang.serialization.Codec;
-import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.util.MiscUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-@AutoCodec.Override()
+@CodecBehavior.Override()
 public class EntityTypeList extends TagList<EntityType<?>> {
     public static final Codec<EntityTypeList> CODEC = EntityTypeListCodec.INSTANCE;
     public static final Map<String, Predicate<Entity>> builtinPredicates = MiscUtil.initialize(new HashMap<>(), m -> {

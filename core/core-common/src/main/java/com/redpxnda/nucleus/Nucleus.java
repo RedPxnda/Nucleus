@@ -1,7 +1,6 @@
 package com.redpxnda.nucleus;
 
 import com.google.gson.Gson;
-import com.mojang.logging.LogUtils;
 import com.redpxnda.nucleus.client.Rendering;
 import com.redpxnda.nucleus.network.SimplePacket;
 import com.redpxnda.nucleus.network.clientbound.ParticleCreationPacket;
@@ -18,6 +17,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
@@ -25,7 +25,7 @@ public class Nucleus {
     public static final String MOD_ID = "nucleus";
     public static final NetworkChannel CHANNEL = NetworkChannel.create(loc("main"));
     public static final Gson GSON = new Gson();
-    public static final Logger LOGGER = LogUtils.getLogger();
+    private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
     public static @Nullable MinecraftServer SERVER;
 
     public static void init() {
@@ -51,4 +51,10 @@ public class Nucleus {
         return new Identifier(MOD_ID, str);
     }
 
+    public static Logger getLogger() {
+        return LoggerFactory.getLogger("Nucleus: " + STACK_WALKER.getCallerClass().getSimpleName());
+    }
+    public static Logger getLogger(String name) {
+        return LoggerFactory.getLogger("Nucleus: " + name);
+    }
 }

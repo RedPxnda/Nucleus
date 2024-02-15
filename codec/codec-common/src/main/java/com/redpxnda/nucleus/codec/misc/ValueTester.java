@@ -4,13 +4,13 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.redpxnda.nucleus.Nucleus;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
-
-import static com.redpxnda.nucleus.Nucleus.LOGGER;
 
 /**
  * {@link ValueTester}s are great tools to (de)serialize checks for specific objects.
@@ -31,6 +31,8 @@ import static com.redpxnda.nucleus.Nucleus.LOGGER;
  * @param <T> The type of object this ValueTester tests for.
  */
 public class ValueTester<T> {
+    private static final Logger LOGGER = Nucleus.getLogger();
+
     private final Map<String, Instruction<T, ?>> instructions;
 
     public ValueTester(Map<String, Instruction<T, ?>> instructions) {

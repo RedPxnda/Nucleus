@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.pose.client;
 
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import net.fabricmc.api.EnvType;
@@ -18,11 +19,11 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
     public static final Codec<HumanoidPoseAnimation> codec = AutoCodec.of(HumanoidPoseAnimation.class).codec();
 
     public List<Frame> frames;
-    public @AutoCodec.Optional int loops = 1; // -1 for indefinite
+    public @CodecBehavior.Optional int loops = 1; // -1 for indefinite
     public @AutoCodec.Ignored float length = -1;
-    public @AutoCodec.Optional Frame initialPose = null;
-    public @AutoCodec.Optional boolean resetFirstPersonView = false;
-    public @AutoCodec.Optional FrameMultiplier leftHandMultiplier = FrameMultiplier.LEFT_HAND_INVERT;
+    public @CodecBehavior.Optional Frame initialPose = null;
+    public @CodecBehavior.Optional boolean resetFirstPersonView = false;
+    public @CodecBehavior.Optional FrameMultiplier leftHandMultiplier = FrameMultiplier.LEFT_HAND_INVERT;
 
     @Override
     public void additionalSetup() {
@@ -30,8 +31,8 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         length = frames.get(frames.size()-1).endTime;
     }
 
-    @AutoCodec.Settings(optionalByDefault = true)
-    @AutoCodec.Override("codec")
+    @AutoCodec.Settings(defaultOptionalBehavior = @CodecBehavior.Optional)
+    @CodecBehavior.Override("codec")
     public static class FrameMultiplier {
         public static final Codec<FrameMultiplier> codec = AutoCodec.of(FrameMultiplier.class).codec();
         public static final Vector3f ONE_VEC = new Vector3f(1, 1, 1);
@@ -51,8 +52,8 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         }
     }
 
-    @AutoCodec.Settings(optionalByDefault = true)
-    @AutoCodec.Override("codec")
+    @AutoCodec.Settings(defaultOptionalBehavior = @CodecBehavior.Optional)
+    @CodecBehavior.Override("codec")
     public static class Frame {
         public static final Codec<Frame> codec = AutoCodec.of(Frame.class).codec();
 
@@ -154,8 +155,8 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         }
     }
 
-    @AutoCodec.Settings(optionalByDefault = true)
-    @AutoCodec.Override("codec")
+    @AutoCodec.Settings(defaultOptionalBehavior = @CodecBehavior.Optional)
+    @CodecBehavior.Override("codec")
     public static class PartState implements AutoCodec.AdditionalConstructing {
         public static final Codec<PartState> codec = AutoCodec.of(PartState.class).codec();
         public static final Vector3f EMPTY_VEC = new Vector3f();

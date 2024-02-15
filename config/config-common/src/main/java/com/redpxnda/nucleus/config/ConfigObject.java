@@ -8,9 +8,9 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.codec.ops.JsoncOps;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
-import com.redpxnda.nucleus.config.screen.ConfigComponent;
-import com.redpxnda.nucleus.config.screen.ConfigComponentType;
+import com.redpxnda.nucleus.config.screen.component.ConfigComponent;
 import com.redpxnda.nucleus.config.screen.ConfigScreen;
+import com.redpxnda.nucleus.config.screen.component.ConfigComponentBehavior;
 import com.redpxnda.nucleus.util.json.JsoncElement;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
@@ -19,6 +19,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -31,6 +32,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ConfigObject<T> {
+    private static final Logger LOGGER = Nucleus.getLogger();
+    
     public final Path path;
     public final String name;
     public final ConfigType type;
@@ -81,13 +84,13 @@ public class ConfigObject<T> {
 
     public <C> C serialize(DynamicOps<C> ops) {
         return codec.encodeStart(ops, instance)
-                .getOrThrow(false, s -> Nucleus.LOGGER.error("Failed to encode config '{}'! -> {}", name, s));
+                .getOrThrow(false, s -> LOGGER.error("Failed to encode config '{}'! -> {}", name, s));
     }
 
     protected void attemptParse(String data) {
         JsonElement json = Nucleus.GSON.fromJson(data, JsonElement.class);
         instance = codec.parse(JsonOps.INSTANCE, json)
-                .getOrThrow(false, s -> Nucleus.LOGGER.error("Failed to parse json for config '{}'! -> {}", name, s));
+                .getOrThrow(false, s -> LOGGER.error("Failed to parse json for config '{}'! -> {}", name, s));
 
         if (presetGetter != null) {
             var preset = presetGetter.apply(instance);
@@ -95,7 +98,7 @@ public class ConfigObject<T> {
             T val = preset.consume();
             if (val != null) {
                 instance = val;
-                Nucleus.LOGGER.info("Loaded preset '{}' for config '{}'.", presetName, name);
+                LOGGER.info("Loaded preset '{}' for config '{}'.", presetName, name);
             }
         }
 
@@ -114,7 +117,7 @@ public class ConfigObject<T> {
         try {
             attemptParse(data);
         } catch (Exception e) {
-            Nucleus.LOGGER.warn("Failed to read manually inputted data for config '" + name + "'!", e);
+            LOGGER.warn("Failed to read manually inputted data for config '" + name + "'!", e);
             resetToDefault();
         }
     }
@@ -129,7 +132,7 @@ public class ConfigObject<T> {
                 String data = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 attemptParse(data);
             } catch (Exception e) {
-                Nucleus.LOGGER.warn("Failed to read data for config '" + name + "'. Creating backup...", e);
+                LOGGER.warn("Failed to read data for config '" + name + "'. Creating backup...", e);
 
                 int num = 0;
                 while (getBackupFile(num).exists()) num++;
@@ -137,8 +140,8 @@ public class ConfigObject<T> {
                 try {
                     FileUtils.copyFile(file, getBackupFile(num));
                 } catch (Exception ex) {
-                    Nucleus.LOGGER.warn("Failed to create backup for config '" + name + "'. Deleting instead...", ex);
-                    if (!file.delete()) Nucleus.LOGGER.warn("Deletion failed for config '{}'!", name);
+                    LOGGER.warn("Failed to create backup for config '" + name + "'. Deleting instead...", ex);
+                    if (!file.delete()) LOGGER.warn("Deletion failed for config '{}'!", name);
                 }
 
                 resetToDefault();
@@ -151,7 +154,7 @@ public class ConfigObject<T> {
 
     public void save() {
         if (instance == null) {
-            Nucleus.LOGGER.warn("Attempted to save null config instance '{}'! Ignoring...", name);
+            LOGGER.warn("Attempted to save null config instance '{}'! Ignoring...", name);
             return;
         }
         try {
@@ -159,7 +162,7 @@ public class ConfigObject<T> {
             FileUtils.write(getFile(), json.toString(), StandardCharsets.UTF_8);
             ConfigManager.skipNextWatch.set(true);
         } catch (Exception e) {
-            Nucleus.LOGGER.warn("Failed to save data for config '" + name + "'. Ignoring...", e);
+            LOGGER.warn("Failed to save data for config '" + name + "'. Ignoring...", e);
         }
     }
 
@@ -206,14 +209,15 @@ public class ConfigObject<T> {
 
         @Environment(EnvType.CLIENT)
         protected void setupScreenSupplier(Map<String, Field> fieldMap) {
-            Map<String, Pair<Field, Supplier<? extends ConfigComponent<?>>>> map = new LinkedHashMap<>();
-            for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
-                var supplier = ConfigComponentType.getFor(entry.getValue());
-                if (supplier != null)
-                    map.put(entry.getKey(), new Pair<>(entry.getValue(), supplier));
-            }
+            screenCreator = scr -> {
+                Map<String, Pair<Field, ConfigComponent<?>>> map = new LinkedHashMap<>();
+                for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+                    var comp = ConfigComponentBehavior.getComponent(entry.getValue(), true);
+                    map.put(entry.getKey(), new Pair<>(entry.getValue(), comp));
+                }
 
-            screenCreator = scr -> new ConfigScreen<>((Screen) scr, map, this);
+                return new ConfigScreen<>((Screen) scr, map, this);
+            };
         }
 
         @Environment(EnvType.CLIENT)

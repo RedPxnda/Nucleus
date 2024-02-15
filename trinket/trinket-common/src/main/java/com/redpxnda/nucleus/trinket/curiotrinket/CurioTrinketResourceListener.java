@@ -10,11 +10,13 @@ import net.minecraft.resource.JsonDataLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class CurioTrinketResourceListener extends JsonDataLoader {
+    private static final Logger LOGGER = Nucleus.getLogger();
     private static int invalidItemCount = 0;
     public static final Map<String, SlotName> slotNames = new HashMap<>();
 
@@ -89,7 +91,7 @@ public class CurioTrinketResourceListener extends JsonDataLoader {
                 });
             });*/
         });
-        Nucleus.LOGGER.warn("Found {} invalid item(s) used for Nucleus trinket data. Intentional?", invalidItemCount);
+        LOGGER.warn("Found {} invalid item(s) used for Nucleus trinket data. Intentional?", invalidItemCount);
     }
 
     public record SlotName(String trinkets, String curios) {}

@@ -94,6 +94,31 @@ public class MathUtil extends MathHelper {
         }
     }
 
+    public static float[] rgbToHsv(int r, int g, int b) {
+        return rgbToHsv(r/255f, g/255f, b/255f);
+    }
+    public static float[] rgbToHsv(float r, float g, float b) {
+        float max = Math.max(r, Math.max(g, b));
+        float min = Math.min(r, Math.min(g, b));
+        float delta = max - min;
+
+        float hue = 0;
+        if (delta != 0) {
+            if (max == r)
+                hue = ((g - b) / delta) % 6;
+            else if (max == g)
+                hue = (b - r) / delta + 2;
+            else if (max == b)
+                hue = (r - g) / delta + 4;
+            hue*=60;
+            if (hue < 0) hue+=360;
+            hue = Math.round(hue);
+        }
+
+        float saturation = delta == 0 ? 0 : delta/ max;
+        return new float[] {hue, saturation, max};
+    }
+
     public static double solveBrent(Function<Double, Double> f, double a, double b, double eps, int maxSteps) {
         double tmp, s;
 

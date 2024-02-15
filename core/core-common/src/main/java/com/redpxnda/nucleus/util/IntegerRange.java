@@ -1,10 +1,10 @@
-package com.redpxnda.nucleus.codec.auto;
+package com.redpxnda.nucleus.util;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * A marker to tell the {@link AutoCodec} that this integer should use a special integer range codec
+ * A marker to say that this integer is within a specific range... used for AutoCodec(Codec module)
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IntegerRange {

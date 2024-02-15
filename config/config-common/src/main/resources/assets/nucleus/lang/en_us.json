@@ -15,5 +15,8 @@
   "nucleus.config_screen.map.description": "This field is a map of keys to values. Press the [>] button to maximize it. Press the [×] button to remove an entry. Press the [+] button to add an entry. Hold shift to move elements down, hold control to move elements up.",
   "nucleus.config_screen.dropdown.description": "This field can be one of several values. Click the arrow to open a dropdown to select the value you want.",
   "nucleus.config_screen.preset.description": "This field is a preset for this config. Click the arrow to open a dropdown to select the preset you want ('none' being no preset/custom settings). NOTE: Setting a preset will override all other set values.",
-  "nucleus.config_screen.preset.warning": "A preset has been set, meaning that all other values will be overridden when you save this config."
+  "nucleus.config_screen.preset.warning": "A preset has been set, meaning that all other values will be overridden when you save this config.",
+  "nucleus.config_screen.optional.description.enabled": "This field is optional. It is currently enabled. Click to disable it.",
+  "nucleus.config_screen.optional.description.disabled": "This field is optional. It is currently disabled. Click to enable it. Note: Since this value is disabled, this value will be reset to its default when reloading this config.",
+  "nucleus.config_screen.color.description": "This is a color field. Enter a hex code, optionally including alpha."
 }

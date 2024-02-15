@@ -3,9 +3,10 @@ package com.redpxnda.nucleus.config.preset;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.redpxnda.nucleus.Nucleus;
-import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -24,9 +25,11 @@ import java.util.function.Function;
  * @param <C> the config this preset is for
  * @param <E> the enum holding the valid presets
  */
-@AutoCodec.Override("codecGetter")
+@CodecBehavior.Override("codecGetter")
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ConfigPreset<C, E extends Enum<E> & ConfigProvider<C>> {
+    private static final Logger LOGGER = Nucleus.getLogger();
+
     public static <C, E extends Enum<E> & ConfigProvider<C>> ConfigPreset<C, E> none() {
         return new ConfigPreset<>(null);
     }
@@ -34,9 +37,9 @@ public class ConfigPreset<C, E extends Enum<E> & ConfigProvider<C>> {
         return new ConfigPreset<>(entry);
     }
 
-    public static final AutoCodec.CodecGetter<ConfigPreset> codecGetter = params -> {
+    public static final CodecBehavior.Getter<ConfigPreset> codecGetter = (f, clazz, raw, params, root) -> {
         if (params == null || !(params[1] instanceof Class cls)) {
-            Nucleus.LOGGER.warn("Invalid format used for ConfigPreset field. Please specify type parameters as direct classes without type parameters.");
+            LOGGER.warn("Invalid format used for ConfigPreset field. Please specify type parameters as direct classes without type parameters.");
             return Codec.STRING.xmap(s -> ConfigPreset.none(), c -> "none");
         }
         return Codec.STRING.comapFlatMap(s -> {

@@ -5,8 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.redpxnda.nucleus.Nucleus;
-import dev.architectury.event.events.common.PlayerEvent;
 import net.minecraft.entity.player.PlayerEntity;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,12 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.redpxnda.nucleus.Nucleus.LOGGER;
-
 /**
  * {@link SupporterUtil} is the main class used to manage Modding Magnificence supporters.
  */
 public class SupporterUtil {
+    private static final Logger LOGGER = Nucleus.getLogger();
+
     private static final Map<UUID, Integer> supporters = new HashMap<>();
 
     public static int getTier(PlayerEntity player) {

@@ -13,6 +13,7 @@ import net.fabricmc.api.EnvType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.slf4j.Logger;
 
 import java.nio.file.*;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 public class ConfigManager {
+    private static final Logger LOGGER = Nucleus.getLogger();
     public static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
     private static final Map<String, ConfigObject<?>> configs = new HashMap<>();
 
@@ -105,7 +107,7 @@ public class ConfigManager {
                                         String configName = fileName.substring(0, fileName.length() - 6);
                                         ConfigObject<?> config = ConfigManager.getConfigObject(configName);
                                         if (config != null && config.watch && config.type.clientCanControl()) {
-                                            Nucleus.LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
+                                            LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
                                             config.load();
                                             config.save();
                                         }
@@ -117,7 +119,7 @@ public class ConfigManager {
                                         String configName = fileName.substring(0, fileName.length() - 6);
                                         ConfigObject<?> config = ConfigManager.getConfigObject(configName);
                                         if (config != null && config.watch && config.type.serverCanControl()) {
-                                            Nucleus.LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
+                                            LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
                                             config.load();
                                             config.save();
 
@@ -137,12 +139,12 @@ public class ConfigManager {
                     }
                 }
             } catch (Exception e) {
-                Nucleus.LOGGER.warn("Failed to setup config file watching!", e);
+                LOGGER.warn("Failed to setup config file watching!", e);
             }
         });
         thread.start();
 
-        Nucleus.LOGGER.info("Successfully created file watcher (and thread) for config folder. ({})", Platform.getConfigFolder());
+        LOGGER.info("Successfully created file watcher (and thread) for config folder. ({})", Platform.getConfigFolder());
     }
 
     public static void syncConfigWithAllPlayers(ConfigObject<?> config, MinecraftServer server) {

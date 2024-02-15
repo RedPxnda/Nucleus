@@ -1,63 +1,57 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
 import com.redpxnda.nucleus.util.MiscUtil;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
-public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget implements ConfigComponent<C> {
-    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.map.description");
+import static com.redpxnda.nucleus.config.screen.component.ConfigEntriesComponent.KEY_TEXT_WIDTH;
+
+public class CollectionComponent<T, C extends Collection<T>> extends ClickableWidget implements ConfigComponent<C> {
+    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.collection.description");
     public static final Text UP_ICON = Text.literal("∧");
     public static final Text DOWN_ICON = Text.literal("∨");
     public static final Text REMOVE_ICON = Text.literal("×");
 
     public final Supplier<C> creator;
-    public final Supplier<Pair<ConfigComponent<K>, ConfigComponent<V>>> elementCreator;
-    public final Map<ConfigComponent<K>, Pair<ConfigComponent<V>, ButtonWidget>> elements = new LinkedHashMap<>();
+    public final Supplier<ConfigComponent<T>> elementCreator;
+    public final List<ConfigComponent<T>> elements = new ArrayList<>();
+    public final Map<ConfigComponent<T>, ButtonWidget> removers = new HashMap<>();
     public ConfigComponent<?> parent;
     public boolean minimized = true;
     public ConfigComponent<?> focusedComponent = null;
-    public ButtonWidget adder;
-    public ButtonWidget minimizer;
+    public final ButtonWidget adder;
+    public final ButtonWidget minimizer;
 
-    public MapComponent(Supplier<C> creator, Type keyType, Type valueType, int x, int y) {
+    public CollectionComponent(Supplier<C> creator, Type type, int x, int y) {
         super(x, y, 142, 8, Text.empty());
         this.creator = creator;
 
         this.elementCreator = () -> {
-            ConfigComponent<V> comp = (ConfigComponent<V>) ConfigComponentType.getFor(valueType).get();
-            ConfigComponent<K> keyComp = (ConfigComponent<K>) ConfigComponentType.getFor(keyType).get();
-
+            ConfigComponent<T> comp = ConfigComponentBehavior.getComponent(type, false);
             comp.setParent(this);
-            keyComp.setParent(this);
-
-            elements.put(keyComp, new Pair<>(
-                    comp,
-                    ButtonWidget.builder(REMOVE_ICON, wid -> {
-                        if (Screen.hasShiftDown())
-                            MiscUtil.moveMapKeyDown(elements, keyComp);
-                        else if (Screen.hasControlDown())
-                            MiscUtil.moveMapKeyUp(elements, keyComp);
-                        else {
-                            keyComp.onRemoved();
-                            comp.onRemoved();
-                            elements.remove(keyComp);
-                        }
-                        requestPositionUpdate();
-                    }).dimensions(0, 0, 20, 20).build()
-            ));
-            return new Pair<>(keyComp, comp);
+            elements.add(comp);
+            removers.put(comp, ButtonWidget.builder(REMOVE_ICON, wid -> {
+                if (Screen.hasShiftDown())
+                    MiscUtil.moveListElementDown(elements, comp);
+                else if (Screen.hasControlDown())
+                    MiscUtil.moveListElementUp(elements, comp);
+                else {
+                    comp.onRemoved();
+                    elements.remove(comp);
+                    removers.remove(comp);
+                }
+                requestPositionUpdate();
+            }).dimensions(0, 0, 20, 20).build());
+            return comp;
         };
 
         adder = ButtonWidget.builder(Text.literal("＋"), wid -> {
@@ -69,6 +63,7 @@ public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget imp
         Text maximizedText = Text.literal("∨");
         minimizer = ButtonWidget.builder(minimizedText, wid -> {
             minimized = !minimized;
+            if (minimized) focusedComponent = null;
             wid.setMessage(minimized ? minimizedText : maximizedText);
             requestPositionUpdate();
         }).dimensions(0, 0, 20, 20).build();
@@ -94,17 +89,23 @@ public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget imp
 
     @Override
     public boolean checkValidity() {
-        for (var entry : elements.entrySet()) {
-            if (!entry.getValue().getLeft().checkValidity()) return false;
+        for (ConfigComponent<T> comp : elements) {
+            if (!comp.checkValidity()) return false;
         }
         return true;
     }
 
     @Override
+    public void onRemoved() {
+        if (!minimized)
+            minimizer.onPress();
+    }
+
+    @Override
     public C getValue() {
         C result = creator.get();
-        for (var entry : elements.entrySet()) {
-            result.put(entry.getKey().getValue(), entry.getValue().getLeft().getValue());
+        for (ConfigComponent<T> component : elements) {
+            result.add(component.getValue());
         }
         return result;
     }
@@ -112,10 +113,9 @@ public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget imp
     @Override
     public void setValue(C value) {
         elements.clear();
-        value.forEach((k, v) -> {
-            var pair = elementCreator.get();
-            pair.getLeft().setValue(k);
-            pair.getRight().setValue(v);
+        value.forEach(t -> {
+            var element = elementCreator.get();
+            element.setValue(t);
         });
         requestPositionUpdate();
     }
@@ -141,21 +141,16 @@ public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget imp
 
     @Override
     public void performPositionUpdate() {
-        minimizer.setPosition(getX()+122, getY());
+        minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
+        width = KEY_TEXT_WIDTH-18;
         height = 20;
         if (!minimized) {
-            elements.forEach((key, pair) -> {
-                ConfigComponent<V> element = pair.getLeft();
-                ButtonWidget remover = pair.getRight();
-
+            elements.forEach(element -> {
                 height += 8;
-                key.setPosition(getX() + 8, getY() + height); // todo key and element infos
-                element.setPosition(key.getX() + key.getWidth() + 20, getY() + height);
-
-                int newWidth = key.getWidth() + element.getWidth() + 56;
-                if (newWidth > width) width = newWidth;
+                element.setPosition(getX() + 8, getY() + height);
+                if (element.getWidth() + 28 > width) width = element.getWidth() + 28;
                 height += element.getHeight();
-                remover.setPosition(element.getX() + element.getWidth() + 8, element.getY());
+                removers.get(element).setPosition(element.getX() + element.getWidth() + 8, element.getY());
                 element.performPositionUpdate();
             });
             height += 8;
@@ -169,14 +164,10 @@ public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget imp
         minimizer.render(context, mouseX, mouseY, delta);
         if (!minimized) {
             int index = 0;
-            for (var entry : elements.entrySet()) {
-                ConfigComponent<K> key = entry.getKey();
-                ConfigComponent<V> element = entry.getValue().getLeft();
-                ButtonWidget remover = entry.getValue().getRight();
-
-                key.render(context, mouseX, mouseY, delta);
-                context.drawText(MinecraftClient.getInstance().textRenderer, "=", key.getX() + key.getWidth() + 8, key.getY() + 6, -11184811, true);
+            for (ConfigComponent<T> element : elements) {
                 element.render(context, mouseX, mouseY, delta);
+
+                ButtonWidget remover = removers.get(element);
                 if (Screen.hasShiftDown()) {
                     remover.setMessage(DOWN_ICON);
                     remover.active = index != elements.size()-1;
@@ -198,70 +189,63 @@ public class MapComponent<K, V, C extends Map<K, V>> extends ClickableWidget imp
     public boolean mouseClicked(double mX, double mY, int button) {
         if (!isMouseOver(mX, mY)) return false;
         if (minimizer.isMouseOver(mX, mY)) return minimizer.mouseClicked(mX, mY, button);
-        if (!minimized && adder.isMouseOver(mX, mY)) return adder.mouseClicked(mX, mY, button);
-        for (var entry : elements.entrySet()) {
-            ConfigComponent<K> key = entry.getKey();
-            ConfigComponent<V> component = entry.getValue().getLeft();
-            ButtonWidget remover = entry.getValue().getRight();
-            if (focusedComponent != null && focusedComponent.mouseClicked(mX, mY, button)) {
-                return true;
-            } else if (component.isMouseOver(mX, mY)) {
-                if (button == 0) {
-                    if (focusedComponent != null) focusedComponent.setFocused(false);
-                    component.setFocused(true);
-                    focusedComponent = component;
-                }
-                component.mouseClicked(mX, mY, button);
-                return true;
-            } else if (key.isMouseOver(mX, mY)) {
-                if (button == 0) {
-                    if (focusedComponent != null) focusedComponent.setFocused(false);
-                    key.setFocused(true);
-                    focusedComponent = key;
-                }
-                key.mouseClicked(mX, mY, button);
-                return true;
-            } else if (remover.isMouseOver(mX, mY) && remover.mouseClicked(mX, mY, button)) return true;
+        if (!minimized) {
+            if (adder.isMouseOver(mX, mY)) return adder.mouseClicked(mX, mY, button);
+            for (ConfigComponent<T> component : elements) {
+                ButtonWidget remover;
+                if (focusedComponent != null && focusedComponent.mouseClicked(mX, mY, button)) {
+                    return true;
+                } else if (component.isMouseOver(mX, mY)) {
+                    if (button == 0) {
+                        if (focusedComponent != null) focusedComponent.setFocused(false);
+                        component.setFocused(true);
+                        focusedComponent = component;
+                    }
+                    component.mouseClicked(mX, mY, button);
+                    return true;
+                } else if ((remover = removers.get(component)).isMouseOver(mX, mY) && remover.mouseClicked(mX, mY, button))
+                    return true;
+            }
         }
         return false;
     }
 
     @Override
     public boolean mouseReleased(double mX, double mY, int button) {
-        if (focusedComponent != null && focusedComponent.mouseReleased(mX, mY, button))
+        if (!minimized && focusedComponent != null && focusedComponent.mouseReleased(mX, mY, button))
             return true;
         return super.mouseReleased(mX, mY, button);
     }
 
     @Override
     public boolean mouseDragged(double mX, double mY, int button, double deltaX, double deltaY) {
-        if (focusedComponent != null && focusedComponent.mouseDragged(mX, mY, button, deltaX, deltaY))
+        if (!minimized && focusedComponent != null && focusedComponent.mouseDragged(mX, mY, button, deltaX, deltaY))
             return true;
         return super.mouseDragged(mX, mY, button, deltaX, deltaY);
     }
 
     @Override
     public boolean mouseScrolled(double mX, double mY, double amount) {
-        if (focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
+        if (!minimized && focusedComponent != null && focusedComponent.mouseScrolled(mX, mY, amount))
             return true;
         return super.mouseScrolled(mX, mY, amount);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyPressed(keyCode, scanCode, modifiers)) return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.keyReleased(keyCode, scanCode, modifiers)) return true;
         return super.keyReleased(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if (focusedComponent != null && focusedComponent.charTyped(chr, modifiers)) return true;
+        if (!minimized && focusedComponent != null && focusedComponent.charTyped(chr, modifiers)) return true;
         return super.charTyped(chr, modifiers);
     }
 

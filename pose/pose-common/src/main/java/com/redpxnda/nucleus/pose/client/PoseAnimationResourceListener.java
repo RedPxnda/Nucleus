@@ -23,6 +23,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
 public class PoseAnimationResourceListener extends JsonDataLoader {
+    private static final Logger LOGGER = Nucleus.getLogger();
     public static final Map<String, HumanoidPoseAnimation> animations = new HashMap<>();
 
     public PoseAnimationResourceListener() {
@@ -54,7 +56,7 @@ public class PoseAnimationResourceListener extends JsonDataLoader {
 
             list.forEach(obj -> animations.put(
                     new Identifier(obj.get("name").getAsString()).toString(),
-                    MiscCodecs.quickParse(obj, HumanoidPoseAnimation.codec, s -> Nucleus.LOGGER.error("Failed to parse HumanoidPoseAnimation at {}! -> {}", key, s))
+                    MiscCodecs.quickParse(obj, HumanoidPoseAnimation.codec, s -> LOGGER.error("Failed to parse HumanoidPoseAnimation at {}! -> {}", key, s))
             ));
         });
     }

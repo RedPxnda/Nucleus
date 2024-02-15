@@ -7,10 +7,13 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapLike;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.util.Color;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 public class ColorCodec implements Codec<Color> {
+    private static final Logger LOGGER = Nucleus.getLogger();
+
     public static final ColorCodec INSTANCE = new ColorCodec();
 
     protected ColorCodec() {}
@@ -26,9 +29,9 @@ public class ColorCodec implements Codec<Color> {
         DataResult<MapLike<T>> potentialMap = ops.getMap(input);
         if (potentialMap.result().isPresent()) {
             MapLike<T> map = potentialMap.result().get();
-            int r = ops.getNumberValue(map.get("r")).getOrThrow(false, s -> Nucleus.LOGGER.error("Invalid number used for color's r value! '" + map.get("r") + "'")).intValue();
-            int g = ops.getNumberValue(map.get("g")).getOrThrow(false, s -> Nucleus.LOGGER.error("Invalid number used for color's g value! '" + map.get("g") + "'")).intValue();
-            int b = ops.getNumberValue(map.get("b")).getOrThrow(false, s -> Nucleus.LOGGER.error("Invalid number used for color's b value! '" + map.get("b") + "'")).intValue();
+            int r = ops.getNumberValue(map.get("r")).getOrThrow(false, s -> LOGGER.error("Invalid number used for color's r value! '" + map.get("r") + "'")).intValue();
+            int g = ops.getNumberValue(map.get("g")).getOrThrow(false, s -> LOGGER.error("Invalid number used for color's g value! '" + map.get("g") + "'")).intValue();
+            int b = ops.getNumberValue(map.get("b")).getOrThrow(false, s -> LOGGER.error("Invalid number used for color's b value! '" + map.get("b") + "'")).intValue();
             int a = ops.getNumberValue(map.get("a"), 255).intValue();
             return DataResult.success(Pair.of(new Color(r, g, b, a), input));
         }

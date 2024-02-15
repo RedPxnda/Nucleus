@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.widget;
 
 import com.redpxnda.nucleus.util.Color;
 import net.minecraft.client.font.TextRenderer;

@@ -1,4 +1,4 @@
-package com.redpxnda.nucleus.config.screen;
+package com.redpxnda.nucleus.config.screen.component;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,6 +29,17 @@ public interface ConfigComponent<T> extends Drawable, Element, Widget {
     T getValue();
 
     void setValue(T value);
+
+    /**
+     * Whether this component needs {@link ConfigComponent#setValue(Object)} to have been called in order to function properly.
+     * This is used in optional fields, where, if this returns true, it will first try to create an instance of your object from the
+     * {@link com.redpxnda.nucleus.codec.behavior.InstantiationBehavior}, and then if that fails check this method and instead
+     * use the raw editing component. If false, this component will simple not be given a value for optional fields. Make sure to
+     * update validity.
+     */
+    default boolean needsValueSet() {
+        return false;
+    };
 
     default void onRemoved() {}
 
