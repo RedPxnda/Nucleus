@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.codec.behavior;
 
+import com.google.common.reflect.TypeToken;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -11,11 +12,11 @@ import com.redpxnda.nucleus.codec.misc.*;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.*;
-import net.minecraft.entity.EntityType;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
@@ -48,11 +49,15 @@ public class CodecBehavior {
             @java.lang.Override
             public MapCodec<Object> getSecondary(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
                 if (field != null) {
-                    AutoCodec.Settings annot = field.getDeclaringClass().getAnnotation(AutoCodec.Settings.class);
-                    if (annot != null) {
-                        Optional op = annot.defaultOptionalBehavior();
-                        if (op.value() && !field.isAnnotationPresent(Optional.class))
-                            return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), op);
+                    if (!field.isAnnotationPresent(Optional.class)) {
+                        AutoCodec.Settings annot = field.getDeclaringClass().getAnnotation(AutoCodec.Settings.class);
+                        if (annot != null) {
+                            Optional op = annot.defaultOptionalBehavior();
+                            if (op.value())
+                                return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), op);
+                        } else if (field.getDeclaringClass().isAnnotationPresent(ConfigAutoCodec.ConfigClassMarker.class)) {
+                            return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), Optional.DEFAULT);
+                        }
                     }
                 }
                 return null;
@@ -213,19 +218,40 @@ public class CodecBehavior {
             if (params == null) return null;
             return (Codec) Codec.either(getCodecOrThrow(params[0], false), getCodecOrThrow(params[1], false));
         });
+        registerClass(TagKey.class, (field, cls, raw, params, isRoot) -> {
+            if (params == null) return null;
+            Type t = params[0];
+            Class c;
+            if (t instanceof Class<?> cs) c = cs;
+            else if (t instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> cs) c = cs;
+            else return null;
+            Registry reg = MiscUtil.objectsToRegistries.get(c);
+            if (reg == null) return null;
+            return Identifier.CODEC.xmap(id -> TagKey.of(reg.getKey(), id), TagKey::id);
+        });
 
         try {
             registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);
-            registerClass(EntityType.class, (Codec) Registries.ENTITY_TYPE.createEntryCodec());
 
             for (Field field : Registries.class.getDeclaredFields()) {
-                if (!Modifier.isStatic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
-                if (field.getGenericType() instanceof ParameterizedType pt && pt.getActualTypeArguments()[0] instanceof Class<?> cls) {
-                    try {
-                        Registry<?> reg = (Registry<?>) field.get(null);
-                        registerClassIfAbsent((Class) cls, Getter.fromSupplier(reg::getCodec));
-                    } catch (IllegalAccessException e) {
-                        LOGGER.error("Failed to add '" + field.getName() + "' from vanilla's Registries as an inherit override.", e);
+                if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
+                if (field.getGenericType() instanceof ParameterizedType type) {
+                    TypeToken token = TypeToken.of(type);
+                    ParameterizedType pt = (ParameterizedType) token.getSupertype(Registry.class).getType();
+                    Type firstParam = pt.getActualTypeArguments()[0];
+
+                    Class cls = null;
+                    if (firstParam instanceof Class<?> c)
+                        cls = c;
+                    else if (firstParam instanceof ParameterizedType t && t.getRawType() instanceof Class<?> c)
+                        cls = c;
+                    if (cls != null) {
+                        try {
+                            Registry<?> reg = (Registry<?>) field.get(null);
+                            registerClassIfAbsent(cls, Getter.fromSupplier(reg::getCodec));
+                        } catch (IllegalAccessException e) {
+                            LOGGER.error("Failed to add '" + field.getName() + "' from vanilla's Registries as a codec behavior", e);
+                        }
                     }
                 }
             }
@@ -382,6 +408,23 @@ public class CodecBehavior {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface Optional {
+        Optional DEFAULT = new Optional() {
+            @java.lang.Override
+            public boolean value() {
+                return true;
+            }
+
+            @java.lang.Override
+            public boolean encodeToNull() {
+                return true;
+            }
+
+            @java.lang.Override
+            public Class<? extends Annotation> annotationType() {
+                return Optional.class;
+            }
+        };
+
         /**
          * @return whether this field is optional
          */

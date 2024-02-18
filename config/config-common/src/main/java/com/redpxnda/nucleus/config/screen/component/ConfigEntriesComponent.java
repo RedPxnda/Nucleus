@@ -39,8 +39,9 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
     protected T value;
     public boolean minimized = true;
     public final ButtonWidget minimizer;
+    public boolean renderInstructions = true;
 
-    public ConfigEntriesComponent(Map<String, Pair<Field, ConfigComponent<?>>> components, TextRenderer textRenderer, int x, int y, int width, int height) { // todo horiz scroll and minimizing
+    public ConfigEntriesComponent(Map<String, Pair<Field, ConfigComponent<?>>> components, TextRenderer textRenderer, int x, int y, int width, int height) { // todo horiz scroll
         super(x, y, width, height, Text.empty());
         this.components = components;
         this.textRenderer = textRenderer;
@@ -172,7 +173,8 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
                 if (component.getInlineMode() == InlineMode.DRAW_LINE)
                     context.drawVerticalLine(getX() + 30, y + 24, y + component.getHeight(), Color.WHITE.argb());
                 component.render(context, mouseX, mouseY, delta);
-                component.drawInstructionText(context, mouseX, mouseY);
+                if (parent instanceof ConfigEntriesComponent<?> c) renderInstructions = c.renderInstructions;
+                if (renderInstructions) component.drawInstructionText(context, mouseX, mouseY);
             }
         }
     }

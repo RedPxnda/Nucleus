@@ -11,7 +11,7 @@ public @interface IntegerRange {
     /**
      * The minimum value in this range, inclusive
      */
-    int min() default Integer.MIN_VALUE;
+    int min() default -Integer.MAX_VALUE;
 
     /**
      * The maximum value in this range, inclusive

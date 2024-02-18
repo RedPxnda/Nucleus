@@ -14,6 +14,7 @@ import net.minecraft.util.Pair;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class ConfigScreen<T> extends Screen {
@@ -21,8 +22,10 @@ public class ConfigScreen<T> extends Screen {
     protected ConfigEntriesComponent<T> widget;
     protected ButtonWidget discardButton;
     protected ButtonWidget saveButton;
+    protected ButtonWidget instructionsButton;
     protected final ConfigObject<T> config;
     protected final Screen parent;
+    public boolean renderInstructions = true;
 
     public ConfigScreen(Screen parent, Map<String, Pair<Field, ConfigComponent<?>>> components, ConfigObject<T> config) {
         super(Text.translatable("nucleus.config_screen.title", config.name + ".jsonc"));
@@ -56,12 +59,27 @@ public class ConfigScreen<T> extends Screen {
                         Text.translatable("nucleus.config_screen.save_fail.description")));
             }
         }).dimensions(128, height-26, 96, 20).build();
+        Text enabledText = Text.translatable("nucleus.config_screen.tips_toggle.enabled");
+        Text disabledText = Text.translatable("nucleus.config_screen.tips_toggle.disabled");
+        instructionsButton = new ButtonWidget(width-104, height-26, 96, 20, enabledText, wid -> {
+            renderInstructions = !renderInstructions;
+            widget.renderInstructions = renderInstructions;
+            wid.setMessage(renderInstructions ? enabledText : disabledText);
+        }, Supplier::get) {
+            @Override
+            public boolean isSelected() {
+                return isHovered();
+            }
+        };
 
         addDrawable(discardButton);
         addSelectableChild(discardButton);
 
         addDrawable(saveButton);
         addSelectableChild(saveButton);
+
+        addDrawable(instructionsButton);
+        addSelectableChild(instructionsButton);
 
         setInitialFocus(widget);
     }

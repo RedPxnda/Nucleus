@@ -2,6 +2,8 @@
   "nucleus.config_screen.title": "Editing: %s",
   "nucleus.config_screen.discard": "Discard Changes",
   "nucleus.config_screen.save": "Save Changes",
+  "nucleus.config_screen.tips_toggle.enabled": "Disable Tips",
+  "nucleus.config_screen.tips_toggle.disabled": "Enable Tips",
   "nucleus.config_screen.save_fail": "Failed to Save Changes!",
   "nucleus.config_screen.save_fail.description": "Make sure your entries are valid.",
   "nucleus.config_screen.invalid_entry": "This field has an invalid entry!",
@@ -18,5 +20,8 @@
   "nucleus.config_screen.preset.warning": "A preset has been set, meaning that all other values will be overridden when you save this config.",
   "nucleus.config_screen.optional.description.enabled": "This field is optional. It is currently enabled. Click to disable it.",
   "nucleus.config_screen.optional.description.disabled": "This field is optional. It is currently disabled. Click to enable it. Note: Since this value is disabled, this value will be reset to its default when reloading this config.",
-  "nucleus.config_screen.color.description": "This is a color field. Enter a hex code, optionally including alpha."
+  "nucleus.config_screen.color.description": "This is a color field. Enter a hex code, optionally including alpha.",
+  "nucleus.config_screen.identifier.description": "This is an identifier field. Enter a namespace and path separated by a colon. Ex. \"mod:example\"",
+  "nucleus.config_screen.registry.description": "This is a registry field. Enter in a specific key or use the right hand side arrow to find one.",
+  "nucleus.config_screen.tag.description": "This is a tag field. Enter a namespace and path for some tag separated by a colon. Ex. \"mod:example\""
 }

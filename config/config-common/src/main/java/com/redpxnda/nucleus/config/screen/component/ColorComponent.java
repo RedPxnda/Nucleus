@@ -23,12 +23,14 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
     public boolean isValid = true;
     public boolean pickerOpen = false;
     public @Nullable Color color;
+    protected int oldWidth;
 
     public ColorComponent(TextRenderer textR, int x, int y, int width, int height) {
         super(x, y, width, height, Text.empty());
         textRenderer = textR;
         textWidget = new TextFieldWidget(textR, x+28, y, width-28, height, Text.empty());
         picker = new ColorPickerWidget(textR, y+28, x, this::setValueNoUpdate);
+        oldWidth = width;
     }
 
     @Override
@@ -66,11 +68,12 @@ public class ColorComponent extends ClickableWidget implements ConfigComponent<C
     public void togglePicker() {
         pickerOpen = !pickerOpen;
         if (pickerOpen) {
-            width += picker.getWidth();
-            height += picker.getHeight();
+            oldWidth = width;
+            if (picker.getWidth() > width) width = picker.getWidth();
+            height += picker.getHeight()+4;
         } else {
-            width -= picker.getWidth();
-            height -= picker.getHeight();
+            width = oldWidth;
+            height -= picker.getHeight()+4;
         }
         picker.unfocusTextFields();
         requestPositionUpdate();

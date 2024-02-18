@@ -11,7 +11,7 @@ public @interface FloatRange {
     /**
      * The minimum value in this range, inclusive
      */
-    float min() default Float.MIN_VALUE;
+    float min() default -Float.MAX_VALUE;
 
     /**
      * The maximum value in this range, inclusive

@@ -95,15 +95,15 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
     }
 
     public ScrollableWidget getDropdownWidget() {
-        return new SelectableOptionsWidget(textRenderer, entries.keySet(), op -> {
-            setValue(getValue(op));
+        return new SelectableOptionsWidget<>(textRenderer, entries, (op, e) -> {
+            setValue(e);
             dropdownOpener.onPress();
         }, getX(), getY(), getWidth(), (textRenderer.fontHeight+1)*(Math.min(entries.size(), 5)) + 8);
     }
 
     @Override
     public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
-        if (getComment(getText()) == null)
+        if (getComment(getText()) == null && !isOpen)
             ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
     }
 

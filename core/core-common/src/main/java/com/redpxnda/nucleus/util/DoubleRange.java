@@ -11,7 +11,7 @@ public @interface DoubleRange {
     /**
      * The minimum value in this range, inclusive
      */
-    double min() default Double.MIN_VALUE;
+    double min() default -Double.MAX_VALUE;
 
     /**
      * The maximum value in this range, inclusive

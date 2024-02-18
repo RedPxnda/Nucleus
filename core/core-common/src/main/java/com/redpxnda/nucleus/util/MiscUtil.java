@@ -8,12 +8,12 @@ import com.redpxnda.nucleus.mixin.ItemStackAccessor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +39,31 @@ public class MiscUtil {
             .put(void.class, Void.class)
             .put(short.class, Short.class)
             .build();
+    public static final Map<Class<?>, Registry<?>> objectsToRegistries = new HashMap<>();
+    static {
+        try {
+            for (Field field : Registries.class.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
+                if (field.getGenericType() instanceof ParameterizedType type) {
+                    TypeToken token = TypeToken.of(type);
+                    ParameterizedType pt = (ParameterizedType) token.getSupertype(Registry.class).getType();
+                    Type firstParam = pt.getActualTypeArguments()[0];
+
+                    Class cls = null;
+                    if (firstParam instanceof Class<?> c)
+                        cls = c;
+                    else if (firstParam instanceof ParameterizedType t && t.getRawType() instanceof Class<?> c)
+                        cls = c;
+                    if (cls != null) {
+                        Registry<?> reg = (Registry<?>) field.get(null);
+                        objectsToRegistries.put(cls, reg);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+            LOGGER.warn("Failed to setup objectsToRegistries map. Not yet bootstrapped?");
+        }
+    }
 
     public static <I, R> Predicate<R> mapPredicate(Predicate<I> original, Function<R, I> mapper) {
         return r -> original.test(mapper.apply(r));

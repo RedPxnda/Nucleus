@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.config.screen.component;
 
+import com.google.common.reflect.TypeToken;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.codec.behavior.AnnotationBehaviorGetter;
@@ -7,28 +8,44 @@ import com.redpxnda.nucleus.codec.behavior.BehaviorOutline;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.codec.behavior.TypeBehaviorGetter;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
-import com.redpxnda.nucleus.util.Color;
-import com.redpxnda.nucleus.util.MiscUtil;
+import com.redpxnda.nucleus.util.*;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+@Environment(EnvType.CLIENT)
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ConfigComponentBehavior {
     private static final Logger LOGGER = Nucleus.getLogger();
     protected static final BehaviorOutline<Getter<?>, AnnotationGetter<?>> getters = new BehaviorOutline<>(false);
 
     static {
+        registerDynamic((field, cls, raw, params, root) -> {
+            if (cls.isArray()) {
+                Class compCls = cls.getComponentType();
+                return new ArrayComponent(compCls, compCls.isPrimitive(), compCls, 0, 0);
+            }
+            return null;
+        });
+
         registerDynamic((field, cls, raw, params, root) -> {
             if (Collection.class.isAssignableFrom(cls) && !getUnsafeOutline().statics.containsKey(cls) && params != null) {
                 Type elementType = MiscUtil.collectionElement(raw);
@@ -47,7 +64,7 @@ public class ConfigComponentBehavior {
 
         registerDynamic((field, cls, raw, params, root) -> {
             if (cls.isEnum() && !getUnsafeOutline().statics.containsKey(cls))
-                return new DropdownComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, cls);
+                return new DropdownComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20, cls);
             return null;
         });
 
@@ -70,7 +87,11 @@ public class ConfigComponentBehavior {
             return null;
         });
 
-        registerClass(String.class, () -> new TextFieldComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20));
+        registerAnnotator(IntegerRange.class, (annotation, field, cls, raw, params, isRoot) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false, annotation.min(), annotation.max()));
+        registerAnnotator(DoubleRange.class, (annotation, field, cls, raw, params, isRoot) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Double::parseDouble, true, annotation.min(), annotation.max()));
+        registerAnnotator(FloatRange.class, (annotation, field, cls, raw, params, isRoot) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Float::parseFloat, true, annotation.min(), annotation.max()));
+
+        registerClass(String.class, () -> new TextFieldComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
         registerClass(int.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false));
         registerClass(Integer.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false));
         registerClass(byte.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Byte::parseByte, false));
@@ -86,12 +107,57 @@ public class ConfigComponentBehavior {
         registerClass(boolean.class, () -> new BooleanComponent(0, 0, 100, 20));
         registerClass(Boolean.class, () -> new BooleanComponent(0, 0, 100, 20));
 
-        registerClass(Color.class, () -> new ColorComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20));
+        registerClass(Color.class, () -> new ColorComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
+
+        registerClass(Identifier.class, () -> new IdentifierComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
+
+        registerClass(TagKey.class, (field, cls, raw, params, root) -> {
+            if (params == null) return null;
+            Type t = params[0];
+            Class c;
+            if (t instanceof Class<?> cs) c = cs;
+            else if (t instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> cs) c = cs;
+            else return null;
+            Registry reg = MiscUtil.objectsToRegistries.get(c);
+            if (reg == null) return null;
+            return new TagKeyComponent(reg.getKey(), MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
+        });
 
         registerClass(ConfigPreset.class, (field, cls, raw, params, root) -> {
             if (params == null || !(params[1] instanceof Class<?> clazz)) return null;
-            return new PresetComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, clazz);
-        }); // todo do the rest (all autocodec ones, registries, colors, ranges, arrays)
+            return new PresetComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20, clazz);
+        }); // todo do the rest (all autocodec ones, registries, TAG LISTS, tags)
+
+        try {
+            /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/
+
+            for (Field field : Registries.class.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
+                if (field.getGenericType() instanceof ParameterizedType type) {
+                    TypeToken token = TypeToken.of(type);
+                    ParameterizedType pt = (ParameterizedType) token.getSupertype(Registry.class).getType();
+                    Type firstParam = pt.getActualTypeArguments()[0];
+
+                    Class cls = null;
+                    if (firstParam instanceof Class<?> c)
+                        cls = c;
+                    else if (firstParam instanceof ParameterizedType t && t.getRawType() instanceof Class<?> c)
+                        cls = c;
+                    if (cls != null) {
+                        try {
+                            Registry<?> reg = (Registry<?>) field.get(null);
+                            registerClassIfAbsent(cls, (f, cls1, raw, params, isRoot) -> {
+                                return new RegistryComponent(reg, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
+                            });
+                        } catch (IllegalAccessException e) {
+                            LOGGER.error("Failed to add '" + field.getName() + "' from vanilla's Registries as a config component behavior", e);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+            LOGGER.warn("Failed to setup config components for vanilla registries. Not yet bootstrapped?");
+        }
     }
 
     public static <T> ConfigComponent<T> getComponent(Type type, boolean isRoot) {

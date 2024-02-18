@@ -28,6 +28,7 @@ public class OptionalComponent<T> extends ClickableWidget implements ConfigCompo
     public final ConfigComponent<T> child;
     public final Consumer<ConfigComponent<T>> emptyValueSetter;
     public int buttonX = 0;
+    public boolean renderInstructions = true;
 
     public OptionalComponent(TextRenderer textRenderer, int x, int y, int width, int height, ConfigComponent<T> child, Consumer<ConfigComponent<T>> emptyValueSetter) {
         super(x, y, width, height, Text.empty());
@@ -61,11 +62,12 @@ public class OptionalComponent<T> extends ClickableWidget implements ConfigCompo
     protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         boolean buttonHovered = mouseX >= getX()+buttonX && mouseX < getX()+buttonX+20 && mouseY >= getY() && mouseY < getY()+20;
         context.drawTexture(BUTTON_TEXTURE, getX()+buttonX, getY(), enabled ? 0 : 20, buttonHovered ? 20 : 0, 20, 20, 64, 64);
-        if (buttonHovered) context.drawTooltip(textRenderer, textRenderer.wrapLines(enabled ? ENABLED_TEXT : DISABLED_TEXT, 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
+        if (buttonHovered && renderInstructions) context.drawTooltip(textRenderer, textRenderer.wrapLines(enabled ? ENABLED_TEXT : DISABLED_TEXT, 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
 
         if (enabled) {
             child.render(context, mouseX, mouseY, delta);
-            child.drawInstructionText(context, mouseX, mouseY);
+            if (parent instanceof ConfigEntriesComponent<?> c) renderInstructions = c.renderInstructions;
+            if (renderInstructions) child.drawInstructionText(context, mouseX, mouseY);
         }
     }
 

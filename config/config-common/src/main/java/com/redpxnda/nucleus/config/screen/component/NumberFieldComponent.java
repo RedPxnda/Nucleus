@@ -7,6 +7,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public class NumberFieldComponent<N extends Number> extends TextFieldWidget implements ConfigComponent<N> {
@@ -18,6 +19,8 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
     public final String hashtag;
     public final int hashtagWidth;
     public boolean isValid = true;
+    public @Nullable N min;
+    public @Nullable N max;
 
     public NumberFieldComponent(TextRenderer textRenderer, int x, int y, int width, int height, NumberParser<N> parser, boolean allowDecimals) {
         super(textRenderer, x, y, width, height, Text.empty());
@@ -29,6 +32,12 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
         this.hashtagWidth = textRenderer.getWidth(hashtag);
 
         setDrawsBackground(false);
+    }
+
+    public NumberFieldComponent(TextRenderer textRenderer, int x, int y, int width, int height, NumberParser<N> parser, boolean allowDecimals, N min, N max) {
+        this(textRenderer, x, y, width, height, parser, allowDecimals);
+        this.min = min;
+        this.max = max;
     }
 
     @Override
@@ -71,15 +80,22 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
         return getValue() != null;
     }
 
+    public N clamp(N value) {
+        if (max != null && value.doubleValue() > max.doubleValue()) value = max;
+        else if (min != null && value.doubleValue() < min.doubleValue()) value = min;
+        return value;
+    }
+
     @Override
     public N getValue() {
         try {
-            return parser.parse(getText());
+            return clamp(parser.parse(getText()));
         } catch (Exception e) {
             return null;
         }
     }
     public void setValue(N value) {
+        value = clamp(value);
         setText(value.toString());
         updateValidity();
     }
@@ -112,11 +128,21 @@ public class NumberFieldComponent<N extends Number> extends TextFieldWidget impl
             if (increment == 0) increment = 1;
 
             if (allowDecimals) {
-                double num = val.doubleValue() + (amount < 0 ? -increment : increment);
-                setText(String.valueOf(num));
+                if (amount > 0 && (max == null || val.doubleValue()+increment <= max.doubleValue())) {
+                    double num = val.doubleValue() + increment;
+                    setText(String.valueOf(num));
+                } else if (amount < 0 && (min == null || val.doubleValue()-increment >= min.doubleValue())) {
+                    double num = val.doubleValue() - increment;
+                    setText(String.valueOf(num));
+                }
             } else {
-                int num = val.intValue() + (amount < 0 ? -increment : increment);
-                setText(String.valueOf(num));
+                if (amount > 0 && (max == null || val.intValue()+increment <= max.intValue())) {
+                    int num = val.intValue() + increment;
+                    setText(String.valueOf(num));
+                } else if (amount < 0 && (min == null || val.intValue()-increment >= min.intValue())) {
+                    int num = val.intValue() - increment;
+                    setText(String.valueOf(num));
+                }
             }
         }
         return true;

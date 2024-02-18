@@ -10,7 +10,8 @@ import net.minecraft.util.Identifier;
 
 public class NucleusTest {
     public static final String MOD_ID = "nucleus_test";
-    
+    public static final Identifier loc = new Identifier("nucleus", "item/blank");
+
     public static void init() {
         /*
         ███████╗ █████╗  ██████╗███████╗████████╗███████╗

@@ -6,9 +6,17 @@ import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.config.preset.ConfigProvider;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
+import com.redpxnda.nucleus.util.FloatRange;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
 
 import java.util.*;
 
+@ConfigAutoCodec.ConfigClassMarker
 public class TestConfig {
     public static TestConfig INSTANCE = null;
 
@@ -38,6 +46,9 @@ public class TestConfig {
         }
     }
 
+    public int[] primArray = {1, 2, 3};
+    public String[] array = {"1", "two", "3rd"};
+
     @Comment("presett!!!")
     public ConfigPreset<TestConfig, TestPreset> preset = ConfigPreset.none();
 
@@ -54,14 +65,20 @@ public class TestConfig {
     @CodecBehavior.Optional
     public Integer someKoolInteger = 5;
 
+    @FloatRange(max = 100)
+    public float aFloat = 67.5f;
+
     @Comment("here's a comment on an OPTIONAL string field")
     @CodecBehavior.Optional
-    public String string = "aggggh!";
+    public String str = "aggggh!";
 
-    @CodecBehavior.Optional
-    public List<String> optionalList = List.of();
+    public Identifier identifier = new Identifier("abcd");
+
+    public Item item = Items.ACACIA_LOG;
 
     public Color color = new Color();
+
+    public TagKey<EntityType<?>> entityTypeTag = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier("sussy:tag"));
 
     @ConfigAutoCodec.ConfigClassMarker
     public static class InnerConfig {

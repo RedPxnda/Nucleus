@@ -88,7 +88,10 @@ public class ConfigAutoCodec<C> extends AutoCodec<C> {
         return "Config" + super.toString();
     }
 
-    // marks that this class should be treated as a config (used for GUI support for inner configs)
+    /**
+     * Marks that this class should be treated as a config.
+     * This is required for inner-config classes for Nucleus Config, and for any class that wants default optional behavior.
+     */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface ConfigClassMarker {
