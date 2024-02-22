@@ -46,9 +46,6 @@
     "entrypoints": {
       "main": [
         "com.redpxnda.nucleus.test.fabric.NucleusTestFabric"
-      ],
-      "modmenu": [
-        "com.redpxnda.nucleus.test.fabric.ModMenuIntegration"
       ]
     },
     "custom": {

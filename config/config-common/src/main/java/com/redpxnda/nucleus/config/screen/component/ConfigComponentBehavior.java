@@ -1,12 +1,15 @@
 package com.redpxnda.nucleus.config.screen.component;
 
-import com.google.common.reflect.TypeToken;
+import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.codec.behavior.AnnotationBehaviorGetter;
 import com.redpxnda.nucleus.codec.behavior.BehaviorOutline;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.codec.behavior.TypeBehaviorGetter;
+import com.redpxnda.nucleus.codec.tag.BlockList;
+import com.redpxnda.nucleus.codec.tag.EntityTypeList;
+import com.redpxnda.nucleus.codec.tag.ItemList;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.util.*;
 import net.fabricmc.api.EnvType;
@@ -15,6 +18,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -23,7 +27,6 @@ import org.slf4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -126,46 +129,30 @@ public class ConfigComponentBehavior {
         registerClass(ConfigPreset.class, (field, cls, raw, params, root) -> {
             if (params == null || !(params[1] instanceof Class<?> clazz)) return null;
             return new PresetComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20, clazz);
-        }); // todo do the rest (all autocodec ones, registries, TAG LISTS, tags)
+        }); // todo do the rest (all autocodec ones,, TAG LISTS)
 
-        try {
-            /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/
+        registerClass(ItemList.class, () -> new TagListComponent<>(ItemList::of, Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
+        registerClass(BlockList.class, () -> new TagListComponent<>(BlockList::of, Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
+        registerClass(EntityTypeList.class, () -> new EntityTypeListComponent(0, 0));
 
-            for (Field field : Registries.class.getDeclaredFields()) {
-                if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
-                if (field.getGenericType() instanceof ParameterizedType type) {
-                    TypeToken token = TypeToken.of(type);
-                    ParameterizedType pt = (ParameterizedType) token.getSupertype(Registry.class).getType();
-                    Type firstParam = pt.getActualTypeArguments()[0];
-
-                    Class cls = null;
-                    if (firstParam instanceof Class<?> c)
-                        cls = c;
-                    else if (firstParam instanceof ParameterizedType t && t.getRawType() instanceof Class<?> c)
-                        cls = c;
-                    if (cls != null) {
-                        try {
-                            Registry<?> reg = (Registry<?>) field.get(null);
-                            registerClassIfAbsent(cls, (f, cls1, raw, params, isRoot) -> {
-                                return new RegistryComponent(reg, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
-                            });
-                        } catch (IllegalAccessException e) {
-                            LOGGER.error("Failed to add '" + field.getName() + "' from vanilla's Registries as a config component behavior", e);
-                        }
-                    }
-                }
-            }
-        } catch (Throwable ignored) {
-            LOGGER.warn("Failed to setup config components for vanilla registries. Not yet bootstrapped?");
-        }
+        /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/ // tod-o dispatches(?)
+        MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, isRoot) -> new RegistryComponent(v, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20)));
     }
 
     public static <T> ConfigComponent<T> getComponent(Type type, boolean isRoot) {
-        return (ConfigComponent<T>) getters.get(type, isRoot); // todo default raw editor !!!!!!!!!!!!!
+        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(type, isRoot);
+        if (comp != null) return comp;
+        Codec codec = CodecBehavior.getCodec(type, true);
+        if (codec == null) throw new RuntimeException("Type '" + type + "' has no known codec or config component behavior!");
+        return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
 
     public static <T> ConfigComponent<T> getComponent(Field field, boolean isRoot) {
-        return (ConfigComponent<T>) getters.get(field, isRoot);
+        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(field, isRoot);
+        if (comp != null) return comp;
+        Codec codec = CodecBehavior.getCodec(field, true);
+        if (codec == null) throw new RuntimeException("Field '" + field + "' has no known codec or config component behavior!");
+        return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
 
     /**
@@ -176,7 +163,11 @@ public class ConfigComponentBehavior {
      * @return a codec for this field/class
      */
     public static <T> ConfigComponent<T> getComponent(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot) {
-        return (ConfigComponent<T>) getters.get(field, cls, raw, params, isRoot);
+        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(field, cls, raw, params, isRoot);
+        if (comp != null) return comp;
+        Codec codec = CodecBehavior.getCodec(field, cls, raw, params, true);
+        if (codec == null) throw new RuntimeException("Field '" + field + "'(type: '" + raw + "') has no known codec or config component behavior!");
+        return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
 
     public static BehaviorOutline<Getter<?>, AnnotationGetter<?>> getUnsafeOutline() {

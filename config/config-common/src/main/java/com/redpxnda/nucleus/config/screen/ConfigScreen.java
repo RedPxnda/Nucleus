@@ -26,6 +26,7 @@ public class ConfigScreen<T> extends Screen {
     protected final ConfigObject<T> config;
     protected final Screen parent;
     public boolean renderInstructions = true;
+    public boolean skipNextInit = false;
 
     public ConfigScreen(Screen parent, Map<String, Pair<Field, ConfigComponent<?>>> components, ConfigObject<T> config) {
         super(Text.translatable("nucleus.config_screen.title", config.name + ".jsonc"));
@@ -36,50 +37,48 @@ public class ConfigScreen<T> extends Screen {
 
     @Override
     protected void init() {
-        widget = new ConfigEntriesComponent<>(components, client.textRenderer, 0, 32, width-6, height-64);
-        widget.performPositionUpdate();
-        widget.setValue(config.getInstance());
+        if (skipNextInit) {
+            skipNextInit = false;
+            widget.performPositionUpdate();
+        } else {
+            widget = new ConfigEntriesComponent<>(components, client.textRenderer, 0, 32, width - 6, height - 64);
+            widget.performPositionUpdate();
+            widget.setValue(config.getInstance());
 
-        addDrawable(widget);
-        addSelectableChild(widget);
-
-        discardButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.discard"), wid -> {
-            close();
-        }).dimensions(16, height-26, 96, 20).build();
-        saveButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.save"), wid -> {
-            if (widget.checkValidity()) {
-                config.setInstance(widget.getValue());
-                config.save();
-                config.load();
+            discardButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.discard"), wid -> {
                 close();
-            } else {
-                client.getToastManager().add(new SystemToast(
-                        SystemToast.Type.PACK_LOAD_FAILURE,
-                        Text.translatable("nucleus.config_screen.save_fail"),
-                        Text.translatable("nucleus.config_screen.save_fail.description")));
-            }
-        }).dimensions(128, height-26, 96, 20).build();
-        Text enabledText = Text.translatable("nucleus.config_screen.tips_toggle.enabled");
-        Text disabledText = Text.translatable("nucleus.config_screen.tips_toggle.disabled");
-        instructionsButton = new ButtonWidget(width-104, height-26, 96, 20, enabledText, wid -> {
-            renderInstructions = !renderInstructions;
-            widget.renderInstructions = renderInstructions;
-            wid.setMessage(renderInstructions ? enabledText : disabledText);
-        }, Supplier::get) {
-            @Override
-            public boolean isSelected() {
-                return isHovered();
-            }
-        };
+            }).dimensions(16, height - 26, 96, 20).build();
+            saveButton = ButtonWidget.builder(Text.translatable("nucleus.config_screen.save"), wid -> {
+                if (widget.checkValidity()) {
+                    config.setInstance(widget.getValue());
+                    config.save();
+                    config.load();
+                    close();
+                } else {
+                    client.getToastManager().add(new SystemToast(
+                            SystemToast.Type.PACK_LOAD_FAILURE,
+                            Text.translatable("nucleus.config_screen.save_fail"),
+                            Text.translatable("nucleus.config_screen.save_fail.description")));
+                }
+            }).dimensions(128, height - 26, 96, 20).build();
+            Text enabledText = Text.translatable("nucleus.config_screen.tips_toggle.enabled");
+            Text disabledText = Text.translatable("nucleus.config_screen.tips_toggle.disabled");
+            instructionsButton = new ButtonWidget(width - 104, height - 26, 96, 20, enabledText, wid -> {
+                renderInstructions = !renderInstructions;
+                widget.renderInstructions = renderInstructions;
+                wid.setMessage(renderInstructions ? enabledText : disabledText);
+            }, Supplier::get) {
+                @Override
+                public boolean isSelected() {
+                    return isHovered();
+                }
+            };
+        }
 
-        addDrawable(discardButton);
-        addSelectableChild(discardButton);
-
-        addDrawable(saveButton);
-        addSelectableChild(saveButton);
-
-        addDrawable(instructionsButton);
-        addSelectableChild(instructionsButton);
+        addDrawableChild(widget);
+        addDrawableChild(discardButton);
+        addDrawableChild(saveButton);
+        addDrawableChild(instructionsButton);
 
         setInitialFocus(widget);
     }

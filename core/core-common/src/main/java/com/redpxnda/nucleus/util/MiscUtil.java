@@ -1,5 +1,7 @@
 package com.redpxnda.nucleus.util;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.internal.LinkedTreeMap;
@@ -39,7 +41,7 @@ public class MiscUtil {
             .put(void.class, Void.class)
             .put(short.class, Short.class)
             .build();
-    public static final Map<Class<?>, Registry<?>> objectsToRegistries = new HashMap<>();
+    public static final BiMap<Class<?>, Registry<?>> objectsToRegistries = HashBiMap.create();
     static {
         try {
             for (Field field : Registries.class.getDeclaredFields()) {

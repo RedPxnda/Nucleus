@@ -1,6 +1,5 @@
 package com.redpxnda.nucleus.codec.behavior;
 
-import com.google.common.reflect.TypeToken;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -14,7 +13,6 @@ import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.*;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
@@ -232,29 +230,7 @@ public class CodecBehavior {
 
         try {
             registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);
-
-            for (Field field : Registries.class.getDeclaredFields()) {
-                if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPublic(field.getModifiers()) || !Registry.class.isAssignableFrom(field.getType())) continue;
-                if (field.getGenericType() instanceof ParameterizedType type) {
-                    TypeToken token = TypeToken.of(type);
-                    ParameterizedType pt = (ParameterizedType) token.getSupertype(Registry.class).getType();
-                    Type firstParam = pt.getActualTypeArguments()[0];
-
-                    Class cls = null;
-                    if (firstParam instanceof Class<?> c)
-                        cls = c;
-                    else if (firstParam instanceof ParameterizedType t && t.getRawType() instanceof Class<?> c)
-                        cls = c;
-                    if (cls != null) {
-                        try {
-                            Registry<?> reg = (Registry<?>) field.get(null);
-                            registerClassIfAbsent(cls, Getter.fromSupplier(reg::getCodec));
-                        } catch (IllegalAccessException e) {
-                            LOGGER.error("Failed to add '" + field.getName() + "' from vanilla's Registries as a codec behavior", e);
-                        }
-                    }
-                }
-            }
+            MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent((Class) k, Getter.fromSupplier(v::getCodec)));
         } catch (Throwable ignored) {
             LOGGER.warn("Failed to setup codecs for vanilla registries. Not yet bootstrapped?");
         }
@@ -382,7 +358,7 @@ public class CodecBehavior {
     public interface AnnotationGetter<A extends Annotation> extends AnnotationBehaviorGetter.Bi<A, Codec<?>, MapCodec<?>> {
         @java.lang.Override
         default MapCodec<?> getSecondary(A annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-            return get(annotation, field, cls, raw, params, isRoot).fieldOf(key);
+            return null;
         }
     }
 

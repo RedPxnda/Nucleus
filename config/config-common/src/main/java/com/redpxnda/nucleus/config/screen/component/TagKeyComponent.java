@@ -16,18 +16,16 @@ public class TagKeyComponent<T> extends ClickableWidget implements ConfigCompone
     public final IdentifierComponent delegate;
     public final RegistryKey<? extends Registry<T>> registry;
     public ConfigComponent<?> parent;
-    public boolean isValid = true;
 
-    public TagKeyComponent(RegistryKey<? extends Registry<T>> registry, TextRenderer textRenderer, int x, int y, int width, int height) { // todo codec
+    public TagKeyComponent(RegistryKey<? extends Registry<T>> registry, TextRenderer textRenderer, int x, int y, int width, int height) {
         super(x, y, width, height, Text.empty());
         this.registry = registry;
         this.delegate = new IdentifierComponent(textRenderer, x, y, width, height);
-        this.delegate.setParent(this);
     }
 
     @Override
     public void onRemoved() {
-        if (parent != null && !isValid) parent.validateChild(this);
+        delegate.onRemoved();
     }
 
     @Override
@@ -95,6 +93,8 @@ public class TagKeyComponent<T> extends ClickableWidget implements ConfigCompone
     @Override
     public void setParent(ConfigComponent<?> widget) {
         parent = widget;
+        delegate.updateValidity();
+        delegate.setParent(this);
     }
 
     @Override

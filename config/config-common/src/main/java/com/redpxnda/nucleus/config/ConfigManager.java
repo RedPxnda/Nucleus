@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.config;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.ops.JsoncOps;
 import com.redpxnda.nucleus.config.network.clientbound.ConfigSyncPacket;
+import com.redpxnda.nucleus.event.PrioritizedEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
@@ -26,6 +27,7 @@ public class ConfigManager {
     private static final Logger LOGGER = Nucleus.getLogger();
     public static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
     private static final Map<String, ConfigObject<?>> configs = new HashMap<>();
+    public static final PrioritizedEvent<ConfigScreensEvent> CONFIG_SCREENS_REGISTRY = PrioritizedEvent.createLoop();
 
     /**
      * Register a new config
@@ -168,4 +170,5 @@ public class ConfigManager {
             config.save();
         });
     }
+
 }

@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.test;
 
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
+import com.redpxnda.nucleus.codec.tag.EntityTypeList;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.config.preset.ConfigProvider;
 import com.redpxnda.nucleus.util.Color;
@@ -14,7 +15,10 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ConfigAutoCodec.ConfigClassMarker
 public class TestConfig {
@@ -79,6 +83,8 @@ public class TestConfig {
     public Color color = new Color();
 
     public TagKey<EntityType<?>> entityTypeTag = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier("sussy:tag"));
+
+    public EntityTypeList entityTypeList = EntityTypeList.of();
 
     @ConfigAutoCodec.ConfigClassMarker
     public static class InnerConfig {

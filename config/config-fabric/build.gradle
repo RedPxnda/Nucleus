@@ -1,0 +1,7 @@
+repositories {
+    maven { url 'https://maven.terraformersmc.com/' }
+}
+
+dependencies {
+    modImplementation "com.terraformersmc:modmenu:7.2.1"
+}

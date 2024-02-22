@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class DropdownComponent<E> extends TextFieldWidget implements ConfigComponent<E> { // todo colored when invalid
     public static final Text OPEN_TEXT = Text.literal("∨");
@@ -35,6 +36,7 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
     public boolean isOpen = false;
     public final ButtonWidget dropdownOpener;
     public final ScrollableWidget dropdown;
+    public Consumer<E> onSet = (e) -> {};
 
     public DropdownComponent(TextRenderer textRenderer, int x, int y, int width, int height, Class<E> enumClass) {
         this(textRenderer, x, y, width, height, MiscUtil.evaluateSupplier(() -> {
@@ -139,8 +141,8 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (dropdownOpener.isMouseOver(mouseX, mouseY) && dropdownOpener.mouseClicked(mouseX, mouseY, button)) return true;
         if (isOpen && dropdown.isMouseOver(mouseX, mouseY) && dropdown.mouseClicked(mouseX, mouseY, button)) return true;
+        if (dropdownOpener.isMouseOver(mouseX, mouseY) && dropdownOpener.mouseClicked(mouseX, mouseY, button)) return true;
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -195,6 +197,7 @@ public class DropdownComponent<E> extends TextFieldWidget implements ConfigCompo
         selected = value;
         setText(getKey(value));
         updateValidity();
+        onSet.accept(value);
     }
 
     @Override

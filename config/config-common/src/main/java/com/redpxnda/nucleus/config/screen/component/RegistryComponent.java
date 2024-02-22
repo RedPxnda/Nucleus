@@ -183,6 +183,8 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     @Override
     public void setParent(ConfigComponent<?> widget) {
         parent = widget;
+        idComp.setParent(this);
+        updateValidity();
     }
 
     @Override

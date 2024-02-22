@@ -23,8 +23,8 @@ public abstract class TagList<T> {
     public TagList(List<T> objects, List<TagKey<T>> tags, Registry<T> registry, RegistryKey<? extends Registry<T>> registryKey) {
         this.registry = registry;
         this.registryKey = registryKey;
-        this.objects = objects;
-        this.tags = tags;
+        this.objects = new ArrayList<>(objects);
+        this.tags = new ArrayList<>(tags);
     }
 
     /**
