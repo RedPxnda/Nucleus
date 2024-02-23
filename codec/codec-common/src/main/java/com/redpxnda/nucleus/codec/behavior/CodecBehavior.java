@@ -35,10 +35,10 @@ import java.util.function.Supplier;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class CodecBehavior {
     private static final Logger LOGGER = Nucleus.getLogger();
-    protected static final BiBehaviorOutline<Getter<?>, AnnotationGetter<?>> getters = new BiBehaviorOutline<>(true, true, true, false);
+    protected static final BiBehaviorOutline<Getter<?>> getters = new BiBehaviorOutline<>(true, true, true, false);
 
     static {
-        registerDynamic(new Getter<>() {
+        registerDynamic(-8, new Getter<>() {
             @java.lang.Override
             public Codec<Object> get(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, boolean isRoot) {
                 return null;
@@ -61,7 +61,7 @@ public class CodecBehavior {
                 return null;
             }
         });
-        registerDynamic((f, cls, raw, params, root) -> {
+        registerDynamic(1, (f, cls, raw, params, root) -> {
             if (!getUnsafeOutline().statics.containsKey(cls)) {
                 Override annot = cls.getAnnotation(Override.class);
                 if (annot != null) {
@@ -87,13 +87,13 @@ public class CodecBehavior {
                         registerClass((Class) cls, getter);
                         return getter.get(f, (Class) cls, raw, params, true);
                     } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-                        LOGGER.error("Field mentioned in AutoCodec.Override annotation for class '" + cls.getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)!", e);
+                        LOGGER.error("Field mentioned in CodecBehavior Override annotation for class '" + cls.getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)!", e);
                     }
                 }
             }
             return null;
         });
-        registerDynamic((f, cls, raw, params, root) -> {
+        registerDynamic(1, (f, cls, raw, params, root) -> {
             if (!getUnsafeOutline().statics.containsKey(cls)) {
                 ConfigAutoCodec.ConfigClassMarker annot = cls.getAnnotation(ConfigAutoCodec.ConfigClassMarker.class);
                 if (annot != null) {
@@ -142,7 +142,7 @@ public class CodecBehavior {
             return null;
         });
 
-        registerAnnotator(Override.class, (annot, field, cls, rawFieldType, typeParams, root) -> {
+        registerAnnotator(Override.class, -10, (annot, field, cls, rawFieldType, typeParams, root) -> {
             try {
                 Field codecField = field.getDeclaringClass().getField(annot.value());
                 return (Codec<?>) codecField.get(null);
@@ -151,7 +151,7 @@ public class CodecBehavior {
                 return null;
             }
         });
-        registerAnnotator(Optional.class, new AnnotationGetter<>() {
+        registerAnnotator(Optional.class, -9, new AnnotationGetter<>() {
             @java.lang.Override
             public Codec<?> get(Optional annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot) {
                 return null;
@@ -160,7 +160,7 @@ public class CodecBehavior {
             @java.lang.Override
             public MapCodec<?> getSecondary(Optional annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
                 if (!annotation.value())
-                    AnnotationGetter.super.getSecondary(annotation, field, cls, raw, params, isRoot, key);
+                    return null;
                 return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), annotation);
             }
         });
@@ -330,7 +330,7 @@ public class CodecBehavior {
         return (MapCodec<T>) getters.getSecondary(field, cls, raw, params, isRoot, key);
     }
 
-    public static BehaviorOutline<Getter<?>, AnnotationGetter<?>> getUnsafeOutline() {
+    public static BehaviorOutline<Getter<?>> getUnsafeOutline() {
         return getters;
     }
 
@@ -347,18 +347,45 @@ public class CodecBehavior {
         getters.statics.put(cls, Getter.fromCodec(getter));
     }
 
+    public static <A extends Annotation> void registerAnnotator(Class<A> cls, float prio, AnnotationGetter<A> getter) {
+        getters.dynamics.put(new Getter() {
+            @java.lang.Override
+            public Codec get(@Nullable Field field, Class c, Type raw, @Nullable Type[] params, boolean isRoot) {
+                if (field != null) {
+                    A annot = field.getAnnotation(cls);
+                    if (annot != null) return getter.get(annot, field, c, raw, params, isRoot);
+                }
+                return null;
+            }
+
+            @java.lang.Override
+            public MapCodec getSecondary(@Nullable Field field, Class c, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
+                if (field != null) {
+                    A annot = field.getAnnotation(cls);
+                    if (annot != null) return getter.getSecondary(annot, field, c, raw, params, isRoot, key);
+                }
+                return null;
+            }
+        }, prio);
+    }
+
     public static <A extends Annotation> void registerAnnotator(Class<A> cls, AnnotationGetter<A> getter) {
-        getters.annotators.put(cls, getter);
+        registerAnnotator(cls, 0f, getter);
+    }
+
+    public static void registerDynamic(float prio, Getter<?> getter) {
+        getters.dynamics.put(getter, prio);
     }
 
     public static void registerDynamic(Getter<?> getter) {
-        getters.dynamics.add(getter);
+        registerDynamic(0f, getter);
     }
 
     public interface AnnotationGetter<A extends Annotation> extends AnnotationBehaviorGetter.Bi<A, Codec<?>, MapCodec<?>> {
         @java.lang.Override
         default MapCodec<?> getSecondary(A annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-            return null;
+            Codec<?> codec = get(annotation, field, cls, raw, params, isRoot);
+            return codec == null ? null : codec.fieldOf(key);
         }
     }
 

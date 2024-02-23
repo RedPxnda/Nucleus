@@ -1,24 +1,22 @@
 package com.redpxnda.nucleus.codec.behavior;
 
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.util.PriorityMap;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class BehaviorOutline<B extends TypeBehaviorGetter<?, ?>, A extends AnnotationBehaviorGetter<?, ?>> {
+public class BehaviorOutline<B extends TypeBehaviorGetter<?, ?>> {
     private static final Logger LOGGER = Nucleus.getLogger();
     public final Map<Class<?>, B> statics = new HashMap<>();
-    public final Map<Class<? extends Annotation>, A> annotators = new HashMap<>();
-    public final List<B> dynamics = new ArrayList<>();
+    //public final Map<Class<? extends Annotation>, A> annotators = new HashMap<>();
+    public final PriorityMap<B> dynamics = new PriorityMap<>();
     public final boolean enableFieldCaching;
     public final boolean enableTypeCaching;
     public final Map<Field, Object> fieldCache = new HashMap<>();
@@ -87,17 +85,8 @@ public class BehaviorOutline<B extends TypeBehaviorGetter<?, ?>, A extends Annot
     }
 
     public @Nullable Object getWithoutCache(@Nullable Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot) {
-        if (field != null) {
-            for (Annotation annotation : field.getAnnotations()) {
-                AnnotationBehaviorGetter annotator = annotators.get(annotation.annotationType());
-                if (annotator != null) {
-                    Object result = annotator.get(annotation, field, cls, raw, params, isRoot);
-                    if (result != null) return result;
-                }
-            }
-        }
-
-        for (B dynamic : dynamics) {
+        dynamics.sortIfUnsorted();
+        for (B dynamic : dynamics.keySet()) {
             Object result = dynamic.get(field, cls, raw, params, isRoot);
             if (result != null) return result;
         }

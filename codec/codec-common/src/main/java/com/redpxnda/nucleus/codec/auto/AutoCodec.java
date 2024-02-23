@@ -125,7 +125,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             Object value = field.codec.decode(
                     ops,
                     map
-            ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding! -> {}", field.field.getName(), s));
+            ).getOrThrow(false, s -> LOGGER.error("Failed to parse field '{}' in AutoCodec decoding of '{}'! -> {}", field.field.getName(), cls.getSimpleName(), s));
 
             boolean setIfNull = defaultSetIfNullBehavior(field, value, instance);
             if (field.codec instanceof NullabilityHandler nh) setIfNull = nh.shouldSetToNull(ops, map);

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class ConfigComponentBehavior {
     private static final Logger LOGGER = Nucleus.getLogger();
-    protected static final BehaviorOutline<Getter<?>, AnnotationGetter<?>> getters = new BehaviorOutline<>(false);
+    protected static final BehaviorOutline<Getter<?>> getters = new BehaviorOutline<>(false);
 
     static {
         registerDynamic((field, cls, raw, params, root) -> {
@@ -170,7 +170,7 @@ public class ConfigComponentBehavior {
         return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
 
-    public static BehaviorOutline<Getter<?>, AnnotationGetter<?>> getUnsafeOutline() {
+    public static BehaviorOutline<Getter<?>> getUnsafeOutline() {
         return getters;
     }
 
@@ -184,12 +184,26 @@ public class ConfigComponentBehavior {
         getters.statics.put(cls, Getter.fromSupplier(getter));
     }
 
+    public static <A extends Annotation> void registerAnnotator(Class<A> cls, float prio, AnnotationGetter<A> getter) {
+        getters.dynamics.put((field, c, raw, params, isRoot) -> {
+            if (field != null) {
+                A annot = field.getAnnotation(cls);
+                if (annot != null) return (ConfigComponent) getter.get(annot, field, c, raw, params, isRoot);
+            }
+            return null;
+        }, prio);
+    }
+
     public static <A extends Annotation> void registerAnnotator(Class<A> cls, AnnotationGetter<A> getter) {
-        getters.annotators.put(cls, getter);
+        registerAnnotator(cls, 0f, getter);
+    }
+
+    public static void registerDynamic(float prio, Getter<?> getter) {
+        getters.dynamics.put(getter, prio);
     }
 
     public static void registerDynamic(Getter<?> getter) {
-        getters.dynamics.add(getter);
+        registerDynamic(0f, getter);
     }
 
     public interface AnnotationGetter<A extends Annotation> extends AnnotationBehaviorGetter<A, ConfigComponent<?>> {}

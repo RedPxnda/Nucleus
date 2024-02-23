@@ -74,11 +74,6 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
         return isMinimized() ? InlineMode.NONE : InlineMode.DRAW_LINE;
     }
 
-    @Override
-    public boolean needsValueSet() {
-        return true;
-    }
-
     public void performPositionUpdate() {
         minimizer.setPosition(getX()+KEY_TEXT_WIDTH-38, getY());
         if (parent != null) width = KEY_TEXT_WIDTH-18;

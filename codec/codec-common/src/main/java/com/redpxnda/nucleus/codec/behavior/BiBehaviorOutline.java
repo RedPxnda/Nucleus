@@ -4,7 +4,6 @@ import com.redpxnda.nucleus.Nucleus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -12,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>, A extends AnnotationBehaviorGetter.Bi<?, ?, ?>> extends BehaviorOutline<B, A> {
+public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends BehaviorOutline<B> {
     private static final Logger LOGGER = Nucleus.getLogger();
     public final boolean enableSecondaryFieldCaching;
     public final boolean enableSecondaryTypeCaching;
@@ -90,17 +89,8 @@ public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>, A exten
     }
 
     public @Nullable Object getSecondaryWithoutCache(@Nullable Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-        if (field != null) {
-            for (Annotation annotation : field.getAnnotations()) {
-                AnnotationBehaviorGetter.Bi annotator = annotators.get(annotation.annotationType());
-                if (annotator != null) {
-                    Object result = annotator.getSecondary(annotation, field, cls, raw, params, isRoot, key);
-                    if (result != null) return result;
-                }
-            }
-        }
-
-        for (B dynamic : dynamics) {
+        dynamics.sortIfUnsorted();
+        for (B dynamic : dynamics.keySet()) {
             Object result = dynamic.getSecondary(field, cls, raw, params, isRoot, key);
             if (result != null) return result;
         }
