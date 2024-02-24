@@ -1,5 +1,7 @@
 {
   "nucleus.config_screen.title": "Editing: %s",
+  "nucleus.config_screen.inner_title": "Editing Inner Config",
+  "nucleus.config_screen.back": "Back",
   "nucleus.config_screen.discard": "Discard Changes",
   "nucleus.config_screen.save": "Save Changes",
   "nucleus.config_screen.tips_toggle.enabled": "Disable Tips",
@@ -7,6 +9,7 @@
   "nucleus.config_screen.save_fail": "Failed to Save Changes!",
   "nucleus.config_screen.save_fail.description": "Make sure your entries are valid.",
   "nucleus.config_screen.invalid_entry": "This field has an invalid entry!",
+  "nucleus.config_screen.entries.description": "This field contains several more fields. Press the [>] button to maximize it. Hold control to open it in a new screen.",
   "nucleus.config_screen.integer": "This is a number field. Decimals are not allowed.",
   "nucleus.config_screen.double": "This is a number field. Decimals are allowed.",
   "nucleus.config_screen.boolean.on": "ON",

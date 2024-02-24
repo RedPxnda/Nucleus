@@ -1,10 +1,12 @@
 package com.redpxnda.nucleus.config.screen.component;
 
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.config.screen.ConfigScreen;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
@@ -26,6 +28,7 @@ import java.util.*;
 @Environment(EnvType.CLIENT)
 public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawable, Element, ConfigComponent<T> {
     private static final Logger LOGGER = Nucleus.getLogger();
+    public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.entries.description");
     public static final int KEY_TEXT_WIDTH = 200;
     public static final int GRADIENT_TINT_START = new Color(0, 0, 0, 200).argb();
     public static final int GRADIENT_TINT_END = new Color(0, 0, 0, 100).argb();
@@ -51,11 +54,22 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
         Text minimizedText = Text.literal(">");
         Text maximizedText = Text.literal("∨");
         minimizer = ButtonWidget.builder(minimizedText, wid -> {
-            minimized = !minimized;
-            if (minimized) focusedComponent = null;
-            wid.setMessage(minimized ? minimizedText : maximizedText);
-            requestPositionUpdate();
+            if (Screen.hasControlDown()) {
+                Screen oldScreen = MinecraftClient.getInstance().currentScreen;
+                if (oldScreen instanceof ConfigScreen<?> cs) cs.skipNextInit = true;
+                ConfigScreen<T> newScreen = new ConfigScreen<>(oldScreen, this);
+                MinecraftClient.getInstance().setScreen(newScreen);
+            } else {
+                minimized = !minimized;
+                if (minimized) focusedComponent = null;
+                wid.setMessage(minimized ? minimizedText : maximizedText);
+                requestPositionUpdate();
+            }
         }).dimensions(0, 0, 20, 20).build();
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 
     @Override
@@ -112,6 +126,17 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
     public void validateChild(ConfigComponent<?> child) {
         invalids.remove(child);
         if (parent != null) ConfigComponent.super.validateChild(child);
+    }
+
+    @Override
+    public void drawInstructionText(DrawContext context, int mouseX, int mouseY) {
+        if (minimizer != null && minimizer.isMouseOver(mouseX, mouseY))
+            ConfigComponent.super.drawInstructionText(context, mouseX, mouseY);
+    }
+
+    @Override
+    public @Nullable Text getInstructionText() {
+        return DESC_TEXT;
     }
 
     @Override
