@@ -25,7 +25,7 @@ Here's a basic example of creating a config:
 
 Start by creating your config class, housing all of the fields of your config.
 Note: Not *every* type will work, but most important ones will. See [CodecBehavior](https://github.com/RedPxnda/Nucleus/blob/1.20.1/codec/codec-common/src/main/java/com/redpxnda/nucleus/codec/behavior/CodecBehavior.java) to see the defined behaviors. If you want to add support for your own types, register it with the CodecBehavior class. 
-(And for screen component support, see [ConfigComponentBehavior](https://github.com/RedPxnda/Nucleus/blob/1.20.1/config/config-common/src/main/java/com/redpxnda/nucleus/config/screen/component/ConfigComponentBehavior.java) 
+(And for screen component support, see [ConfigComponentBehavior](https://github.com/RedPxnda/Nucleus/blob/1.20.1/config/config-common/src/main/java/com/redpxnda/nucleus/config/screen/component/ConfigComponentBehavior.java))
 ```java
 @ConfigAutoCodec.ConfigClassMarker // this annotation is required to make sure this class is correctly (de)serialized
 public class TestConfig {
