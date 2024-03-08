@@ -743,6 +743,24 @@ static def setupAccessWideners(Project proj) {
     setupAccessWideners(proj, "src/main/resources/nucleus-${proj.name}.accesswidener")
 }
 
+static def setupSharedDepends(Project proj) {
+    proj.subprojects { Project sub ->
+        def plat = sub.name.split("-")[1]
+
+        if (proj.hasProperty("shared_repos")) {
+            proj.shared_repos.get(plat).each { String repo ->
+                sub.repositories.maven({ url repo })
+            }
+        }
+
+        if (proj.hasProperty("shared_depends")) {
+            proj.shared_depends.get(plat).each { Closure adder ->
+                adder.call(sub.dependencies)
+            }
+        }
+    }
+}
+
 static def dependOn(Project proj, List<String> depNames) {
     proj.subprojects { Project subproject ->
         def plat = subproject.name.split("-")[1]
@@ -759,9 +777,22 @@ static def dependOn(Project proj, List<String> depNames) {
             }
         }
 
-        dependencies {
-            depNames.each { String dep ->
-                implementation project(path: ":${dep}:${dep}-${plat}", configuration: "namedElements")
+        depNames.each { String dep ->
+            def platformProj = project(":${dep}:${dep}-${plat}")
+            if (platformProj.hasProperty("shared_repos")) {
+                platformProj.shared_repos.get(plat).each { String repo ->
+                    subproject.repositories.maven({ url repo })
+                }
+            }
+
+            if (platformProj.hasProperty("shared_depends")) {
+                platformProj.shared_depends.get(plat).each { Closure adder ->
+                    adder.call(subproject.dependencies)
+                }
+            }
+
+            dependencies {
+                api project(path: ":${dep}:${dep}-${plat}", configuration: "namedElements")
                 if (plat != "common") common(project(path: ":${dep}:${dep}-common", configuration: "namedElements")) { transitive false }
             }
         }

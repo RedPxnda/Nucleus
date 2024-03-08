@@ -1,0 +1,134 @@
+import java.nio.file.Files
+import java.util.jar.JarFile
+import java.util.zip.ZipFile
+
+ext {
+
+    shared_repos = [
+            "common": [
+                    "https://repo.codemc.org/repository/maven-public",
+                    "https://maven.shedaniel.me/"
+            ],
+            "fabric": [
+                    "https://repo.codemc.org/repository/maven-public",
+                    "https://maven.shedaniel.me/"
+            ],
+            "forge": [
+                    "https://repo.codemc.org/repository/maven-public",
+                    "https://maven.shedaniel.me/"
+            ]
+    ]
+
+    shared_depends = [
+            "common": [
+                    { DependencyHandler dh -> dh.implementation("org.ow2.asm:asm:${rootProject.asm_version}") },
+                    { DependencyHandler dh -> dh.implementation("org.ow2.asm:asm-tree:${rootProject.asm_version}") },
+                    { DependencyHandler dh -> dh.implementation("com.dfsek:paralithic:${rootProject.paralithic_version}") },
+                    { DependencyHandler dh -> dh.implementation("net.fabricmc:mapping-io:${rootProject.mappingio_version}") },
+                    { DependencyHandler dh -> dh.implementation("net.fabricmc:mapping-io-extras:${rootProject.mappingio_extras_version}") } // todo remove this guy?
+            ],
+            "fabric": [
+                    { DependencyHandler dh -> dh.implementation(dh.include("org.ow2.asm:asm:${rootProject.asm_version}")) },
+                    { DependencyHandler dh -> dh.implementation(dh.include("org.ow2.asm:asm-tree:${rootProject.asm_version}")) },
+                    { DependencyHandler dh -> dh.implementation(dh.include("com.dfsek:paralithic:${rootProject.paralithic_version}")) },
+                    { DependencyHandler dh -> dh.implementation(dh.include("net.fabricmc:mapping-io:${rootProject.mappingio_version}")) },
+                    { DependencyHandler dh -> dh.implementation(dh.include("net.fabricmc:mapping-io-extras:${rootProject.mappingio_extras_version}")) } // todo remove this guy?
+            ],
+            "forge": [
+                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("org.ow2.asm:asm:${rootProject.asm_version}")) },
+                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("org.ow2.asm:asm-tree:${rootProject.asm_version}")) },
+                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("com.dfsek:paralithic:${rootProject.paralithic_version}")) },
+                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("net.fabricmc:mapping-io:${rootProject.mappingio_version}")) },
+                    { DependencyHandler dh -> dh.forgeRuntimeLibrary(dh.include("net.fabricmc:mapping-io-extras:${rootProject.mappingio_extras_version}")) } // todo remove this guy?
+            ]
+    ]
+}
+
+dependOn(project, ["core"])
+setupSharedDepends(project)
+
+tasks.register("downloadYarnMappings") {
+    group = "nucleus"
+    description = "Downloads Yarn mappings from the fabric maven"
+
+    doLast {
+        try {
+            def currentDirectory = System.getProperty("user.dir")
+            File file = new File("${currentDirectory}/expression/expression-common/src/main/resources/data/nucleus/mappings")
+            file.mkdirs()
+            def path = Files.write(file.toPath().resolve("yarn.jar"), new URL("https://maven.fabricmc.net/net/fabricmc/yarn/1.20.1+build.10/yarn-1.20.1+build.10.jar").openStream().readAllBytes())
+
+            def jar = new JarFile(path.toFile())
+            def entry = jar.getJarEntry("mappings/mappings.tiny")
+
+            InputStream input = jar.getInputStream(entry)
+            Files.copy(input, file.toPath().resolve("yarn.tiny"))
+
+            jar.close()
+            Files.delete(path)
+        } catch (Exception e) {
+            println("Error downloading yarn mappings file: ")
+            e.printStackTrace()
+        }
+    }
+}
+
+tasks.register("downloadMojangMappings") {
+    group = "nucleus"
+    description = "Downloads Mojang mappings from the piston-data maven"
+
+    doLast {
+        try {
+            def currentDirectory = System.getProperty("user.dir")
+            File file = new File("${currentDirectory}/expression/expression-common/src/main/resources/data/nucleus/mappings")
+            file.mkdirs()
+            Files.write(file.toPath().resolve("mojmap.txt"), new URL("https://piston-data.mojang.com/v1/objects/${rootProject.mojmap_version}").openStream().readAllBytes())
+        } catch (Exception e) {
+            println("Error downloading mojmap mappings file: ")
+            e.printStackTrace()
+        }
+    }
+}
+
+tasks.register("downloadIntermediaryMappings") {
+    group = "nucleus"
+    description = "Downloads Intermediary mappings from the FabricMC intermediary github"
+
+    doLast {
+        try {
+            def currentDirectory = System.getProperty("user.dir")
+            File file = new File("${currentDirectory}/expression/expression-common/src/main/resources/data/nucleus/mappings")
+            file.mkdirs()
+            Files.write(file.toPath().resolve("intermediary.tiny"), new URL("https://raw.githubusercontent.com/FabricMC/intermediary/master/mappings/${rootProject.intermediary_version}").openStream().readAllBytes())
+        } catch (Exception e) {
+            println("Error downloading intermediary mappings file: ")
+            e.printStackTrace()
+        }
+    }
+}
+
+tasks.register("downloadSrgMappings") {
+    group = "nucleus"
+    description = "Downloads SRG mappings from the MinecraftForge maven"
+
+    doLast {
+        try {
+            def currentDirectory = System.getProperty("user.dir")
+            File file = new File("${currentDirectory}/expression/expression-common/src/main/resources/data/nucleus/mappings")
+            file.mkdirs()
+            def path = Files.write(file.toPath().resolve("srg.zip"), new URL("https://maven.minecraftforge.net/de/oceanlabs/mcp/mcp_config/${rootProject.srg_version}/mcp_config-${rootProject.srg_version}.zip").openStream().readAllBytes())
+
+            def zip = new ZipFile(path.toFile())
+            def entry = zip.getEntry("config/joined.tsrg")
+
+            InputStream input = zip.getInputStream(entry)
+            Files.copy(input, file.toPath().resolve("srg.tsrg"))
+
+            zip.close()
+            Files.delete(path)
+        } catch (Exception e) {
+            println("Error downloading srg mappings file: ")
+            e.printStackTrace()
+        }
+    }
+}

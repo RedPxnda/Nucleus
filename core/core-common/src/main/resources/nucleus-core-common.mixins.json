@@ -5,7 +5,7 @@
   "minVersion": "0.8",
   "plugin": "com.redpxnda.nucleus.mixin.plugin.MixinPlugin",
   "client": [
-    "client.ClientLevelAccessor",
+    "client.ClientWorldAccessor",
     "client.ClientPlayerEntityMixin",
     "client.DrawContextAccessor",
     "client.GameRendererMixin",

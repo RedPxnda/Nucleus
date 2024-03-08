@@ -1,0 +1,5 @@
+license = 'MIT'
+mods = [{modId = 'nucleus_expression', version = '1.0.0', displayName = 'Nucleus (Expression)', description = 'A way to execute code, perform calculations, etc. in data', authors = 'RedPxnda'}]
+dependencies.nucleus_expression = [{modId = 'forge', mandatory = true, versionRange = '[47,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
+modLoader = 'javafml'
+loaderVersion = '[47,)'

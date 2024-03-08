@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.redpxnda.nucleus.event.RenderEvents;
 import com.redpxnda.nucleus.impl.MiscAbstraction;
 import com.redpxnda.nucleus.impl.ShaderRegistry;
-import com.redpxnda.nucleus.mixin.client.ClientLevelAccessor;
+import com.redpxnda.nucleus.mixin.client.ClientWorldAccessor;
 import com.redpxnda.nucleus.registry.effect.RenderingMobEffect;
 import dev.architectury.event.EventResult;
 import net.fabricmc.api.EnvType;
@@ -146,7 +146,7 @@ public class Rendering {
     }
     public static Particle addParticleToWorld(ClientWorld level, ParticleEffect options, boolean overrideLimiter, boolean canSpawnOnMinimal, double x, double y, double z, double xs, double ys, double zs) {
         try {
-            return ((ClientLevelAccessor) level).getWorldRenderer().spawnParticle(
+            return ((ClientWorldAccessor) level).getWorldRenderer().spawnParticle(
                     options, overrideLimiter, canSpawnOnMinimal,
                     x, y, z, xs, ys, zs);
         } catch (Throwable throwable) {
