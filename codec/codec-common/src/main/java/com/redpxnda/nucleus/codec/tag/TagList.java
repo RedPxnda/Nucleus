@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public abstract class TagList<T> {
+public class TagList<T> {
     public static <T, L extends TagList<T>> Codec<L> getCodec(BiFunction<List<T>, List<TagKey<T>>, L> creator, Registry<T> registry, RegistryKey<? extends Registry<T>> registryKey) {
         return new TagListCodec<>(creator, registry, registryKey);
     }

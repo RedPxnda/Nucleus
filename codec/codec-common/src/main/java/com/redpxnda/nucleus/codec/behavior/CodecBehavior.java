@@ -8,6 +8,10 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.codec.misc.*;
+import com.redpxnda.nucleus.codec.tag.TagList;
+import com.redpxnda.nucleus.codec.tag.TagListCodec;
+import com.redpxnda.nucleus.codec.tag.TaggableEntry;
+import com.redpxnda.nucleus.codec.tag.TaggableEntryCodec;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.*;
@@ -225,6 +229,28 @@ public class CodecBehavior {
             Registry reg = MiscUtil.objectsToRegistries.get(c);
             if (reg == null) return null;
             return Identifier.CODEC.xmap(id -> TagKey.of(reg.getKey(), id), TagKey::id);
+        });
+        registerClass(TaggableEntry.class, (field, cls, raw, params, passes) -> {
+            if (params == null) return null;
+            Type t = params[0];
+            Class c;
+            if (t instanceof Class<?> cs) c = cs;
+            else if (t instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> cs) c = cs;
+            else return null;
+            Registry reg = MiscUtil.objectsToRegistries.get(c);
+            if (reg == null) return null;
+            return new TaggableEntryCodec(tag -> new TaggableEntry<>(tag, reg, reg.getKey()), obj -> new TaggableEntry<>(obj, reg, reg.getKey()), reg, reg.getKey());
+        });
+        registerClass(TagList.class, (field, cls, raw, params, passes) -> {
+            if (params == null) return null;
+            Type t = params[0];
+            Class c;
+            if (t instanceof Class<?> cs) c = cs;
+            else if (t instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> cs) c = cs;
+            else return null;
+            Registry reg = MiscUtil.objectsToRegistries.get(c);
+            if (reg == null) return null;
+            return new TagListCodec<>((objs, tags) -> new TagList<>(objs, tags, reg, reg.getKey()), reg, reg.getKey());
         });
 
         try {
