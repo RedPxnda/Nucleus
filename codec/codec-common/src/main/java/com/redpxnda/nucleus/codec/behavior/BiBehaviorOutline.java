@@ -7,16 +7,17 @@ import org.slf4j.Logger;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends BehaviorOutline<B> {
     private static final Logger LOGGER = Nucleus.getLogger();
     public final boolean enableSecondaryFieldCaching;
     public final boolean enableSecondaryTypeCaching;
-    public final Map<Field, Object> secondaryFieldCache = new HashMap<>();
-    public final Map<Type, Object> secondaryTypeCache = new HashMap<>();
+    public final Map<Field, Object> secondaryFieldCache = new ConcurrentHashMap<>();
+    public final Map<Type, Object> secondaryTypeCache = new ConcurrentHashMap<>();
 
     public BiBehaviorOutline() {
         super();
@@ -42,7 +43,7 @@ public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends
         this.enableSecondaryTypeCaching = enableSecondaryTypeCaching;
     }
 
-    public @Nullable Object getSecondary(Type type, boolean isRoot, String key) {
+    public @Nullable Object getSecondary(Type type, List<String> passes, String key) {
         Type[] params = null;
         Class cls;
 
@@ -55,22 +56,22 @@ public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends
             throw new IllegalStateException("Type used for a Behavior attempted to use Wildcard/TypeParameter. See logger error above.");
         }
 
-        return getSecondary(null, cls, type, params, isRoot, key);
+        return getSecondary(null, cls, type, params, passes, key);
     }
 
-    public @Nullable Object getSecondary(Field field, boolean isRoot, String key) {
+    public @Nullable Object getSecondary(Field field, List<String> passes, String key) {
         Type raw = field.getGenericType();
         Type[] params = raw instanceof ParameterizedType pt ? pt.getActualTypeArguments() : null;
         Class cls = field.getType();
-        return getSecondary(field, cls, raw, params, isRoot, key);
+        return getSecondary(field, cls, raw, params, passes, key);
     }
 
-    public @Nullable Object getSecondary(@Nullable Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
+    public @Nullable Object getSecondary(@Nullable Field field, Class cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
         if (enableSecondaryFieldCaching) {
             if (field != null) {
                 Object value;
                 if ((value = secondaryFieldCache.get(field)) == null) {
-                    value = getSecondaryWithoutCache(field, cls, raw, params, isRoot, key);
+                    value = getSecondaryWithoutCache(field, cls, raw, params, passes, key);
                     secondaryFieldCache.put(field, value);
                 }
                 return value;
@@ -80,22 +81,24 @@ public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends
         if (enableSecondaryTypeCaching) {
             Object value;
             if ((value = secondaryTypeCache.get(raw)) == null) {
-                value = getSecondaryWithoutCache(null, cls, raw, params, isRoot, key);
+                value = getSecondaryWithoutCache(null, cls, raw, params, passes, key);
                 secondaryTypeCache.put(raw, value);
             }
             return value;
         }
-        return getSecondaryWithoutCache(field, cls, raw, params, isRoot, key);
+        return getSecondaryWithoutCache(field, cls, raw, params, passes, key);
     }
 
-    public @Nullable Object getSecondaryWithoutCache(@Nullable Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-        dynamics.sortIfUnsorted();
-        for (B dynamic : dynamics.keySet()) {
-            Object result = dynamic.getSecondary(field, cls, raw, params, isRoot, key);
-            if (result != null) return result;
+    public @Nullable Object getSecondaryWithoutCache(@Nullable Field field, Class cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+        synchronized (dynamics) {
+            dynamics.sortIfUnsorted();
+            for (B dynamic : dynamics.keySet()) {
+                Object result = dynamic.getSecondary(field, cls, raw, params, passes, key);
+                if (result != null) return result;
+            }
         }
 
         var st = statics.get(cls);
-        return st == null ? null : st.getSecondary(field, cls, raw, params, isRoot, key);
+        return st == null ? null : st.getSecondary(field, cls, raw, params, passes, key);
     }
 }

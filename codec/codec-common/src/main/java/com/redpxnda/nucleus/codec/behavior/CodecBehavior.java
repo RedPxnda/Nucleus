@@ -27,9 +27,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -40,28 +38,28 @@ public class CodecBehavior {
     static {
         registerDynamic(-8, new Getter<>() {
             @java.lang.Override
-            public Codec<Object> get(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, boolean isRoot) {
+            public Codec<Object> get(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, List<String> passes) {
                 return null;
             }
 
             @java.lang.Override
-            public MapCodec<Object> getSecondary(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
+            public MapCodec<Object> getSecondary(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
                 if (field != null) {
                     if (!field.isAnnotationPresent(Optional.class)) {
                         AutoCodec.Settings annot = field.getDeclaringClass().getAnnotation(AutoCodec.Settings.class);
                         if (annot != null) {
                             Optional op = annot.defaultOptionalBehavior();
                             if (op.value())
-                                return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), op);
+                                return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, passes), op);
                         } else if (field.getDeclaringClass().isAnnotationPresent(ConfigAutoCodec.ConfigClassMarker.class)) {
-                            return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), Optional.DEFAULT);
+                            return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, passes), Optional.DEFAULT);
                         }
                     }
                 }
                 return null;
             }
         });
-        registerDynamic(1, (f, cls, raw, params, root) -> {
+        registerDynamic(1, (f, cls, raw, params, passes) -> {
             if (!getUnsafeOutline().statics.containsKey(cls)) {
                 Override annot = cls.getAnnotation(Override.class);
                 if (annot != null) {
@@ -85,7 +83,7 @@ public class CodecBehavior {
 
                         Getter<?> getter = (Getter<?>) obj;
                         registerClass((Class) cls, getter);
-                        return getter.get(f, (Class) cls, raw, params, true);
+                        return getter.get(f, (Class) cls, raw, params, new ArrayList<>());
                     } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
                         LOGGER.error("Field mentioned in CodecBehavior Override annotation for class '" + cls.getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)!", e);
                     }
@@ -93,7 +91,7 @@ public class CodecBehavior {
             }
             return null;
         });
-        registerDynamic(1, (f, cls, raw, params, root) -> {
+        registerDynamic(1, (f, cls, raw, params, passes) -> {
             if (!getUnsafeOutline().statics.containsKey(cls)) {
                 ConfigAutoCodec.ConfigClassMarker annot = cls.getAnnotation(ConfigAutoCodec.ConfigClassMarker.class);
                 if (annot != null) {
@@ -104,11 +102,11 @@ public class CodecBehavior {
             }
             return null;
         });
-        registerDynamic((f, cls, raw, params, root) -> {
+        registerDynamic((f, cls, raw, params, passes) -> {
             if (cls.isArray()) {
                 Class<?> component = cls.getComponentType();
                 Codec<?> codec;
-                codec = getCodecOrThrow(component, false);
+                codec = getCodecOrThrow(component, new ArrayList<>());
                 if (component.isPrimitive())
                     return MiscCodecs.primitiveArray(
                             codec,
@@ -122,27 +120,27 @@ public class CodecBehavior {
             }
             return null;
         });
-        registerDynamic((f, cls, raw, params, root) -> {
+        registerDynamic((f, cls, raw, params, passes) -> {
             if (cls.isEnum() && !getUnsafeOutline().statics.containsKey(cls))
                 return MiscCodecs.ofEnum((Class) cls);
             return null;
         });
-        registerDynamic((f, cls, raw, params, root) -> {
+        registerDynamic((f, cls, raw, params, passes) -> {
             if (Collection.class.isAssignableFrom(cls) && !getUnsafeOutline().statics.containsKey(cls) && params != null) {
                 Type type = MiscUtil.collectionElement(raw);
-                return CollectionCodec.of((Codec) getCodecOrThrow(type, false), () -> MiscUtil.createCollection((Class) cls));
+                return CollectionCodec.of((Codec) getCodecOrThrow(type, new ArrayList<>()), () -> MiscUtil.createCollection((Class) cls));
             }
             return null;
         });
-        registerDynamic((f, cls, raw, params, root) -> {
+        registerDynamic((f, cls, raw, params, passes) -> {
             if (Map.class.isAssignableFrom(cls) && !getUnsafeOutline().statics.containsKey(cls) && params != null) {
                 Type[] types = MiscUtil.mapElements(raw);
-                return CustomMapCodec.of(getCodecOrThrow(types[0], false), (Codec) getCodecOrThrow(types[1], false), () -> MiscUtil.createMap(raw, (Class) cls));
+                return CustomMapCodec.of(getCodecOrThrow(types[0], new ArrayList<>()), (Codec) getCodecOrThrow(types[1], new ArrayList<>()), () -> MiscUtil.createMap(raw, (Class) cls));
             }
             return null;
         });
 
-        registerAnnotator(Override.class, -10, (annot, field, cls, rawFieldType, typeParams, root) -> {
+        registerAnnotator(Override.class, -10, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             try {
                 Field codecField = field.getDeclaringClass().getField(annot.value());
                 return (Codec<?>) codecField.get(null);
@@ -153,32 +151,33 @@ public class CodecBehavior {
         });
         registerAnnotator(Optional.class, -9, new AnnotationGetter<>() {
             @java.lang.Override
-            public Codec<?> get(Optional annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot) {
+            public Codec<?> get(Optional annotation, Field field, Class cls, Type raw, @Nullable Type[] params, List<String> passes) {
                 return null;
             }
 
             @java.lang.Override
-            public MapCodec<?> getSecondary(Optional annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-                if (!annotation.value())
+            public MapCodec<?> getSecondary(Optional annotation, Field field, Class cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+                if (/*passes.contains("optional") || */!annotation.value())
                     return null;
-                return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, isRoot), annotation);
+                //passes.add("optional");
+                return new OptionalMapCodec<>(key, getCodecOrThrow(field, cls, raw, params, passes), annotation);
             }
         });
-        registerAnnotator(IntegerRange.class, (annot, field, cls, rawFieldType, typeParams, root) -> {
+        registerAnnotator(IntegerRange.class, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             if (cls.equals(int.class) || cls.equals(Integer.class)) {
                 if (annot.failHard()) return Codec.intRange(annot.min(), annot.max());
                 else return Codec.INT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
             }
             return null;
         });
-        registerAnnotator(DoubleRange.class, (annot, field, cls, rawFieldType, typeParams, root) -> {
+        registerAnnotator(DoubleRange.class, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             if (cls.equals(double.class) || cls.equals(Double.class)) {
                 if (annot.failHard()) return Codec.doubleRange(annot.min(), annot.max());
                 else return Codec.DOUBLE.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
             }
             return null;
         });
-        registerAnnotator(FloatRange.class, (annot, field, cls, rawFieldType, typeParams, root) -> {
+        registerAnnotator(FloatRange.class, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             if (cls.equals(float.class) || cls.equals(Float.class)) {
                 if (annot.failHard()) return Codec.floatRange(annot.min(), annot.max());
                 else return Codec.FLOAT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
@@ -208,15 +207,15 @@ public class CodecBehavior {
         registerClass(Color.class, MiscCodecs.COLOR);
         registerClass(InterpolateMode.class, InterpolateMode.codec);
         registerClass(Vector3f.class, MiscCodecs.VECTOR_3F);
-        registerClass(Pair.class, (field, cls, raw, params, root) -> { // todo replacement for mojank's pair codec?
+        registerClass(Pair.class, (field, cls, raw, params, passes) -> { // todo replacement for mojank's pair codec?
             if (params == null) return null;
-            return (Codec) Codec.pair(getCodecOrThrow(params[0], false), getCodecOrThrow(params[1], false));
+            return (Codec) Codec.pair(getCodecOrThrow(params[0], new ArrayList<>()), getCodecOrThrow(params[1], new ArrayList<>()));
         });
-        registerClass(Either.class, (field, cls, raw, params, root) -> {
+        registerClass(Either.class, (field, cls, raw, params, passes) -> {
             if (params == null) return null;
-            return (Codec) Codec.either(getCodecOrThrow(params[0], false), getCodecOrThrow(params[1], false));
+            return (Codec) Codec.either(getCodecOrThrow(params[0], new ArrayList<>()), getCodecOrThrow(params[1], new ArrayList<>()));
         });
-        registerClass(TagKey.class, (field, cls, raw, params, isRoot) -> {
+        registerClass(TagKey.class, (field, cls, raw, params, passes) -> {
             if (params == null) return null;
             Type t = params[0];
             Class c;
@@ -236,8 +235,8 @@ public class CodecBehavior {
         }
     }
 
-    public static <T> Codec<T> getCodecOrThrow(Type type, boolean isRoot) {
-        Codec<T> result = getCodec(type, isRoot);
+    public static <T> Codec<T> getCodecOrThrow(Type type, List<String> passes) {
+        Codec<T> result = getCodec(type, passes);
         if (result == null) {
             LOGGER.error("Failed to find Codec for type: {}", type);
             throw new IllegalArgumentException("No CodecBehavior defined for type: " + type);
@@ -245,8 +244,8 @@ public class CodecBehavior {
         return result;
     }
 
-    public static <T> Codec<T> getCodecOrThrow(Field field, boolean isRoot) {
-        Codec<T> result = getCodec(field, isRoot);
+    public static <T> Codec<T> getCodecOrThrow(Field field, List<String> passes) {
+        Codec<T> result = getCodec(field, passes);
         if (result == null) {
             LOGGER.error("Failed to find Codec for field: {}", field);
             throw new IllegalArgumentException("No CodecBehavior defined for type: " + field);
@@ -254,8 +253,8 @@ public class CodecBehavior {
         return result;
     }
 
-    public static <T> Codec<T> getCodecOrThrow(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot) {
-        Codec<T> result = getCodec(field, cls, raw, params, isRoot);
+    public static <T> Codec<T> getCodecOrThrow(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, List<String> passes) {
+        Codec<T> result = getCodec(field, cls, raw, params, passes);
         if (result == null) {
             LOGGER.error("Failed to find Codec for: FIELD: {} ... CLASS: {} ... RAW TYPE: {} ... PARAMS: {}", field, cls, raw, params == null ? null : Arrays.toString(params));
             throw new IllegalArgumentException("No CodecBehavior defined for inputted values. See logger error above.");
@@ -263,12 +262,12 @@ public class CodecBehavior {
         return result;
     }
 
-    public static <T> @Nullable Codec<T> getCodec(Type type, boolean isRoot) {
-        return (Codec<T>) getters.get(type, isRoot);
+    public static <T> @Nullable Codec<T> getCodec(Type type, List<String> passes) {
+        return (Codec<T>) getters.get(type, passes);
     }
 
-    public static <T> @Nullable Codec<T> getCodec(Field field, boolean isRoot) {
-        return (Codec<T>) getters.get(field, isRoot);
+    public static <T> @Nullable Codec<T> getCodec(Field field, List<String> passes) {
+        return (Codec<T>) getters.get(field, passes);
     }
 
     /**
@@ -276,15 +275,15 @@ public class CodecBehavior {
      * @param cls the class of the field, or the class of the codec if no field
      * @param raw the raw "generic type" of the field, or the class if no field
      * @param params the type params of the field, or null if no field
-     * @param isRoot false if recursive call, true otherwise
+     * @param passes false if recursive call, true otherwise
      * @return a codec for this field/class
      */
-    public static <T> @Nullable Codec<T> getCodec(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot) {
-        return (Codec<T>) getters.get(field, cls, raw, params, isRoot);
+    public static <T> @Nullable Codec<T> getCodec(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, List<String> passes) {
+        return (Codec<T>) getters.get(field, cls, raw, params, passes);
     }
 
-    public static <T> MapCodec<T> getMapCodecOrThrow(Type type, boolean isRoot, String key) {
-        MapCodec<T> result = getMapCodec(type, isRoot, key);
+    public static <T> MapCodec<T> getMapCodecOrThrow(Type type, List<String> passes, String key) {
+        MapCodec<T> result = getMapCodec(type, passes, key);
         if (result == null) {
             LOGGER.error("Failed to find MapCodec for type: {}", type);
             throw new IllegalArgumentException("No CodecBehavior defined for type: " + type);
@@ -292,8 +291,8 @@ public class CodecBehavior {
         return result;
     }
 
-    public static <T> MapCodec<T> getMapCodecOrThrow(Field field, boolean isRoot, String key) {
-        MapCodec<T> result = getMapCodec(field, isRoot, key);
+    public static <T> MapCodec<T> getMapCodecOrThrow(Field field, List<String> passes, String key) {
+        MapCodec<T> result = getMapCodec(field, passes, key);
         if (result == null) {
             LOGGER.error("Failed to find MapCodec for field: {}", field);
             throw new IllegalArgumentException("No CodecBehavior defined for type: " + field);
@@ -301,8 +300,8 @@ public class CodecBehavior {
         return result;
     }
 
-    public static <T> MapCodec<T> getMapCodecOrThrow(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-        MapCodec<T> result = getMapCodec(field, cls, raw, params, isRoot, key);
+    public static <T> MapCodec<T> getMapCodecOrThrow(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+        MapCodec<T> result = getMapCodec(field, cls, raw, params, passes, key);
         if (result == null) {
             LOGGER.error("Failed to find MapCodec for: FIELD: {} ... CLASS: {} ... RAW TYPE: {} ... PARAMS: {}", field, cls, raw, params == null ? null : Arrays.toString(params));
             throw new IllegalArgumentException("No CodecBehavior defined for inputted values. See logger error above.");
@@ -310,12 +309,12 @@ public class CodecBehavior {
         return result;
     }
 
-    public static <T> @Nullable MapCodec<T> getMapCodec(Type type, boolean isRoot, String key) {
-        return (MapCodec<T>) getters.getSecondary(type, isRoot, key);
+    public static <T> @Nullable MapCodec<T> getMapCodec(Type type, List<String> passes, String key) {
+        return (MapCodec<T>) getters.getSecondary(type, passes, key);
     }
 
-    public static <T> @Nullable MapCodec<T> getMapCodec(Field field, boolean isRoot, String key) {
-        return (MapCodec<T>) getters.getSecondary(field, isRoot, key);
+    public static <T> @Nullable MapCodec<T> getMapCodec(Field field, List<String> passes, String key) {
+        return (MapCodec<T>) getters.getSecondary(field, passes, key);
     }
 
     /**
@@ -323,11 +322,11 @@ public class CodecBehavior {
      * @param cls the class of the field, or the class of the codec if no field
      * @param raw the raw "generic type" of the field, or the class if no field
      * @param params the type params of the field, or null if no field
-     * @param isRoot false if recursive call, true otherwise
+     * @param passes false if recursive call, true otherwise
      * @return a codec for this field/class
      */
-    public static <T> @Nullable MapCodec<T> getMapCodec(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-        return (MapCodec<T>) getters.getSecondary(field, cls, raw, params, isRoot, key);
+    public static <T> @Nullable MapCodec<T> getMapCodec(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+        return (MapCodec<T>) getters.getSecondary(field, cls, raw, params, passes, key);
     }
 
     public static BehaviorOutline<Getter<?>> getUnsafeOutline() {
@@ -348,25 +347,27 @@ public class CodecBehavior {
     }
 
     public static <A extends Annotation> void registerAnnotator(Class<A> cls, float prio, AnnotationGetter<A> getter) {
-        getters.dynamics.put(new Getter() {
-            @java.lang.Override
-            public Codec get(@Nullable Field field, Class c, Type raw, @Nullable Type[] params, boolean isRoot) {
-                if (field != null) {
-                    A annot = field.getAnnotation(cls);
-                    if (annot != null) return getter.get(annot, field, c, raw, params, isRoot);
+        synchronized (getters.dynamics) {
+            getters.dynamics.put(new Getter() {
+                @java.lang.Override
+                public Codec get(@Nullable Field field, Class c, Type raw, @Nullable Type[] params, List passes) {
+                    if (field != null) {
+                        A annot = field.getAnnotation(cls);
+                        if (annot != null) return getter.get(annot, field, c, raw, params, passes);
+                    }
+                    return null;
                 }
-                return null;
-            }
 
-            @java.lang.Override
-            public MapCodec getSecondary(@Nullable Field field, Class c, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-                if (field != null) {
-                    A annot = field.getAnnotation(cls);
-                    if (annot != null) return getter.getSecondary(annot, field, c, raw, params, isRoot, key);
+                @java.lang.Override
+                public MapCodec getSecondary(@Nullable Field field, Class c, Type raw, @Nullable Type[] params, List passes, String key) {
+                    if (field != null) {
+                        A annot = field.getAnnotation(cls);
+                        if (annot != null) return getter.getSecondary(annot, field, c, raw, params, passes, key);
+                    }
+                    return null;
                 }
-                return null;
-            }
-        }, prio);
+            }, prio);
+        }
     }
 
     public static <A extends Annotation> void registerAnnotator(Class<A> cls, AnnotationGetter<A> getter) {
@@ -374,7 +375,9 @@ public class CodecBehavior {
     }
 
     public static void registerDynamic(float prio, Getter<?> getter) {
-        getters.dynamics.put(getter, prio);
+        synchronized (getters.dynamics) {
+            getters.dynamics.put(getter, prio);
+        }
     }
 
     public static void registerDynamic(Getter<?> getter) {
@@ -383,24 +386,24 @@ public class CodecBehavior {
 
     public interface AnnotationGetter<A extends Annotation> extends AnnotationBehaviorGetter.Bi<A, Codec<?>, MapCodec<?>> {
         @java.lang.Override
-        default MapCodec<?> getSecondary(A annotation, Field field, Class cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-            Codec<?> codec = get(annotation, field, cls, raw, params, isRoot);
+        default MapCodec<?> getSecondary(A annotation, Field field, Class cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+            Codec<?> codec = get(annotation, field, cls, raw, params, passes);
             return codec == null ? null : codec.fieldOf(key);
         }
     }
 
     public interface Getter<T> extends TypeBehaviorGetter.Bi<MapCodec<T>, Codec<T>, T> {
         static <T> Getter<T> fromSupplier(Supplier<Codec<T>> supplier) {
-            return (field, cls, raw, params, root) -> supplier.get();
+            return (field, cls, raw, params, passes) -> supplier.get();
         }
 
         static <T> Getter<T> fromCodec(Codec<T> codec) {
-            return (field, cls, raw, params, root) -> codec;
+            return (field, cls, raw, params, passes) -> codec;
         }
 
         @java.lang.Override
-        default MapCodec<T> getSecondary(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot, String key) {
-            Codec<T> codec = get(field, cls, raw, params, isRoot);
+        default MapCodec<T> getSecondary(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+            Codec<T> codec = get(field, cls, raw, params, passes);
             return codec == null ? null : codec.fieldOf(key);
         }
     }

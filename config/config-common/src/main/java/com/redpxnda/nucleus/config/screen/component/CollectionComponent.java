@@ -36,7 +36,7 @@ public class CollectionComponent<T, C extends Collection<T>> extends ClickableWi
         this.creator = creator;
 
         this.elementCreator = () -> {
-            ConfigComponent<T> comp = ConfigComponentBehavior.getComponent(type, false);
+            ConfigComponent<T> comp = ConfigComponentBehavior.getComponent(type, new ArrayList<>());
             comp.setParent(this);
             elements.add(comp);
             removers.put(comp, ButtonWidget.builder(REMOVE_ICON, wid -> {

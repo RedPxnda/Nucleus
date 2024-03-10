@@ -3,6 +3,7 @@ package com.redpxnda.nucleus.config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +35,11 @@ public interface ConfigScreensEvent {
 
         /**
          * Add an automatic screen to the specified mod. THIS ONLY WORKS IF YOUR CONFIG WAS MADE THROUGH {@link ConfigBuilder#automatic(Class)}!
-         * @param modId      the id of the mod
-         * @param configName the name of the config object to use
+         * @param modId    the id of the mod
+         * @param configId the id of the config object to use
          */
-        public void add(String modId, String configName) {
-            add(modId, () -> ConfigManager.getConfigObject(configName));
+        public void add(String modId, Identifier configId) {
+            add(modId, () -> ConfigManager.getConfigObject(configId));
         }
 
         /**

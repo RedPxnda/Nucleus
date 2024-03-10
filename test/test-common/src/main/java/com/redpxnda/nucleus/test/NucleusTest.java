@@ -5,8 +5,6 @@ import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigType;
 import com.redpxnda.nucleus.facet.FacetRegistry;
 import dev.architectury.event.events.common.PlayerEvent;
-import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
@@ -47,14 +45,15 @@ public class NucleusTest {
          ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝ ╚══════╝
         */
         ConfigManager.register(ConfigBuilder.automatic(TestConfig.class)
-                .name("nucleus-test-common")
+                .id("nucleus:test-common")
                 .type(ConfigType.COMMON)
                 .creator(TestConfig::new)
                 .updateListener(i -> TestConfig.INSTANCE = i)
                 .presetGetter(i -> i.preset)
+                .automaticScreen()
         );
 
-        if (Platform.getEnv() == EnvType.CLIENT)
-            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", "nucleus-test-common"));
+        /*if (Platform.getEnv() == EnvType.CLIENT)
+            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", "nucleus-test-common"));*/
     }
 }

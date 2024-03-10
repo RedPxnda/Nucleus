@@ -13,6 +13,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class AutoCodec<C> extends MapCodec<C> {
             String name = entry.getKey();
             Field field = entry.getValue();
 
-            MapCodec<?> codec = CodecBehavior.getMapCodecOrThrow(field, true, name);
+            MapCodec<?> codec = CodecBehavior.getMapCodecOrThrow(field, new ArrayList<>(), name);
             Type fieldType = field.getGenericType();
 
             fields.put(name, new AutoCodecField(name, codec, fieldType, field.getType(), field));

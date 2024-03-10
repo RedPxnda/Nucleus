@@ -14,6 +14,7 @@ import net.fabricmc.api.EnvType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
 import java.nio.file.*;
@@ -26,7 +27,8 @@ import java.util.function.Predicate;
 public class ConfigManager {
     private static final Logger LOGGER = Nucleus.getLogger();
     public static final AtomicBoolean skipNextWatch = new AtomicBoolean(false);
-    private static final Map<String, ConfigObject<?>> configs = new HashMap<>();
+    private static final Map<Identifier, ConfigObject<?>> configs = new HashMap<>();
+    private static final Map<String, ConfigObject<?>> configsByFileLocation = new HashMap<>();
     public static final PrioritizedEvent<ConfigScreensEvent> CONFIG_SCREENS_REGISTRY = PrioritizedEvent.createLoop();
 
     /**
@@ -38,33 +40,54 @@ public class ConfigManager {
     }
 
     public static <T> ConfigObject<T> register(ConfigObject<T> config) {
-        ConfigObject<?> old = configs.get(config.name);
-        if (old != null) throw new IllegalStateException("Two configs cannot be registered under the same name!\nOld: " + old + "\nNew: " + config);
+        ConfigObject<?> old = configs.get(config.id);
+        if (old != null) throw new IllegalStateException("Two configs cannot be registered under the same id!\nOld: " + old + "\nNew: " + config);
 
-        configs.put(config.name, config);
+        configsByFileLocation.put(config.fileLocation, config);
+        configs.put(config.id, config);
         return config;
     }
 
     /**
      * Use this carefully, it casts unsafely.
      */
-    public static <T> T getConfig(String name) {
-        return (T) configs.get(name).getInstance();
+    public static <T> T getConfig(Identifier id) {
+        return (T) configs.get(id).getInstance();
     }
 
     /**
      * Use this carefully, it casts unsafely.
      */
-    public static <T> ConfigObject<T> getConfigObject(String name) {
-        return (ConfigObject<T>) configs.get(name);
+    public static <T> ConfigObject<T> getConfigObject(Identifier id) {
+        return (ConfigObject<T>) configs.get(id);
     }
+
+    /**
+     * Use this carefully, it casts unsafely.
+     */
+    public static <T> ConfigObject<T> getConfigObjectByFileLocation(String fileLocation) {
+        return (ConfigObject<T>) configsByFileLocation.get(fileLocation);
+    }
+
+    /**
+     * Use this carefully, it casts unsafely.
+     */
+    public static <T> ConfigObject<T> getConfigObjectByPath(Path path) {
+        String relative = Platform.getConfigFolder().relativize(path).toString();
+        String location = relative.substring(0, relative.length() - 6); // 6 = ".jsonc".length()
+        ConfigObject<?> config = ConfigManager.getConfigObjectByFileLocation(location);
+        return (ConfigObject<T>) config;
+    }
+
+
 
     /**
      * do not call, this is for internal purposes
      */
     public static void init() {
         register(ConfigBuilder.automatic(NucleusConfig.class)
-                .name("nucleus")
+                .id("nucleus:configs")
+                .fileLocation("nucleus/configs")
                 .creator(NucleusConfig::new)
                 .type(ConfigType.COMMON)
                 .updateListener(config -> NucleusConfig.INSTANCE = config)
@@ -105,11 +128,9 @@ public class ConfigManager {
                             if (path.toString().endsWith(".jsonc")) {
                                 if (Platform.getEnv() == EnvType.CLIENT && MinecraftClient.getInstance() != null)
                                     MinecraftClient.getInstance().execute(() -> {
-                                        String fileName = path.getFileName().toString();
-                                        String configName = fileName.substring(0, fileName.length() - 6);
-                                        ConfigObject<?> config = ConfigManager.getConfigObject(configName);
+                                        ConfigObject<?> config = ConfigManager.getConfigObjectByPath(path);
                                         if (config != null && config.watch && config.type.clientCanControl()) {
-                                            LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.name);
+                                            LOGGER.info("File modification for client-sided config '{}' detected. Updating!", config.id);
                                             config.load();
                                             config.save();
                                         }
@@ -117,11 +138,9 @@ public class ConfigManager {
 
                                 if (Nucleus.SERVER != null)
                                     Nucleus.SERVER.execute(() -> {
-                                        String fileName = path.getFileName().toString();
-                                        String configName = fileName.substring(0, fileName.length() - 6);
-                                        ConfigObject<?> config = ConfigManager.getConfigObject(configName);
+                                        ConfigObject<?> config = ConfigManager.getConfigObjectByPath(path);
                                         if (config != null && config.watch && config.type.serverCanControl()) {
-                                            LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.name);
+                                            LOGGER.info("File modification for server-sided config '{}' detected. Updating!", config.id);
                                             config.load();
                                             config.save();
 
@@ -151,12 +170,12 @@ public class ConfigManager {
 
     public static void syncConfigWithAllPlayers(ConfigObject<?> config, MinecraftServer server) {
         if (config.type != ConfigType.SERVER_CLIENT_SYNCED) return;
-        new ConfigSyncPacket(config.name, config.serialize(JsoncOps.INSTANCE).toString()).send(server);
+        new ConfigSyncPacket(config.id, config.serialize(JsoncOps.INSTANCE).toString()).send(server);
     }
 
     public static void syncConfigWithPlayer(ConfigObject<?> config, ServerPlayerEntity sp) {
         if (config.type != ConfigType.SERVER_CLIENT_SYNCED) return;
-        new ConfigSyncPacket(config.name, config.serialize(JsoncOps.INSTANCE).toString()).send(sp);
+        new ConfigSyncPacket(config.id, config.serialize(JsoncOps.INSTANCE).toString()).send(sp);
     }
 
     private static void setupConfigs(ConfigType type) {

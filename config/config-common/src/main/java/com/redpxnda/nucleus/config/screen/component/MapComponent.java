@@ -12,6 +12,7 @@ import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -38,8 +39,8 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
         this.creator = creator;
 
         this.elementCreator = () -> {
-            ConfigComponent<V> comp = ConfigComponentBehavior.getComponent(valueType, false);
-            ConfigComponent<K> keyComp = ConfigComponentBehavior.getComponent(keyType, false);
+            ConfigComponent<V> comp = ConfigComponentBehavior.getComponent(valueType, new ArrayList<>());
+            ConfigComponent<K> keyComp = ConfigComponentBehavior.getComponent(keyType, new ArrayList<>());
 
             comp.setParent(this);
             keyComp.setParent(this);

@@ -6,16 +6,16 @@ import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ConfigBuilder<T> {
-    protected Path path = Platform.getConfigFolder();
-    protected String name;
+    protected String fileLocation;
+    protected Identifier id;
     protected ConfigType type;
     protected Codec<T> codec;
     protected Supplier<T> creator;
@@ -43,32 +43,32 @@ public class ConfigBuilder<T> {
      * Builds the config
      */
     public ConfigObject<T> build() {
-        if (name == null || type == null || codec == null || creator == null)
+        if (id == null || type == null || codec == null || creator == null)
             throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
-        return new ConfigObject<>(path, name, type, codec, creator, onUpdate, presetGetter, watch, null);
+        return new ConfigObject<>(fileLocation, id, type, codec, creator, onUpdate, presetGetter, watch, null);
     }
 
     /**
-     * Defines the subpath for this builder.
-     * Normally, the path to this config will just be <b>config/[the_name].json</b>. Using this method will turn this into <b>config/[the_subpath]/[the_name].json</b>
+     * Defines the file location for this config.
+     * This will be relative to the config folder, and includes the file name(but the file extension is added automatically. Leave that out).
      */
-    public ConfigBuilder<T> path(String subpath) {
-        this.path = Platform.getConfigFolder().resolve(subpath);
-        return this;
-    }
-
-    public ConfigBuilder<T> path(Path subpath) {
-        this.path = Platform.getConfigFolder().resolve(subpath);
+    public ConfigBuilder<T> fileLocation(String location) {
+        this.fileLocation = location;
         return this;
     }
 
     /**
-     * Defines the name for this config. This will be your config's file name, excluding the extension.
-     * This will normally be set to your mod name + your config type, but it doesn't have to be.
+     * Defines the id for this config. Every config should have a unique id.
+     * This will set the file location for you, so make sure to call file location after this.
      */
-    public ConfigBuilder<T> name(String name) {
-        this.name = name;
+    public ConfigBuilder<T> id(Identifier id) {
+        this.id = id;
+        this.fileLocation = id.getNamespace() + "-" + id.getPath();
         return this;
+    }
+
+    public ConfigBuilder<T> id(String id) {
+        return id(new Identifier(id));
     }
 
     /**
@@ -111,6 +111,13 @@ public class ConfigBuilder<T> {
         return this;
     }
 
+    public ConfigBuilder<T> automaticScreen() {
+        assert this instanceof ConfigBuilder.Automatic<T> : "Config must be automatic to create an automatic screen!";
+        if (Platform.getEnv() == EnvType.CLIENT)
+            ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add(id.getNamespace(), id));
+        return this;
+    }
+
     protected ConfigBuilder<T> codec(Codec<T> codec) {
         this.codec = codec;
         return this;
@@ -127,9 +134,9 @@ public class ConfigBuilder<T> {
 
         @Override
         public ConfigObject.Automatic<T> build() {
-            if (name == null || type == null || codec == null || creator == null)
+            if (id == null || type == null || codec == null || creator == null)
                 throw new UnsupportedOperationException("ConfigBuilder incomplete! You must define a name, type, codec, and creator.");
-            return new ConfigObject.Automatic<>(path, name, type, codec, creator, onUpdate, presetGetter, watch, null, Platform.getEnv() == EnvType.CLIENT ? ConfigAutoCodec.performFieldSearch(cls) : null);
+            return new ConfigObject.Automatic<>(fileLocation, id, type, codec, creator, onUpdate, presetGetter, watch, null, Platform.getEnv() == EnvType.CLIENT ? ConfigAutoCodec.performFieldSearch(cls) : null);
         }
     }
 }

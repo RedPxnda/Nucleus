@@ -31,7 +31,7 @@ public class ConfigScreen<T> extends Screen {
     protected @Nullable ConfigComponent<?> oldWidgetParent;
 
     public ConfigScreen(Screen parent, Map<String, Pair<Field, ConfigComponent<?>>> components, ConfigObject<T> config) {
-        super(Text.translatable("nucleus.config_screen.title", config.name + ".jsonc"));
+        super(Text.translatable("nucleus.config_screen.title", config.id + ".jsonc"));
         this.parent = parent;
         this.config = config;
         this.components = components;

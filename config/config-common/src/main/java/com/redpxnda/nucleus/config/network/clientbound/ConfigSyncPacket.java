@@ -4,24 +4,25 @@ import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.network.SimplePacket;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 
 public class ConfigSyncPacket implements SimplePacket {
-    public final String config;
+    public final Identifier config;
     public final String data;
 
-    public ConfigSyncPacket(String config, String data) {
+    public ConfigSyncPacket(Identifier config, String data) {
         this.config = config;
         this.data = data;
     }
 
     public ConfigSyncPacket(PacketByteBuf buf) {
-        this.config = buf.readString();
+        this.config = new Identifier(buf.readString());
         this.data = buf.readString();
     }
 
     @Override
     public void toBuffer(PacketByteBuf buf) {
-        buf.writeString(config);
+        buf.writeString(config.toString());
         buf.writeString(data);
     }
 

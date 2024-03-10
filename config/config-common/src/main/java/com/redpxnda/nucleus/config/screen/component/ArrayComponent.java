@@ -43,7 +43,7 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
         this.primitive = primitive;
 
         this.elementCreator = () -> {
-            ConfigComponent comp = ConfigComponentBehavior.getComponent(type, false);
+            ConfigComponent comp = ConfigComponentBehavior.getComponent(type, new ArrayList<>());
             comp.setParent(this);
             elements.add(comp);
             removers.put(comp, ButtonWidget.builder(REMOVE_ICON, wid -> {

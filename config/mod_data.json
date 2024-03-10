@@ -1,6 +1,6 @@
 {
   "id": "nucleus_config",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "Nucleus (Config)",
   "description": "A dynamic and easy-to-use config library",
   "authors": [

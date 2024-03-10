@@ -29,7 +29,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -75,24 +77,25 @@ public class ConfigComponentBehavior {
             if (cls.isAnnotationPresent(ConfigAutoCodec.ConfigClassMarker.class)) {
                 Screen screen = MinecraftClient.getInstance().currentScreen;
                 return new ConfigEntriesComponent(ConfigAutoCodec.performFieldSearch(cls).entrySet().stream()
-                        .map(entry -> Map.entry(entry.getKey(), new Pair<>(entry.getValue(), getComponent(entry.getValue(), true))))
+                        .map(entry -> Map.entry(entry.getKey(), new Pair<>(entry.getValue(), getComponent(entry.getValue(), new ArrayList<>()))))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
                         MinecraftClient.getInstance().textRenderer, 0, 0, screen == null ? 200 : screen.width, 20); // height updated later
             }
             return null;
         });
 
-        registerAnnotator(CodecBehavior.Optional.class, (annotation, field, cls, raw, params, isRoot) -> {
-            if (isRoot) {
-                ConfigComponent<?> child = getComponent(field, cls, raw, params, false);
+        registerAnnotator(CodecBehavior.Optional.class, (annotation, field, cls, raw, params, passes) -> {
+            if (!passes.contains("optional")) {
+                passes.add("optional");
+                ConfigComponent<?> child = getComponent(field, cls, raw, params, passes);
                 return new OptionalComponent(MinecraftClient.getInstance().textRenderer, 0, 0, child.getWidth(), child.getHeight(), child, c -> {});
             }
             return null;
         });
 
-        registerAnnotator(IntegerRange.class, (annotation, field, cls, raw, params, isRoot) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false, annotation.min(), annotation.max()));
-        registerAnnotator(DoubleRange.class, (annotation, field, cls, raw, params, isRoot) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Double::parseDouble, true, annotation.min(), annotation.max()));
-        registerAnnotator(FloatRange.class, (annotation, field, cls, raw, params, isRoot) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Float::parseFloat, true, annotation.min(), annotation.max()));
+        registerAnnotator(IntegerRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false, annotation.min(), annotation.max()));
+        registerAnnotator(DoubleRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Double::parseDouble, true, annotation.min(), annotation.max()));
+        registerAnnotator(FloatRange.class, (annotation, field, cls, raw, params, passes) -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Float::parseFloat, true, annotation.min(), annotation.max()));
 
         registerClass(String.class, () -> new TextFieldComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20));
         registerClass(int.class, () -> new NumberFieldComponent<>(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Integer::parseInt, false));
@@ -136,21 +139,21 @@ public class ConfigComponentBehavior {
         registerClass(EntityTypeList.class, () -> new EntityTypeListComponent(0, 0));
 
         /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/ // tod-o dispatches(?)
-        MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, isRoot) -> new RegistryComponent(v, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20)));
+        MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, passes) -> new RegistryComponent(v, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20)));
     }
 
-    public static <T> ConfigComponent<T> getComponent(Type type, boolean isRoot) {
-        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(type, isRoot);
+    public static <T> ConfigComponent<T> getComponent(Type type, List<String> passes) {
+        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(type, passes);
         if (comp != null) return comp;
-        Codec codec = CodecBehavior.getCodec(type, true);
+        Codec codec = CodecBehavior.getCodec(type, new ArrayList<>());
         if (codec == null) throw new RuntimeException("Type '" + type + "' has no known codec or config component behavior!");
         return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
 
-    public static <T> ConfigComponent<T> getComponent(Field field, boolean isRoot) {
-        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(field, isRoot);
+    public static <T> ConfigComponent<T> getComponent(Field field, List<String> passes) {
+        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(field, passes);
         if (comp != null) return comp;
-        Codec codec = CodecBehavior.getCodec(field, true);
+        Codec codec = CodecBehavior.getCodec(field, new ArrayList<>());
         if (codec == null) throw new RuntimeException("Field '" + field + "' has no known codec or config component behavior!");
         return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
@@ -162,10 +165,10 @@ public class ConfigComponentBehavior {
      * @param params the type params of the field, or null if no field
      * @return a codec for this field/class
      */
-    public static <T> ConfigComponent<T> getComponent(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, boolean isRoot) {
-        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(field, cls, raw, params, isRoot);
+    public static <T> ConfigComponent<T> getComponent(@Nullable Field field, Class<T> cls, Type raw, @Nullable Type[] params, List<String> passes) {
+        ConfigComponent<T> comp = (ConfigComponent<T>) getters.get(field, cls, raw, params, passes);
         if (comp != null) return comp;
-        Codec codec = CodecBehavior.getCodec(field, cls, raw, params, true);
+        Codec codec = CodecBehavior.getCodec(field, cls, raw, params, new ArrayList<>());
         if (codec == null) throw new RuntimeException("Field '" + field + "'(type: '" + raw + "') has no known codec or config component behavior!");
         return new RawJsonComponent(codec, 0, 0, 20, 20);
     }
@@ -185,13 +188,15 @@ public class ConfigComponentBehavior {
     }
 
     public static <A extends Annotation> void registerAnnotator(Class<A> cls, float prio, AnnotationGetter<A> getter) {
-        getters.dynamics.put((field, c, raw, params, isRoot) -> {
-            if (field != null) {
-                A annot = field.getAnnotation(cls);
-                if (annot != null) return (ConfigComponent) getter.get(annot, field, c, raw, params, isRoot);
-            }
-            return null;
-        }, prio);
+        synchronized (getters.dynamics) {
+            getters.dynamics.put((field, c, raw, params, passes) -> {
+                if (field != null) {
+                    A annot = field.getAnnotation(cls);
+                    if (annot != null) return (ConfigComponent) getter.get(annot, field, c, raw, params, passes);
+                }
+                return null;
+            }, prio);
+        }
     }
 
     public static <A extends Annotation> void registerAnnotator(Class<A> cls, AnnotationGetter<A> getter) {
@@ -199,7 +204,9 @@ public class ConfigComponentBehavior {
     }
 
     public static void registerDynamic(float prio, Getter<?> getter) {
-        getters.dynamics.put(getter, prio);
+        synchronized (getters.dynamics) {
+            getters.dynamics.put(getter, prio);
+        }
     }
 
     public static void registerDynamic(Getter<?> getter) {
