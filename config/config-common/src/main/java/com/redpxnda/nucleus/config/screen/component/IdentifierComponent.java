@@ -18,7 +18,7 @@ public class IdentifierComponent extends TextFieldWidget implements ConfigCompon
     public IdentifierComponent(TextRenderer textRenderer, int x, int y, int width, int height) {
         super(textRenderer, x, y, width, height, Text.empty());
         this.textRenderer = textRenderer;
-        setMaxLength(200);
+        setMaxLength(1024);
     }
 
     @Override

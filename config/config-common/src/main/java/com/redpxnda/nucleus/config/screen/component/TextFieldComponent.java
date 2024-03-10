@@ -1,6 +1,5 @@
 package com.redpxnda.nucleus.config.screen.component;
 
-import com.redpxnda.nucleus.config.screen.component.ConfigComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
@@ -16,6 +15,7 @@ public class TextFieldComponent extends TextFieldWidget implements ConfigCompone
 
     public TextFieldComponent(TextRenderer textRenderer, int x, int y, int width, int height) {
         super(textRenderer, x, y, width, height, Text.empty());
+        setMaxLength(1024);
     }
 
     @Override
