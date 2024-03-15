@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinket;
 import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinketRenderer;
+import com.redpxnda.nucleus.trinket.fabric.SlotReferenceCreator;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.Trinket;
 import dev.emi.trinkets.api.TrinketEnums;
@@ -27,35 +28,35 @@ public class TrinketItemCreatorImpl {
         Trinket t = new Trinket() {
             @Override
             public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
-                trinket.tick(stack, entity, slot.index());
+                trinket.tick(stack, entity, SlotReferenceCreator.get(slot));
             }
 
             @Override
             public void onEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-                trinket.onEquip(stack, entity, slot.index());
+                trinket.onEquip(stack, entity, SlotReferenceCreator.get(slot));
             }
 
             @Override
             public void onUnequip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-                trinket.onUnequip(stack, entity, slot.index());
+                trinket.onUnequip(stack, entity, SlotReferenceCreator.get(slot));
             }
 
             @Override
             public boolean canEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-                return trinket.canEquip(stack, entity, slot.index());
+                return trinket.canEquip(stack, entity, SlotReferenceCreator.get(slot));
             }
 
             @Override
             public boolean canUnequip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-                return trinket.canUnequip(stack, entity, slot.index());
+                return trinket.canUnequip(stack, entity, SlotReferenceCreator.get(slot));
             }
 
             @Override
             public Multimap<EntityAttribute, EntityAttributeModifier> getModifiers(ItemStack stack, SlotReference slot, LivingEntity entity, UUID uuid) {
-                Multimap<EntityAttribute, EntityAttributeModifier> map = trinket.useNbtAttributeBehavior(stack, entity, slot.index(), uuid) ?
+                Multimap<EntityAttribute, EntityAttributeModifier> map = trinket.useNbtAttributeBehavior(stack, entity, SlotReferenceCreator.get(slot), uuid) ?
                         Trinket.super.getModifiers(stack, slot, entity, uuid) :
                         HashMultimap.create();
-                map.putAll(trinket.getAttributeModifiers(stack, entity, slot.index(), uuid));
+                map.putAll(trinket.getAttributeModifiers(stack, entity, SlotReferenceCreator.get(slot), uuid));
                 return map;
             }
 

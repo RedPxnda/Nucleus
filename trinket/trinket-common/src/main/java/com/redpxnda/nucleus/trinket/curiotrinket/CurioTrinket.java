@@ -21,7 +21,7 @@ public interface CurioTrinket {
      * @param entity The entity wearing the stack
      * @param slotIndex The index of the slot
      */
-    default void tick(ItemStack stack, LivingEntity entity, int slotIndex) {
+    default void tick(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
     }
 
     /**
@@ -30,7 +30,7 @@ public interface CurioTrinket {
      * @param stack The stack being equipped
      * @param entity The entity that equipped the stack
      */
-    default void onEquip(ItemStack stack, LivingEntity entity, int slotIndex) {
+    default void onEquip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
     }
 
     /**
@@ -39,7 +39,7 @@ public interface CurioTrinket {
      * @param stack The stack being unequipped
      * @param entity The entity that unequipped the stack
      */
-    default void onUnequip(ItemStack stack, LivingEntity entity, int slotIndex) {
+    default void onUnequip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
     }
 
     /**
@@ -49,7 +49,7 @@ public interface CurioTrinket {
      * @param entity The entity that is equipping the stack
      * @return Whether the stack can be equipped
      */
-    default boolean canEquip(ItemStack stack, LivingEntity entity, int slotIndex) {
+    default boolean canEquip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
         return true;
     }
 
@@ -60,7 +60,7 @@ public interface CurioTrinket {
      * @param entity The entity that is unequipping the stack
      * @return Whether the stack can be unequipped
      */
-    default boolean canUnequip(ItemStack stack, LivingEntity entity, int slotIndex) {
+    default boolean canUnequip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
         return !EnchantmentHelper.hasBindingCurse(stack);
     }
 
@@ -76,7 +76,7 @@ public interface CurioTrinket {
      * @param uuid The generated UUID for use in attribute modifiers (See ICurioItem's and Trinket's getAttributeModifiers, they explain it better)
      * @return whether this trinket should extend default behavior attribute modifier behavior
      */
-    default boolean useNbtAttributeBehavior(ItemStack stack, LivingEntity entity, int slotIndex, UUID uuid) {
+    default boolean useNbtAttributeBehavior(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex, UUID uuid) {
         return true;
     }
 
@@ -89,7 +89,7 @@ public interface CurioTrinket {
      * @param uuid The generated UUID for use in attribute modifiers (See ICurioItem's and Trinket's getAttributeModifiers, they explain it better)
      * @return A multimap holding every attribute modifier that should be applied when wearing this trinket.
      */
-    default Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(ItemStack stack, LivingEntity entity, int slotIndex, UUID uuid) {
+    default Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex, UUID uuid) {
         return HashMultimap.create();
     }
 

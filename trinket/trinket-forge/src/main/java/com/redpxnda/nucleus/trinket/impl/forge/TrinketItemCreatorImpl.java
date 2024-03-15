@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinket;
 import com.redpxnda.nucleus.trinket.curiotrinket.CurioTrinketRenderer;
+import com.redpxnda.nucleus.trinket.forge.SlotReferenceCreator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.EntityModel;
@@ -38,35 +39,35 @@ public class TrinketItemCreatorImpl {
         ICurioItem curio = new ICurioItem() {
             @Override
             public void curioTick(SlotContext slotContext, ItemStack stack) {
-                trinket.tick(stack, slotContext.entity(), slotContext.index());
+                trinket.tick(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext));
             }
 
             @Override
             public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
-                trinket.onEquip(stack, slotContext.entity(), slotContext.index());
+                trinket.onEquip(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext));
             }
 
             @Override
             public void onUnequip(SlotContext slotContext, ItemStack newStack, ItemStack stack) {
-                trinket.onUnequip(stack, slotContext.entity(), slotContext.index());
+                trinket.onUnequip(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext));
             }
 
             @Override
             public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                return trinket.canEquip(stack, slotContext.entity(), slotContext.index());
+                return trinket.canEquip(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext));
             }
 
             @Override
             public boolean canUnequip(SlotContext slotContext, ItemStack stack) {
-                return trinket.canUnequip(stack, slotContext.entity(), slotContext.index());
+                return trinket.canUnequip(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext));
             }
 
             @Override
             public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(SlotContext slotContext, UUID uuid, ItemStack stack) {
-                Multimap<EntityAttribute, EntityAttributeModifier> map = trinket.useNbtAttributeBehavior(stack, slotContext.entity(), slotContext.index(), uuid) ?
+                Multimap<EntityAttribute, EntityAttributeModifier> map = trinket.useNbtAttributeBehavior(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext), uuid) ?
                         ICurioItem.super.getAttributeModifiers(slotContext, uuid, stack) :
                         HashMultimap.create();
-                map.putAll(trinket.getAttributeModifiers(stack, slotContext.entity(), slotContext.index(), uuid));
+                map.putAll(trinket.getAttributeModifiers(stack, slotContext.entity(), SlotReferenceCreator.get(slotContext), uuid));
                 return map;
             }
 
