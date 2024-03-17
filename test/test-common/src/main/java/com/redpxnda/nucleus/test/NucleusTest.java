@@ -46,6 +46,7 @@ public class NucleusTest {
         */
         ConfigManager.register(ConfigBuilder.automatic(TestConfig.class)
                 .id("nucleus:test-common")
+                .fileLocation("nucleus/test")
                 .type(ConfigType.COMMON)
                 .creator(TestConfig::new)
                 .updateListener(i -> TestConfig.INSTANCE = i)

@@ -17,7 +17,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +76,7 @@ public class ConfigManager {
      */
     public static <T> ConfigObject<T> getConfigObjectByPath(Path path) {
         String relative = Platform.getConfigFolder().relativize(path).toString();
-        String location = relative.substring(0, relative.length() - 6); // 6 = ".jsonc".length()
+        String location = relative.substring(0, relative.length() - 6).replace('\\', '/'); // 6 = ".jsonc".length()
         ConfigObject<?> config = ConfigManager.getConfigObjectByFileLocation(location);
         return (ConfigObject<T>) config;
     }
@@ -93,15 +95,34 @@ public class ConfigManager {
                 .updateListener(config -> NucleusConfig.INSTANCE = config)
         );
 
-        LifecycleEvent.SETUP.register(() -> {
-            setupConfigs(ConfigType.COMMON);
+        LifecycleEvent.SETUP.register(() -> setupConfigs(ConfigType.COMMON));
+        LifecycleEvent.SERVER_STARTING.register(s -> setupConfigs(t -> t == ConfigType.SERVER_ONLY || t == ConfigType.SERVER_CLIENT_SYNCED));
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ClientLifecycleEvent.CLIENT_SETUP.register(s -> setupConfigs(ConfigType.CLIENT_ONLY)));
 
+        PlayerEvent.PLAYER_JOIN.register(sp -> configs.forEach((name, config) -> syncConfigWithPlayer(config, sp)));
+
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ClientLifecycleEvent.CLIENT_STARTED.register(s -> {
             if (NucleusConfig.INSTANCE != null && NucleusConfig.INSTANCE.watchChanges)
                 setupFileWatching();
+        }));
+        EnvExecutor.runInEnv(Env.SERVER, () -> () -> LifecycleEvent.SERVER_STARTED.register(s -> {
+            if (NucleusConfig.INSTANCE != null && NucleusConfig.INSTANCE.watchChanges)
+                setupFileWatching();
+        }));
+    }
+
+    private static void registerWatchingForSubpaths(Path start, WatchService watchService, WatchEvent.Kind<?>... events) throws IOException {
+        // Register the base directory
+        start.register(watchService, events);
+
+        // Register all subdirectories recursively
+        Files.walkFileTree(start, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                dir.register(watchService, events);
+                return FileVisitResult.CONTINUE;
+            }
         });
-        LifecycleEvent.SERVER_STARTING.register(s -> setupConfigs(t -> t == ConfigType.SERVER_ONLY || t == ConfigType.SERVER_CLIENT_SYNCED));
-        PlayerEvent.PLAYER_JOIN.register(sp -> configs.forEach((name, config) -> syncConfigWithPlayer(config, sp)));
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ClientLifecycleEvent.CLIENT_SETUP.register(s -> setupConfigs(ConfigType.CLIENT_ONLY)));
     }
 
     private static void setupFileWatching() {
@@ -109,21 +130,21 @@ public class ConfigManager {
             try {
                 Path configs = Platform.getConfigFolder();
                 WatchService service = FileSystems.getDefault().newWatchService();
-                configs.register(
-                        service,
-                        StandardWatchEventKinds.ENTRY_MODIFY
-                );
+                registerWatchingForSubpaths(configs, service, StandardWatchEventKinds.ENTRY_MODIFY);
 
+                boolean shouldSleep = false; // used to prevent sleeping on first update
                 while (true) {
                     WatchKey key = service.take();
 
-                    Thread.sleep(50); // Sleep to prevent picking up multiple of the same event
+                    if (shouldSleep)
+                        Thread.sleep(50); // Sleep to prevent picking up multiple of the same event
+                    else shouldSleep = true;
                     List<WatchEvent<?>> events = key.pollEvents();
                     if (!skipNextWatch.get()) {
                         for (WatchEvent<?> event : events) {
                             WatchEvent.Kind<?> kind = event.kind();
                             if (kind != StandardWatchEventKinds.ENTRY_MODIFY) return;
-                            Path path = (Path) event.context();
+                            Path path = ((Path) key.watchable()).resolve((Path) event.context());
 
                             if (path.toString().endsWith(".jsonc")) {
                                 if (Platform.getEnv() == EnvType.CLIENT && MinecraftClient.getInstance() != null)
