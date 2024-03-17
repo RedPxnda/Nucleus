@@ -37,8 +37,7 @@ public class FacetRegistry {
             try {
                 ((Facet) facet).loadNbt(element);
             } catch (ClassCastException ex) {
-                LOGGER.error("NBT data mismatch for Facet '{}'! Tried to give '{}', but it expected something different.", key, element);
-                throw new RuntimeException("Facet received unexpected NBT type during NBT load. Check logger error above.", ex);
+                LOGGER.error("NBT data mismatch for Facet '" + key + "'! Tried to give '" + element + "', but it expected something different.", ex);
             }
     }
 
