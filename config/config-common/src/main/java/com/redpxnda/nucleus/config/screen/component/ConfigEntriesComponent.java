@@ -253,22 +253,20 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isMouseOver(mouseX, mouseY)) {
-            if (minimizer.isMouseOver(mouseX, mouseY)) return minimizer.mouseClicked(mouseX, mouseY, button);
-            if (!isMinimized()) {
-                for (var c : components.values()) {
-                    ConfigComponent<?> component = c.getRight();
-                    if (focusedComponent != null && focusedComponent.mouseClicked(mouseX, mouseY, button)) {
-                        return true;
-                    } else if (component.isMouseOver(mouseX, mouseY)) {
-                        if (button == 0) {
-                            if (focusedComponent != null) focusedComponent.setFocused(false);
-                            component.setFocused(true);
-                            focusedComponent = component;
-                        }
-                        component.mouseClicked(mouseX, mouseY, button);
-                        return true;
+        if (minimizer.isMouseOver(mouseX, mouseY)) return minimizer.mouseClicked(mouseX, mouseY, button);
+        if (!isMinimized()) {
+            for (var c : components.values()) {
+                ConfigComponent<?> component = c.getRight();
+                if (focusedComponent != null && focusedComponent.mouseClicked(mouseX, mouseY, button)) {
+                    return true;
+                } else if (component.isMouseOver(mouseX, mouseY)) {
+                    if (button == 0) {
+                        if (focusedComponent != null) focusedComponent.setFocused(false);
+                        component.setFocused(true);
+                        focusedComponent = component;
                     }
+                    component.mouseClicked(mouseX, mouseY, button);
+                    return true;
                 }
             }
         }
@@ -277,28 +275,22 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (isMouseOver(mouseX, mouseY)) {
-            if (!isMinimized() && focusedComponent != null && focusedComponent.mouseReleased(mouseX, mouseY, button))
-                return true;
-        }
+        if (!isMinimized() && focusedComponent != null && focusedComponent.mouseReleased(mouseX, mouseY, button))
+            return true;
         return parent == null && super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (isMouseOver(mouseX, mouseY)) {
-            if (!isMinimized() && focusedComponent != null && focusedComponent.mouseDragged(mouseX, mouseY, button, deltaX, deltaY))
-                return true;
-        }
+        if (!isMinimized() && focusedComponent != null && focusedComponent.mouseDragged(mouseX, mouseY, button, deltaX, deltaY))
+            return true;
         return parent == null && super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (isMouseOver(mouseX, mouseY)) {
-            if (!isMinimized() && focusedComponent != null && focusedComponent.mouseScrolled(mouseX, mouseY, amount))
-                return true;
-        }
+        if (!isMinimized() && focusedComponent != null && focusedComponent.mouseScrolled(mouseX, mouseY, amount))
+            return true;
         return parent == null && super.mouseScrolled(mouseX, mouseY, amount);
     }
 

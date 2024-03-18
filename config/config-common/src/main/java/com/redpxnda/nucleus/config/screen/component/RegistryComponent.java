@@ -47,6 +47,11 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
         }, x, y+24, width, 54);
     }
 
+    @Override
+    public void onRemoved() {
+        if (parent != null && !isValid) parent.validateChild(this);
+    }
+
     public void updateValidity() {
         if (parent != null) {
             if (!checkValidity()) {
@@ -183,7 +188,7 @@ public class RegistryComponent<T> extends ClickableWidget implements ConfigCompo
     @Override
     public void setParent(ConfigComponent<?> widget) {
         parent = widget;
-        idComp.setParent(this);
+        //idComp.setParent(this);
         updateValidity();
     }
 

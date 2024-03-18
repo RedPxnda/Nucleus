@@ -207,7 +207,7 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
 
     @Override
     public boolean mouseClicked(double mX, double mY, int button) {
-        if (!isMouseOver(mX, mY)) return false;
+        //if (!isMouseOver(mX, mY)) return false;
         if (minimizer.isMouseOver(mX, mY)) return minimizer.mouseClicked(mX, mY, button);
         if (!minimized) {
             if (adder.isMouseOver(mX, mY)) return adder.mouseClicked(mX, mY, button);

@@ -13,6 +13,8 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends ClickableWidget implements ConfigComponent<T> {
     public final TagEntryType tagEntryType = new TagEntryType();
@@ -24,9 +26,13 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Click
     public ConfigComponent<?> parent;
     public ConfigComponent<?> focusedComponent = null;
     public final Text description;
+    public final Function<E, T> fromObj;
+    public final Function<TagKey<E>, T> fromTag;
 
-    public TaggableEntryComponent(Registry<E> registry, RegistryKey<? extends Registry<E>> registryKey, String typeIdentifier, int x, int y) {
+    public TaggableEntryComponent(Function<E, T> fromObj, Function<TagKey<E>, T> fromTag, Registry<E> registry, RegistryKey<? extends Registry<E>> registryKey, String typeIdentifier, int x, int y) {
         super(x, y, 142, 8, Text.empty());
+        this.fromObj = fromObj;
+        this.fromTag = fromTag;
         this.registry = registry;
         this.registryKey = registryKey;
 
@@ -55,7 +61,7 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Click
 
     @Override
     public T getValue() {
-        return (T) entry.getValue();
+        return (T) ((EntryType) entry.getType()).createTaggableEntry(entry.getValue());
     }
 
     @Override
@@ -163,8 +169,9 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Click
 
     }
 
-    public abstract static class EntryType<A> {
+    public abstract class EntryType<A> {
         public abstract ConfigComponent<A> createEntry();
+        public abstract T createTaggableEntry(A component);
     }
 
     public class TagEntryType extends EntryType<TagKey<E>> {
@@ -172,12 +179,22 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Click
         public ConfigComponent<TagKey<E>> createEntry() {
             return new TagKeyComponent<>(registryKey, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
         }
+
+        @Override
+        public T createTaggableEntry(TagKey<E> component) {
+            return fromTag.apply(component);
+        }
     }
 
     public class ObjectEntryType extends EntryType<E> {
         @Override
         public ConfigComponent<E> createEntry() {
             return new RegistryComponent<>(registry, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20);
+        }
+
+        @Override
+        public T createTaggableEntry(E component) {
+            return fromObj.apply(component);
         }
     }
 
@@ -203,7 +220,7 @@ public class TaggableEntryComponent<E, T extends TaggableEntry<E>> extends Click
         }
 
         public boolean isMouseOver(double mouseX, double mouseY) {
-            return dropdown.isMouseOver(mouseX, mouseY) || (component != null && component.isMouseOver(mouseX, mouseY));
+            return dropdown.isMouseOver(mouseX, mouseY) || (dropdown.isOpen && dropdown.dropdown.isMouseOver(mouseX, mouseY)) || (component != null && component.isMouseOver(mouseX, mouseY));
         }
 
         public int getWidth() {

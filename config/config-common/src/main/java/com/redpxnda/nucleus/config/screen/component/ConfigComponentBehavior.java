@@ -136,9 +136,9 @@ public class ConfigComponentBehavior {
         registerClass(BlockList.class, () -> new TagListComponent<>(BlockList::of, Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
         registerClass(EntityTypeList.class, () -> new EntityTypeListComponent(0, 0));
 
-        registerClass(TaggableItem.class, () -> new TaggableEntryComponent<>(Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
-        registerClass(TaggableBlock.class, () -> new TaggableEntryComponent<>(Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
-        registerClass(TaggableEntityType.class, () -> new TaggableEntryComponent<>(Registries.ENTITY_TYPE, RegistryKeys.ENTITY_TYPE, "entity", 0, 0));
+        registerClass(TaggableItem.class, () -> new TaggableEntryComponent<>(TaggableItem::new, TaggableItem::new, Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
+        registerClass(TaggableBlock.class, () -> new TaggableEntryComponent<>(TaggableBlock::new, TaggableBlock::new, Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
+        registerClass(TaggableEntityType.class, () -> new TaggableEntryComponent<>(TaggableEntityType::new, TaggableEntityType::new, Registries.ENTITY_TYPE, RegistryKeys.ENTITY_TYPE, "entity", 0, 0));
 
         /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/ // tod-o dispatches(?)
         MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, passes) -> new RegistryComponent(v, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20)));

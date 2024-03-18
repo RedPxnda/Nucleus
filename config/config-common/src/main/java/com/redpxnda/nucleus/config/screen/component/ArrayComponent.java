@@ -194,7 +194,7 @@ public class ArrayComponent extends ClickableWidget implements ConfigComponent {
 
     @Override
     public boolean mouseClicked(double mX, double mY, int button) {
-        if (!isMouseOver(mX, mY)) return false;
+        //if (!isMouseOver(mX, mY)) return false;
         if (minimizer.isMouseOver(mX, mY)) return minimizer.mouseClicked(mX, mY, button);
         if (!minimized) {
             if (adder.isMouseOver(mX, mY)) return adder.mouseClicked(mX, mY, button);

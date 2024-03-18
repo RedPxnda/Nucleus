@@ -110,6 +110,8 @@ public class TestConfig {
         public Float more = 5f;
 
         public String string = "adwadawd!";
+
+        public TestEnum enu = TestEnum.another;
     }
 
     /*@Comment("This is a list of entity types, or entity type tags!")
