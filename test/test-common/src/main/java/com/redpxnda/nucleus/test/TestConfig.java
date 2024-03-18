@@ -3,11 +3,13 @@ package com.redpxnda.nucleus.test;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.codec.tag.EntityTypeList;
+import com.redpxnda.nucleus.codec.tag.TaggableBlock;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.config.preset.ConfigProvider;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
 import com.redpxnda.nucleus.util.FloatRange;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -25,7 +27,9 @@ public class TestConfig {
     public static TestConfig INSTANCE = null;
 
     public enum TestEnum {
+        @Comment("first dadw")
         first,
+        @Comment("second gwah")
         second,
         third,
         fourth,
@@ -58,6 +62,8 @@ public class TestConfig {
 
     @Comment("This is a collection test")
     public List<TestEnum> list = new ArrayList<>();
+
+    public TaggableBlock taggableBlock = new TaggableBlock(Blocks.RESPAWN_ANCHOR);
 
     public TestEnum anEnum = TestEnum.first;
 
@@ -93,6 +99,17 @@ public class TestConfig {
         public Integer more = 5;
 
         public String innerValues = "aggggh!";
+
+        public InnerConfig2 innerInner = new InnerConfig2();
+    }
+
+    @ConfigAutoCodec.ConfigClassMarker
+    public static class InnerConfig2 {
+        @Comment("inner config, inner integer")
+        @CodecBehavior.Optional
+        public Float more = 5f;
+
+        public String string = "adwadawd!";
     }
 
     /*@Comment("This is a list of entity types, or entity type tags!")

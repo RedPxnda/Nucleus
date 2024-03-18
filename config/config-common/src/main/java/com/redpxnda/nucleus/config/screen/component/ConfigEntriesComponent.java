@@ -29,7 +29,8 @@ import java.util.*;
 public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawable, Element, ConfigComponent<T> {
     private static final Logger LOGGER = Nucleus.getLogger();
     public static final Text DESC_TEXT = Text.translatable("nucleus.config_screen.entries.description");
-    public static final int KEY_TEXT_WIDTH = 200;
+    public static final int KEY_TEXT_WIDTH = 175;
+    public static final int CHILD_OFFSET = 12;
     public static final int GRADIENT_TINT_START = new Color(0, 0, 0, 200).argb();
     public static final int GRADIENT_TINT_END = new Color(0, 0, 0, 100).argb();
 
@@ -96,7 +97,7 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
             components.forEach((k, c) -> {
                 var comp = c.getRight();
                 if (comp.getInlineMode() == InlineMode.INLINE) comp.setX(getX() + KEY_TEXT_WIDTH);
-                else comp.setX(getX() + 38);
+                else comp.setX(getX() + CHILD_OFFSET);
                 comp.setY(contentHeight - (int) getScrollY());
                 comp.performPositionUpdate();
                 int newWidth;
@@ -175,23 +176,23 @@ public class ConfigEntriesComponent<T> extends ScrollableWidget implements Drawa
                 int invalidWidth = textRenderer.getWidth("(!) ");
                 if (invalids.contains(component)) {
                     textOffset += invalidWidth;
-                    context.drawText(textRenderer, "(!) ", getX() + 20, y + 6, -43691, true);
-                    if (mouseX >= getX() + 20 && mouseX <= getX() + 20 + invalidWidth && mouseY >= y + 6 && mouseY <= y + 6 + textRenderer.fontHeight)
+                    context.drawText(textRenderer, "(!) ", getX() + CHILD_OFFSET - 4, y + 6, -43691, true);
+                    if (mouseX >= getX() + CHILD_OFFSET - 4 && mouseX <= getX() + CHILD_OFFSET - 4 + invalidWidth && mouseY >= y + 6 && mouseY <= y + 6 + textRenderer.fontHeight)
                         context.drawTooltip(textRenderer, textRenderer.wrapLines(Text.translatable("nucleus.config_screen.invalid_entry"), 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
                 }
 
                 Comment comment = field.getAnnotation(Comment.class);
                 int commentWidth = textRenderer.getWidth("(?) ");
                 if (comment != null) {
-                    context.drawText(textRenderer, "(?) ", getX() + 20 + textOffset, y + 6, -11184811, true);
-                    if (mouseX >= getX() + 20 + textOffset && mouseX <= getX() + 20 + textOffset + commentWidth + textWidth && mouseY >= y + 6 && mouseY <= y + 6 + textRenderer.fontHeight)
+                    context.drawText(textRenderer, "(?) ", getX() + CHILD_OFFSET - 4 + textOffset, y + 6, -11184811, true);
+                    if (mouseX >= getX() + CHILD_OFFSET - 4 + textOffset && mouseX <= getX() + CHILD_OFFSET - 4 + textOffset + commentWidth + textWidth && mouseY >= y + 6 && mouseY <= y + 6 + textRenderer.fontHeight)
                         context.drawTooltip(textRenderer, textRenderer.wrapLines(Text.literal(comment.value()), 150), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY);
                     textOffset += commentWidth;
                 }
 
-                context.drawText(textRenderer, key, getX() + 20 + textOffset, y + 6, Color.WHITE.argb(), true); // todo key translations
+                context.drawText(textRenderer, key, getX() + CHILD_OFFSET - 4 + textOffset, y + 6, Color.WHITE.argb(), true); // todo key translations
                 if (component.getInlineMode() == InlineMode.DRAW_LINE)
-                    context.drawVerticalLine(getX() + 30, y + 24, y + component.getHeight(), Color.WHITE.argb());
+                    context.drawVerticalLine(getX() + CHILD_OFFSET, y + 24, y + component.getHeight(), Color.WHITE.argb());
                 component.render(context, mouseX, mouseY, delta);
                 if (parent instanceof ConfigEntriesComponent<?> c) renderInstructions = c.renderInstructions;
                 if (renderInstructions) component.drawInstructionText(context, mouseX, mouseY);

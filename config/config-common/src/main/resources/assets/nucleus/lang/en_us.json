@@ -26,6 +26,7 @@
   "nucleus.config_screen.color.description": "This is a color field. Enter a hex code, optionally including alpha.",
   "nucleus.config_screen.identifier.description": "This is an identifier field. Enter a namespace and path separated by a colon. Ex. \"mod:example\"",
   "nucleus.config_screen.registry.description": "This is a registry field. Enter in a specific key or use the right hand side arrow to find one.",
+  "nucleus.config_screen.taggable_entry.description": "This field is a taggable entry of %1$s. It can either be a tag or a %1$s",
   "nucleus.config_screen.tag.description": "This is a tag field. Enter a namespace and path for some tag separated by a colon. Ex. \"mod:example\"",
   "nucleus.json_editor.title": "Editing Raw JSON",
   "nucleus.json_editor.save_fail": "Failed to Save Changes!",
@@ -34,5 +35,5 @@
   "nucleus.config_screen.json.invalid_description": "This field's type is unrecognized, and hence must be edited through a raw json editor. The provided json is invalid!",
   "nucleus.config_screen.json.invalid_toast_title": "Failed to parse JSON!",
   "nucleus.config_screen.json.invalid_toast_description": "Check logs to see the error.",
-  "nucleus.config_screen.tag_list.description": "This field is a list of %1$s. Entries can either be a tag or a %1$s"
+  "nucleus.config_screen.tag_list.description": "This field is a list of %1$s. Entries can either be a tag or a %1$s."
 }

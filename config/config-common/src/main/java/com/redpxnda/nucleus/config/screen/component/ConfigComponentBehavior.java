@@ -7,9 +7,7 @@ import com.redpxnda.nucleus.codec.behavior.AnnotationBehaviorGetter;
 import com.redpxnda.nucleus.codec.behavior.BehaviorOutline;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.codec.behavior.TypeBehaviorGetter;
-import com.redpxnda.nucleus.codec.tag.BlockList;
-import com.redpxnda.nucleus.codec.tag.EntityTypeList;
-import com.redpxnda.nucleus.codec.tag.ItemList;
+import com.redpxnda.nucleus.codec.tag.*;
 import com.redpxnda.nucleus.config.preset.ConfigPreset;
 import com.redpxnda.nucleus.util.*;
 import net.fabricmc.api.EnvType;
@@ -132,11 +130,15 @@ public class ConfigComponentBehavior {
         registerClass(ConfigPreset.class, (field, cls, raw, params, root) -> {
             if (params == null || !(params[1] instanceof Class<?> clazz)) return null;
             return new PresetComponent(MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20, clazz);
-        }); // todo do the rest (all autocodec ones,, TAG LISTS)
+        });
 
         registerClass(ItemList.class, () -> new TagListComponent<>(ItemList::of, Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
         registerClass(BlockList.class, () -> new TagListComponent<>(BlockList::of, Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
         registerClass(EntityTypeList.class, () -> new EntityTypeListComponent(0, 0));
+
+        registerClass(TaggableItem.class, () -> new TaggableEntryComponent<>(Registries.ITEM, RegistryKeys.ITEM, "item", 0, 0));
+        registerClass(TaggableBlock.class, () -> new TaggableEntryComponent<>(Registries.BLOCK, RegistryKeys.BLOCK, "block", 0, 0));
+        registerClass(TaggableEntityType.class, () -> new TaggableEntryComponent<>(Registries.ENTITY_TYPE, RegistryKeys.ENTITY_TYPE, "entity", 0, 0));
 
         /*registerClass(ParticleEffect.class, ParticleTypes.TYPE_CODEC);*/ // tod-o dispatches(?)
         MiscUtil.objectsToRegistries.forEach((k, v) -> registerClassIfAbsent(k, (f, cls, raw, params, passes) -> new RegistryComponent(v, MinecraftClient.getInstance().textRenderer, 0, 0, 150, 20)));

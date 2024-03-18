@@ -17,6 +17,12 @@ public class EntityTypeListComponent extends TagListComponent<EntityType<?>, Ent
         entryTypes.put("predicate", predicateEntryType);
     }
 
+    @Override
+    public void setValue(EntityTypeList value) {
+        super.setValue(value);
+        value.getBuiltins().forEach(str -> components.add(new Entry(predicateEntryType, str)));
+    }
+
     public class PredicateEntryType extends EntryType<String> {
         @Override
         public ConfigComponent<String> createEntry() {
