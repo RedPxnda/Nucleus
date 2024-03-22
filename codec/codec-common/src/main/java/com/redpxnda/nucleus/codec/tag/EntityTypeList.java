@@ -15,6 +15,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.village.Merchant;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class EntityTypeList extends TagList<EntityType<?>> {
 
     public EntityTypeList(List<EntityType<?>> objects, List<TagKey<EntityType<?>>> tags, List<String> builtins) {
         super(objects, tags, Registries.ENTITY_TYPE, RegistryKeys.ENTITY_TYPE);
-        this.builtins = builtins;
+        this.builtins = new ArrayList<>(builtins);
     }
 
     public boolean contains(Entity obj) {
