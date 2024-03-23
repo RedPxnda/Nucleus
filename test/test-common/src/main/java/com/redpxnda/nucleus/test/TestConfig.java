@@ -67,8 +67,6 @@ public class TestConfig {
 
     public TestEnum anEnum = TestEnum.first;
 
-    public Map<String, Integer> map = new HashMap<>();
-
     public InnerConfig inner = new InnerConfig();
 
     @Comment("This field is an optional integer.")
@@ -91,6 +89,8 @@ public class TestConfig {
     public TagKey<EntityType<?>> entityTypeTag = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier("sussy:tag"));
 
     public EntityTypeList entityTypeList = EntityTypeList.of();
+
+    public Map<Item, String> registryMap = new HashMap<>();
 
     @ConfigAutoCodec.ConfigClassMarker
     public static class InnerConfig {

@@ -167,6 +167,7 @@ public class MapComponent<K, V, M extends Map<K, V>> extends ClickableWidget imp
                 if (newWidth > width) width = newWidth;
                 height += element.getHeight();
                 remover.setPosition(element.getX() + element.getWidth() + 8, element.getY());
+                key.performPositionUpdate();
                 element.performPositionUpdate();
             });
             height += 8;
