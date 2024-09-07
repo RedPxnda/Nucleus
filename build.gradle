@@ -14,7 +14,7 @@ import java.nio.file.Files
 
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
     id "com.github.johnrengelman.shadow" version "7.1.2" apply false
 }
 
@@ -747,14 +747,14 @@ static def setupAccessWideners(Project proj, String path) {
 
             remapJar {
                 if (isFabric) injectAccessWidener = true
-                if (isNeoForge) atAccessWideners.add "nucleus.accessWidener"
+                if (isNeoForge) atAccessWideners.add "nucleus.accessWidener" // todo not this
             }
         }
     }
 }
 
 static def setupAccessWideners(Project proj) {
-    setupAccessWideners(proj, "src/main/resources/nucleus-${proj.name}.accesswidener")
+    setupAccessWideners(proj, "src/main/resources/nucleus-${proj.name}.accessWidener")
 }
 
 static def setupSharedDepends(Project proj) {

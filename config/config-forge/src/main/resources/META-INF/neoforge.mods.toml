@@ -1,5 +1,5 @@
 license = 'MIT'
-mods = [{modId = 'nucleus_config', version = '2.1.5', displayName = 'Nucleus (Config)', description = 'A dynamic and easy-to-use config library', authors = 'RedPxnda', logoFile = 'icon.png'}]
+mods = [{modId = 'nucleus_config', version = '2.1.6', displayName = 'Nucleus (Config)', description = 'A dynamic and easy-to-use config library', authors = 'RedPxnda', logoFile = 'icon.png'}]
 dependencies.nucleus_config = [{modId = 'neoforge', mandatory = true, versionRange = '[21.0.0-beta,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
 mixins = []
 modLoader = 'javafml'

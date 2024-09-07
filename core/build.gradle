@@ -1,2 +1,2 @@
-setupAccessWideners(project, "src/main/resources/nucleus.accesswidener")
+setupAccessWideners(project, "src/main/resources/nucleus.accessWidener")
 includeMixinExtras(project)
