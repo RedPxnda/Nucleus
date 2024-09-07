@@ -1,6 +1,6 @@
 {
   "id": "nucleus_expression",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "name": "Nucleus (Expression)",
   "description": "A way to execute code, perform calculations, etc. in data",
   "authors": [

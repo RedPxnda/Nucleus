@@ -1,6 +1,6 @@
 {
   "id": "nucleus",
-  "version": "2.1.2",
+  "version": "1.1.2",
   "name": "Nucleus (Core)",
   "description": "A library mod focused on making multi-platform mod development easier.",
   "authors": [
