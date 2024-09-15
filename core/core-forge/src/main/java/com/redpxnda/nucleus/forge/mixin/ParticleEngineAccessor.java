@@ -10,6 +10,6 @@ import java.util.Map;
 
 @Mixin(ParticleManager.class)
 public interface ParticleEngineAccessor {
-    @Accessor("f_107293_")
+    @Accessor("factories")
     Map<Identifier, ParticleFactory<?>> getProviders();
 }
