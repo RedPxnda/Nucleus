@@ -10,4 +10,4 @@ transitive-accessible class net/minecraft/client/render/item/HeldItemRenderer$Ha
 transitive-accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
 transitive-accessible field net/minecraft/client/particle/Particle MAX_SQUARED_COLLISION_CHECK_DISTANCE D
 transitive-accessible field net/minecraft/client/particle/Particle stopped Z
-transitive-accessible method net/minecraft/item/ItemGroup <init> (Lnet/minecraft/item/ItemGroup$Row;ILnet/minecraft/item/ItemGroup$Type;Lnet/minecraft/text/Text;Ljava/util/function/Supplier;Lnet/minecraft/item/ItemGroup$EntryCollector;)V
+#transitive-accessible method net/minecraft/item/ItemGroup <init> (Lnet/minecraft/item/ItemGroup$Row;ILnet/minecraft/item/ItemGroup$Type;Lnet/minecraft/text/Text;Ljava/util/function/Supplier;Lnet/minecraft/item/ItemGroup$EntryCollector;)V
