@@ -182,7 +182,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         }
 
         protected final Function<PriorityMap<T>, T> function;
-        protected final PriorityMap<T> listeners = new PriorityMap<>();
+        protected PriorityMap<T> listeners = new PriorityMap<>();
         protected T invoker = null;
 
         protected Impl(Function<PriorityMap<T>, T> function) {
@@ -191,7 +191,9 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void register(T listener, float prio) {
-            listeners.put(listener, prio);
+            PriorityMap<T> copy = new PriorityMap<>(listeners);
+            copy.put(listener, prio);
+            listeners = copy;
         }
 
         @Override
@@ -201,7 +203,9 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void sort() {
-            listeners.sort();
+            PriorityMap<T> copy = new PriorityMap<>(listeners);
+            copy.sort();
+            listeners = copy;
         }
 
         @Override
@@ -212,12 +216,14 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void register(T listener) {
-            listeners.put(listener, 0f);
+            register(listener, 0f);
         }
 
         @Override
         public void unregister(T listener) {
-            listeners.remove(listener);
+            PriorityMap<T> copy = new PriorityMap<>(listeners);
+            copy.remove(listener);
+            listeners = copy;
         }
 
         @Override
@@ -227,12 +233,15 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void clearListeners() {
-            listeners.clear();
+            PriorityMap<T> copy = new PriorityMap<>(listeners);
+            copy.clear();
+            listeners = copy;
         }
 
         public void update() {
-            listeners.sortIfUnsorted();
-            invoker = listeners.size() == 1 ? listeners.keySet().stream().findFirst().get() : function.apply(listeners);
+            if (!hasBeenSorted())
+                sort();
+            invoker = function.apply(listeners);
         }
     }
 
