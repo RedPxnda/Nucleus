@@ -17,7 +17,7 @@ public class TranslationStorageMixin {
     @Inject(
             method = "loadFrom",
             at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap;copyOf(Ljava/util/Map;)Lcom/google/common/collect/ImmutableMap;", remap = false))
-    private static void nucleus$adjustTranslationsEvent(ResourceManager resourceManager, List<String> definitions, boolean rightToLeft, CallbackInfoReturnable<ClientLanguage> cir, @Local Map<String, String> map) {
+    private static void nucleus$adjustTranslationsEvent(ResourceManager resourceManager, List<String> definitions, boolean rightToLeft, CallbackInfoReturnable<ClientLanguage> cir, @Local(ordinal = 0) Map<String, String> map) {
         ClientEvents.TRANSLATIONS_RELOADED.invoker().adjust(map);
     }
 }
