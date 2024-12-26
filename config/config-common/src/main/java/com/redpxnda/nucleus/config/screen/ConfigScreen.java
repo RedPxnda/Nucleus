@@ -112,7 +112,6 @@ public class ConfigScreen<T> extends Screen {
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         if (saveButton != null) saveButton.active = widget.invalids.isEmpty();
-        context.drawString(font, title, 8, 16 - font.lineHeight/2, -11184811, true);
         if (widget.scrollbarVisible())
             context.fill(widget.getX() + widget.getWidth(), widget.getY(), widget.getX() + widget.getWidth() + 8, widget.getY() + widget.getHeight(), -16777216);
         context.pose().pushPose();
@@ -120,6 +119,7 @@ public class ConfigScreen<T> extends Screen {
         renderBackground(context, mouseX, mouseY, delta);
         context.pose().popPose();
         super.render(context, mouseX, mouseY, delta);
+        context.drawString(font, title, 8, 16 - font.lineHeight/2, -11184811, true);
     }
 
     @Override
