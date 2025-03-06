@@ -109,7 +109,7 @@ public class Rendering {
             for (Map.Entry<Holder<MobEffect>, MobEffectInstance> entry : entity.getActiveEffectsMap().entrySet()) {
                 MobEffectInstance instance = entry.getValue();
                 Holder<MobEffect> effect = entry.getKey();
-                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
+                if (effect.value() instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     boolean result = rendering.renderPre(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
                     if (result)
                         return EventResult.interruptFalse();
@@ -120,7 +120,7 @@ public class Rendering {
         RenderEvents.LIVING_ENTITY_RENDER.register((stage, model, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
             if (stage != RenderEvents.EntityRenderStage.POST) return EventResult.pass();
             entity.getActiveEffectsMap().forEach((effect, instance) -> {
-                if (effect instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
+                if (effect.value() instanceof RenderingMobEffect rendering && (instance.getDuration() > 0 || instance.isInfiniteDuration())) {
                     rendering.renderPost(instance, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight);
                 }
             });
