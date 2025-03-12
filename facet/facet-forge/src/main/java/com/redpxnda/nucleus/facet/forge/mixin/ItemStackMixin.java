@@ -17,6 +17,6 @@ public abstract class ItemStackMixin {
     @Inject(method = "<init>(Lnet/minecraft/item/ItemConvertible;ILnet/minecraft/nbt/NbtCompound;)V", at = @At("RETURN"))
     private void nucleus$setupFacetsOnItemCreation(ItemConvertible item, int count, NbtCompound capNbt, CallbackInfo ci) {
         if (isEmpty()) return;
-        ItemStackFacet.setupFacets((ItemStack) (Object) this);
+        //ItemStackFacet.setupFacets((ItemStack) (Object) this);
     }
 }

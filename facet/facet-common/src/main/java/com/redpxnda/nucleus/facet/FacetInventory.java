@@ -49,9 +49,9 @@ public class FacetInventory {
         return getInternal(entity);
     }
 
-    public static FacetInventory get(ItemStack stack) {
-        return getInternal(stack);
-    }
+    //public static FacetInventory get(ItemStack stack) {
+    //    return getInternal(stack);
+    //}
 
     private static FacetInventory getInternal(Object holder) {
         return ((FacetHolder) holder).getFacets();

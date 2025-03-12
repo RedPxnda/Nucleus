@@ -14,6 +14,6 @@ public abstract class ItemStackMixin {
     @Inject(method = "<init>(Lnet/minecraft/item/ItemConvertible;I)V", at = @At("RETURN"))
     private void nucleus$setupFacetsOnItemCreation(ItemConvertible item, int count, CallbackInfo ci) {
         if (MiscUtil.isItemEmptyIgnoringCount((ItemStack) (Object) this)) return;
-        ItemStackFacet.setupFacets((ItemStack) (Object) this);
+        //ItemStackFacet.setupFacets((ItemStack) (Object) this);
     }
 }

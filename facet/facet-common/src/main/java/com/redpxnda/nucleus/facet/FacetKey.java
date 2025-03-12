@@ -34,9 +34,9 @@ public class FacetKey<T extends Facet<?>> {
         return getOptionalInternal(holder);
     }
 
-    public Optional<T> getOptional(ItemStack holder) {
-        return getOptionalInternal(holder);
-    }
+    //public Optional<T> getOptional(ItemStack holder) {
+    //    return getOptionalInternal(holder);
+    //}
 
     public Optional<T> getOptional(StatusEffectInstance holder) {
         return getOptionalInternal(holder);
