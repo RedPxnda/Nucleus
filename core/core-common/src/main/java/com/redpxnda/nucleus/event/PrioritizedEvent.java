@@ -7,12 +7,13 @@ import dev.architectury.event.Event;
 import dev.architectury.event.EventResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -30,7 +31,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
     void sort();
 
-    static <T> PrioritizedEvent<T> of(Function<PriorityMap<T>, T> function) {
+    static <T> PrioritizedEvent<T> of(BiFunction<Impl<T>, PriorityMap<T>, T> function) {
         return new Impl<>(function);
     }
 
@@ -41,11 +42,11 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T> PrioritizedEvent<T> createLoop(Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 for (T listener : listeners.keySet()) {
-                    Impl.invokeMethod(listener, method, args);
+                    i.invokeMethodOptimized(listener, method, args);
                 }
                 return null;
             }
@@ -59,11 +60,11 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T> PrioritizedEvent<T> createObject(Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 for (T listener : listeners.keySet()) {
-                    Object result = Impl.invokeMethod(listener, method, args);
+                    Object result = i.invokeMethodOptimized(listener, method, args);
                     if (result != null) return result;
                 }
                 return null;
@@ -78,11 +79,11 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T> PrioritizedEvent<T> createEventResult(Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 for (T listener : listeners.keySet()) {
-                    EventResult result = Objects.requireNonNull(Impl.invokeMethod(listener, method, args));
+                    EventResult result = Objects.requireNonNull(i.invokeMethodOptimized(listener, method, args));
                     if (result.interruptsFurtherEvaluation()) return result;
                 }
                 return EventResult.pass();
@@ -97,11 +98,11 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T> PrioritizedEvent<T> createBoolean(Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 for (T listener : listeners.keySet()) {
-                    boolean result = Objects.requireNonNull(Impl.invokeMethod(listener, method, args));
+                    boolean result = Objects.requireNonNull(i.invokeMethodOptimized(listener, method, args));
                     if (!result) return false;
                 }
                 return EventResult.pass();
@@ -116,11 +117,11 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T> PrioritizedEvent<T> createCompoundEventResult(Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 for (T listener : listeners.keySet()) {
-                    CompoundEventResult<?> result = Objects.requireNonNull(Impl.invokeMethod(listener, method, args));
+                    CompoundEventResult<?> result = Objects.requireNonNull(i.invokeMethodOptimized(listener, method, args));
                     if (result.interruptsFurtherEvaluation()) return result;
                 }
                 return CompoundEventResult.pass();
@@ -135,12 +136,12 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T, R> PrioritizedEvent<T> createDynamic(Function<List<R>, R> combiner, Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 List<R> results = new ArrayList<>();
                 for (T listener : listeners.keySet()) {
-                    R result = Impl.invokeMethod(listener, method, args);
+                    R result = i.invokeMethodOptimized(listener, method, args);
                     results.add(result);
                 }
                 return combiner.apply(results);
@@ -155,12 +156,12 @@ public interface PrioritizedEvent<T> extends Event<T> {
     }
 
     static <T, R extends Interruptable> PrioritizedEvent<T> createInterruptable(Function<List<R>, R> combiner, Class<T> cls) {
-        return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
+        return of((i, listeners) -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
             protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
                 List<R> results = new ArrayList<>();
                 for (T listener : listeners.keySet()) {
-                    R result = Impl.invokeMethod(listener, method, args);
+                    R result = i.invokeMethodOptimized(listener, method, args);
                     if (result.isOverwritten()) return result;
                     results.add(result);
                     if (result.isInterrupted()) break;
@@ -191,11 +192,23 @@ public interface PrioritizedEvent<T> extends Event<T> {
                     .bindTo(listener).invokeWithArguments(args);
         }
 
-        protected final Function<PriorityMap<T>, T> function;
+        private <R> R invokeMethodOptimized(T listener, Method method, Object[] args) throws Throwable {
+            return (R) methodLookup.computeIfAbsent(listener, (t) -> new ConcurrentHashMap<>()).computeIfAbsent(method, (m -> {
+                try {
+                    return MethodHandles.lookup().unreflect(method)
+                            .bindTo(listener);
+                } catch (RuntimeException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })).invokeWithArguments(args);
+        }
+
+        protected final BiFunction<Impl<T>, PriorityMap<T>, T> function;
         protected final PriorityMap<T> listeners = new PriorityMap<>();
+        public Map<T, Map<Method, MethodHandle>> methodLookup = new ConcurrentHashMap<>();
         protected T invoker = null;
 
-        protected Impl(Function<PriorityMap<T>, T> function) {
+        protected Impl(BiFunction<Impl<T>, PriorityMap<T>, T> function) {
             this.function = function;
         }
 
@@ -204,6 +217,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
             synchronized (listeners) {
                 listeners.put(listener, prio);
                 listeners.sort();
+                methodLookup = new HashMap<>();
             }
         }
 
@@ -214,8 +228,9 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void sort() {
-            synchronized (listeners){
+            synchronized (listeners) {
                 listeners.sort();
+                methodLookup = new HashMap<>();
             }
         }
 
@@ -235,6 +250,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
             synchronized (listeners) {
                 listeners.remove(listener);
                 listeners.sort();
+                methodLookup = new HashMap<>();
             }
         }
 
@@ -248,14 +264,16 @@ public interface PrioritizedEvent<T> extends Event<T> {
             synchronized (listeners) {
                 listeners.clear();
                 listeners.sort();
+                methodLookup = new HashMap<>();
             }
         }
 
         public void update() {
             if (!hasBeenSorted())
                 sort();
-            synchronized (listeners){
-                invoker = function.apply(listeners);
+            synchronized (listeners) {
+                invoker = function.apply(this, listeners);
+                methodLookup = new HashMap<>();
             }
         }
     }
