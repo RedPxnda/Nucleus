@@ -25,7 +25,9 @@ import java.util.function.Function;
  */
 public interface PrioritizedEvent<T> extends Event<T> {
     void register(T listener, float prio);
+
     boolean hasBeenSorted();
+
     void sort();
 
     static <T> PrioritizedEvent<T> of(Function<PriorityMap<T>, T> function) {
@@ -37,6 +39,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createLoop((Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T> PrioritizedEvent<T> createLoop(Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -54,6 +57,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createObject((Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T> PrioritizedEvent<T> createObject(Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -72,6 +76,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createEventResult((Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T> PrioritizedEvent<T> createEventResult(Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -90,6 +95,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createBoolean((Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T> PrioritizedEvent<T> createBoolean(Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -108,6 +114,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createCompoundEventResult((Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T> PrioritizedEvent<T> createCompoundEventResult(Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -126,6 +133,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createDynamic(combiner, (Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T, R> PrioritizedEvent<T> createDynamic(Function<List<R>, R> combiner, Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -145,6 +153,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         if (typeGetter.length != 0) throw new IllegalStateException("Type getter array must be empty!");
         return createInterruptable(combiner, (Class<T>) typeGetter.getClass().getComponentType());
     }
+
     static <T, R extends Interruptable> PrioritizedEvent<T> createInterruptable(Function<List<R>, R> combiner, Class<T> cls) {
         return of(listeners -> (T) Proxy.newProxyInstance(PrioritizedEvent.class.getClassLoader(), new Class[]{cls}, new AbstractInvocationHandler() {
             @Override
@@ -172,6 +181,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
      */
     interface Interruptable {
         boolean isInterrupted();
+
         boolean isOverwritten();
     }
 
@@ -182,7 +192,7 @@ public interface PrioritizedEvent<T> extends Event<T> {
         }
 
         protected final Function<PriorityMap<T>, T> function;
-        protected PriorityMap<T> listeners = new PriorityMap<>();
+        protected final PriorityMap<T> listeners = new PriorityMap<>();
         protected T invoker = null;
 
         protected Impl(Function<PriorityMap<T>, T> function) {
@@ -191,9 +201,10 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void register(T listener, float prio) {
-            PriorityMap<T> copy = new PriorityMap<>(listeners);
-            copy.put(listener, prio);
-            listeners = copy;
+            synchronized (listeners) {
+                listeners.put(listener, prio);
+                listeners.sort();
+            }
         }
 
         @Override
@@ -203,9 +214,9 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void sort() {
-            PriorityMap<T> copy = new PriorityMap<>(listeners);
-            copy.sort();
-            listeners = copy;
+            synchronized (listeners){
+                listeners.sort();
+            }
         }
 
         @Override
@@ -221,9 +232,10 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void unregister(T listener) {
-            PriorityMap<T> copy = new PriorityMap<>(listeners);
-            copy.remove(listener);
-            listeners = copy;
+            synchronized (listeners) {
+                listeners.remove(listener);
+                listeners.sort();
+            }
         }
 
         @Override
@@ -233,15 +245,18 @@ public interface PrioritizedEvent<T> extends Event<T> {
 
         @Override
         public void clearListeners() {
-            PriorityMap<T> copy = new PriorityMap<>(listeners);
-            copy.clear();
-            listeners = copy;
+            synchronized (listeners) {
+                listeners.clear();
+                listeners.sort();
+            }
         }
 
         public void update() {
             if (!hasBeenSorted())
                 sort();
-            invoker = function.apply(listeners);
+            synchronized (listeners){
+                invoker = function.apply(listeners);
+            }
         }
     }
 
