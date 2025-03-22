@@ -73,7 +73,7 @@ public class NucleusTest {
         /*
         EDITOR
         */
-        if (true) {
+        if (Platform.getEnv() == EnvType.CLIENT) {
             ClientLoader.RENDER.add(ImGuiDebugPanels::onRender);
         }
 
