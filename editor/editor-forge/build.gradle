@@ -3,13 +3,13 @@ repositories {
 }
 
 dependencies {
-    forgeRuntimeLibrary(api("io.github.spair:imgui-java-binding:$imgui_version"))
-    forgeRuntimeLibrary(api("io.github.spair:imgui-java-lwjgl3:$imgui_version")) {
+    forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-binding:$imgui_version"))))
+            forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-lwjgl3:$imgui_version")))) {
         exclude group: 'org.lwjgl'
         exclude group: 'org.lwjgl.lwjgl'
     }
 
-    forgeRuntimeLibrary(api(implementation(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))))
-    forgeRuntimeLibrary(api(implementation(include("io.github.spair:imgui-java-natives-macos:$imgui_version"))))
-    forgeRuntimeLibrary(api(implementation(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))))
+    runtimeOnly(forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-natives-linux:$imgui_version")))))
+    runtimeOnly(forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-natives-macos:$imgui_version")))))
+    runtimeOnly(forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-natives-windows:$imgui_version")))))
 }
