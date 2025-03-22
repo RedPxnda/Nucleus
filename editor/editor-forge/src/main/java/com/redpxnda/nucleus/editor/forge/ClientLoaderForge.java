@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.editor.forge;
 
 import com.redpxnda.nucleus.editor.NucleusEditor;
-import com.redpxnda.nucleus.editor.core.ImGuiMinecraft;
+import com.redpxnda.nucleus.editor.core.ClientLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -16,7 +16,7 @@ import java.nio.file.Path;
 public class ClientLoaderForge {
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiLayersEvent event) {
-        event.registerBelowAll(ResourceLocation.parse(NucleusEditor.MOD_ID + ":render_imgui"), ImGuiMinecraft::renderOverlay);
+        event.registerBelowAll(ResourceLocation.parse(NucleusEditor.MOD_ID + ":render_imgui"), ClientLoader::renderOverlay);
     }
 
     static void initClient() {

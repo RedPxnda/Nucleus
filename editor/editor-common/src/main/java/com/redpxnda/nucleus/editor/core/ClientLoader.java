@@ -1,7 +1,18 @@
 package com.redpxnda.nucleus.editor.core;
 
 
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.GuiGraphics;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClientLoader {
+    public static List<ClientLoader.ImGuiRenderCallback> RENDER = new ArrayList<>();
+
+    public static void renderOverlay(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+        RENDER.forEach(imGuiRenderCallback -> imGuiRenderCallback.render(guiGraphics, deltaTracker));
+    }
 
     public static void initClient() {
         if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64"))
@@ -19,5 +30,9 @@ public class ClientLoader {
         //Path nativeLibPath = FMLPaths.GAMEDIR.get().resolve(relativePath).normalize();
 
         //System.setProperty("imgui.library.path", nativeLibPath.toAbsolutePath().toString());
+    }
+
+    public interface ImGuiRenderCallback {
+        void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker);
     }
 }

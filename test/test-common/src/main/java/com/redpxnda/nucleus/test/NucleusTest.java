@@ -3,18 +3,15 @@ package com.redpxnda.nucleus.test;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigType;
-import com.redpxnda.nucleus.editor.core.ImGuiMinecraft;
+import com.redpxnda.nucleus.editor.core.ClientLoader;
 import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
-import static com.redpxnda.nucleus.editor.core.ImGuiMinecraft.RENDER;
 
 public class NucleusTest {
     public static final String MOD_ID = "nucleus_test";
@@ -77,12 +74,7 @@ public class NucleusTest {
         EDITOR
         */
         if (true) {
-            RENDER.add(new ImGuiMinecraft.ImGuiRenderCallback() {
-                @Override
-                public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-                    ImGuiDebugPanels.onRender(guiGraphics, deltaTracker);
-                }
-            });
+            ClientLoader.RENDER.add(ImGuiDebugPanels::onRender);
         }
 
     }

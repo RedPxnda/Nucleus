@@ -1,7 +1,7 @@
 package com.redpxnda.nucleus.editor.fabric.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.redpxnda.nucleus.editor.core.ImGuiMinecraft;
+import com.redpxnda.nucleus.editor.core.ClientLoader;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,7 +17,7 @@ public class GuiMixin {
     @Inject(method = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V", at = @At("TAIL"), cancellable = true)
     private void miapi$teleportBlockEffect(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         RenderSystem.enableDepthTest();
-        ImGuiMinecraft.renderOverlay(guiGraphics, deltaTracker);
+        ClientLoader.renderOverlay(guiGraphics, deltaTracker);
         RenderSystem.disableDepthTest();
     }
 }
