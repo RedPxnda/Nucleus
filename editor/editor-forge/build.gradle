@@ -1,3 +1,4 @@
+/*
 dependencies {
     forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-binding:$imgui_version"))))
             forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-lwjgl3:$imgui_version")))) {
@@ -8,4 +9,4 @@ dependencies {
     runtimeOnly(forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-natives-linux:$imgui_version")))))
     runtimeOnly(forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-natives-macos:$imgui_version")))))
     runtimeOnly(forgeRuntimeLibrary(implementation(api(include("io.github.spair:imgui-java-natives-windows:$imgui_version")))))
-}
+}*/

@@ -1,3 +1,4 @@
+/*
 repositories {
     maven { url 'https://jitpack.io' }
 }
@@ -12,4 +13,4 @@ dependencies {
     runtimeOnly(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))
     runtimeOnly(include("io.github.spair:imgui-java-natives-macos:$imgui_version"))
     runtimeOnly(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))
-}
+}*/

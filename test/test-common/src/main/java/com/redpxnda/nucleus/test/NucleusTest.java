@@ -71,7 +71,12 @@ public class NucleusTest {
          */
         RegistryAnalyzer.register("nucleus", () -> TestRegistries.class);
         /*
-        EDITOR
+        ███████╗██████╗ ██╗████████╗ ██████╗ ██████╗
+        ██╔════╝██╔══██╗██║╚══██╔══╝██╔═══██╗██╔══██╗
+        █████╗  ██║  ██║██║   ██║   ██║   ██║██████╔╝
+        ██╔══╝  ██║  ██║██║   ██║   ██║   ██║██╔══██╗
+        ███████╗██████╔╝██║   ██║   ╚██████╔╝██║  ██║
+        ╚══════╝╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
         */
         if (Platform.getEnv() == EnvType.CLIENT) {
             ClientLoader.RENDER.add(ImGuiDebugPanels::onRender);
