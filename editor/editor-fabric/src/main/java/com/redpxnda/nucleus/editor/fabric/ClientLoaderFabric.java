@@ -7,21 +7,22 @@ import java.nio.file.Path;
 
 public class ClientLoaderFabric {
 
-	static void initClient() {
-		if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64"))
-			setupImGuiLibARM64();
-	}
+    static void initClient() {
 
-	private static void setupImGuiLibARM64() {
-		System.setProperty("imgui.library.name", "libimgui-javaarm64.dylib");
+        if (System.getProperty("os.arch").equals("arm") || System.getProperty("os.arch").startsWith("aarch64"))
+            setupImGuiLibARM64();
+    }
 
-		if (!FabricLoader.getInstance().isDevelopmentEnvironment()) return;
+    private static void setupImGuiLibARM64() {
+        System.setProperty("imgui.library.name", "libimgui-javaarm64.dylib");
 
-		// Define the base path and the relative path to the native library. Expects game root dir to be /runs/client/.
-		String relativePath = "../../build/resources/main/io/imgui/java/native-bin/";
-		// Resolve the absolute path to the native library
-		Path nativeLibPath = FabricLoader.getInstance().getGameDir().resolve(relativePath).normalize();
+        if (!FabricLoader.getInstance().isDevelopmentEnvironment()) return;
 
-		System.setProperty("imgui.library.path", nativeLibPath.toAbsolutePath().toString());
-	}
+        // Define the base path and the relative path to the native library. Expects game root dir to be /runs/client/.
+        String relativePath = "../../build/resources/main/io/imgui/java/native-bin/";
+        // Resolve the absolute path to the native library
+        Path nativeLibPath = FabricLoader.getInstance().getGameDir().resolve(relativePath).normalize();
+
+        System.setProperty("imgui.library.path", nativeLibPath.toAbsolutePath().toString());
+    }
 }

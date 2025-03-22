@@ -9,7 +9,7 @@ dependencies {
         exclude group: 'org.lwjgl.lwjgl'
     }
 
-    forgeRuntimeLibrary(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))
-    forgeRuntimeLibrary(include("io.github.spair:imgui-java-natives-macos:$imgui_version"))
-    forgeRuntimeLibrary(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))
+    forgeRuntimeLibrary(api(implementation(include("io.github.spair:imgui-java-natives-linux:$imgui_version"))))
+    forgeRuntimeLibrary(api(implementation(include("io.github.spair:imgui-java-natives-macos:$imgui_version"))))
+    forgeRuntimeLibrary(api(implementation(include("io.github.spair:imgui-java-natives-windows:$imgui_version"))))
 }

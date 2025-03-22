@@ -1,5 +1,5 @@
 package com.redpxnda.nucleus.test;
-/*
+
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Window;
 import imgui.ImGui;
@@ -49,5 +49,3 @@ public class ImGuiDebugPanels {
 		ImGui.end();
 	}
 }
-
- */

@@ -7,8 +7,13 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.internal.ImGuiContext;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImGuiMinecraft {
     public static final ImGuiImplGl3 IMGUI_GL3 = new ImGuiImplGl3();
@@ -19,6 +24,7 @@ public class ImGuiMinecraft {
     private static boolean consumeKeyPress;
 
     private static boolean frameActive = false;
+    public static List<ImGuiRenderCallback> RENDER = new ArrayList<>();
 
     static {
         ImGuiMinecraft.setupImGui(genImguiGlVersionString(), !Minecraft.ON_OSX);
@@ -47,7 +53,14 @@ public class ImGuiMinecraft {
 
         frameActive = true;
 
+        //IMGUI_GLFW.init(Minecraft.getInstance().getWindow().getWindow(), true);
         IMGUI_GLFW.newFrame();
+        IMGUI_GL3.newFrame();
+
+        //ImGuiIO io = ImGui.getIO();
+        //io.getFontDefault();
+        //io.Fonts.addFontDefault(); // Ensure default font is added
+        //io.Fonts.build(); // This is required!
 
         ImGui.newFrame();
     }
@@ -75,6 +88,10 @@ public class ImGuiMinecraft {
         frameActive = false;
     }
 
+    public static void renderOverlay(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+        RENDER.forEach(imGuiRenderCallback -> imGuiRenderCallback.render(guiGraphics, deltaTracker));
+    }
+
     public static void dispose() {
         //IMGUI_GL3.dispose();
         //IMGUI_GLFW.dispose();
@@ -91,7 +108,7 @@ public class ImGuiMinecraft {
     // https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions#glsl-versions
     public static String genImguiGlVersionString() {
         String[] glVersion = new String[]{};//ImmediateWindowHandler.getGLVersion().split("\\.");
-        if (glVersion.length <= 2) {
+        if (glVersion.length <= 2 && glVersion.length > 2) {
             String glslVersionStr = glVersion[0] + glVersion[1] + "0";
             return switch (glslVersionStr) {
                 case "200" -> "110";
@@ -105,5 +122,9 @@ public class ImGuiMinecraft {
         }
 
         return "150";
+    }
+
+    public interface ImGuiRenderCallback {
+        void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker);
     }
 }
