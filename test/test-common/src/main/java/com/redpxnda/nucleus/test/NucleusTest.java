@@ -68,5 +68,9 @@ public class NucleusTest {
         ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝
          */
         RegistryAnalyzer.register("nucleus", () -> TestRegistries.class);
+        /*
+        EDITOR
+        */
+
     }
 }

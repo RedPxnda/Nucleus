@@ -1,0 +1,6 @@
+license = 'MIT'
+mods = [{modId = 'nucleus_editor', version = '1.0.0', displayName = 'Nucleus (Editor)', description = 'Bundles the Imgui binaries and required hooks for an easy imgui setup', authors = 'RedPxnda, Smartin'}]
+dependencies.nucleus_editor = [{modId = 'neoforge', mandatory = true, versionRange = '[21.0.0-beta,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}]
+mixins = []
+modLoader = 'javafml'
+loaderVersion = '[1,)'

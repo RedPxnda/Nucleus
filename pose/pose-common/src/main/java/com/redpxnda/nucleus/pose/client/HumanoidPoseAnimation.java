@@ -21,14 +21,14 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
     public List<Frame> frames;
     public @CodecBehavior.Optional int loops = 1; // -1 for indefinite
     public @AutoCodec.Ignored float length = -1;
-    public @CodecBehavior.Optional Frame initialPose = null;
+    public @CodecBehavior.Optional Frame initialPose = new Frame();
     public @CodecBehavior.Optional boolean resetFirstPersonView = false;
     public @CodecBehavior.Optional FrameMultiplier leftHandMultiplier = FrameMultiplier.LEFT_HAND_INVERT;
 
     @Override
     public void additionalSetup() {
         frames = frames.stream().sorted((f1, f2) -> Float.compare(f1.endTime, f2.endTime)).collect(Collectors.toCollection(ArrayList::new));
-        length = frames.get(frames.size()-1).endTime;
+        length = frames.get(frames.size() - 1).endTime;
     }
 
     @AutoCodec.Settings(defaultOptionalBehavior = @CodecBehavior.Optional)
@@ -45,6 +45,7 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
         public FrameMultiplier() {
         }
+
         public FrameMultiplier(Vector3f position, Vector3f rotation, Vector3f scale) {
             this.position = position;
             this.rotation = rotation;
@@ -78,12 +79,14 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
         public Frame() {
         }
+
         public Frame(PartState usedItem, PartState unusedItem, PartState rightItem, PartState leftItem) {
             this.usedItem = usedItem;
             this.unusedItem = unusedItem;
             this.rightItem = rightItem;
             this.leftItem = leftItem;
         }
+
         public Frame(PartState fpUsedArm, PartState fpUnusedArm, PartState fpRightArm, PartState fpLeftArm, InterpolateMode interpolate, float endTime) {
             this.fpUsedArm = fpUsedArm;
             this.fpUnusedArm = fpUnusedArm;
@@ -92,6 +95,7 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
             this.interpolate = interpolate;
             this.endTime = endTime;
         }
+
         public Frame(PartState head, PartState body, PartState usedArm, PartState unusedArm, PartState rightArm, PartState leftArm, PartState rightLeg, PartState leftLeg, InterpolateMode interpolate, float endTime) {
             this.head = head;
             this.body = body;
@@ -104,6 +108,7 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
             this.interpolate = interpolate;
             this.endTime = endTime;
         }
+
         public Frame(PartState head, PartState body, PartState fpUsedArm, PartState fpUnusedArm, PartState fpRightArm, PartState fpLeftArm, PartState usedArm, PartState unusedArm, PartState rightArm, PartState leftArm, PartState rightLeg, PartState leftLeg, InterpolateMode interpolate, float endTime) {
             this.head = head;
             this.body = body;
@@ -169,6 +174,7 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
         public PartState() {
         }
+
         public PartState(Vector3f position, Vector3f rotation, Vector3f scale) {
             this.position = position;
             this.rotation = rotation;
@@ -205,14 +211,14 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         }
 
         public Matrix4f generateMatrix(FrameMultiplier multiplier) {
-            Matrix4f translationMatrix = new Matrix4f().translate(position.x*multiplier.position.x, position.y*multiplier.position.y, position.z*multiplier.position.z);
+            Matrix4f translationMatrix = new Matrix4f().translate(position.x * multiplier.position.x, position.y * multiplier.position.y, position.z * multiplier.position.z);
 
             Matrix4f rotationMatrix = new Matrix4f()
-                    .rotateX(rotation.x*multiplier.rotation.x)
-                    .rotateY(rotation.y*multiplier.rotation.y)
-                    .rotateZ(rotation.z*multiplier.rotation.z);
+                    .rotateX(rotation.x * multiplier.rotation.x)
+                    .rotateY(rotation.y * multiplier.rotation.y)
+                    .rotateZ(rotation.z * multiplier.rotation.z);
 
-            Matrix4f scaleMatrix = new Matrix4f().scale(scale.x*multiplier.scale.x, scale.y*multiplier.scale.y, scale.z*multiplier.scale.z);
+            Matrix4f scaleMatrix = new Matrix4f().scale(scale.x * multiplier.scale.x, scale.y * multiplier.scale.y, scale.z * multiplier.scale.z);
 
             return new Matrix4f()
                     .mul(translationMatrix)

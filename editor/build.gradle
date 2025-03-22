@@ -1,0 +1,58 @@
+dependOn(project, ["core"])
+
+ext {
+
+    shared_repos = [
+            "common": [
+                    "https://repo.codemc.org/repository/maven-public",
+                    "https://maven.shedaniel.me/",
+                    "https://jitpack.io"
+            ],
+            "fabric": [
+                    "https://repo.codemc.org/repository/maven-public",
+                    "https://maven.shedaniel.me/",
+                    "https://jitpack.io"
+            ],
+            "forge" : [
+                    "https://repo.codemc.org/repository/maven-public",
+                    "https://maven.shedaniel.me/",
+                    "https://jitpack.io"
+            ]
+    ]
+}
+/*
+    shared_depends = [
+            "common": [
+                    { DependencyHandler dh -> dh.implementation("io.github.spair:imgui-java-binding:$imgui_version") },
+                    { DependencyHandler dh -> dh.implementation(("io.github.spair:imgui-java-lwjgl3:$imgui_version") {
+                        exclude group: 'org.lwjgl'
+                        exclude group: 'org.lwjgl.lwjgl'
+                    }) },
+                    { DependencyHandler dh -> dh.api("io.github.spair:imgui-java-natives-linux:$imgui_version") },
+                    { DependencyHandler dh -> dh.api("io.github.spair:imgui-java-natives-macos:$imgui_version") },
+                    { DependencyHandler dh -> dh.api("io.github.spair:imgui-java-natives-windows:$imgui_version") }
+            ],
+            "fabric": [
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-binding:$imgui_version")) },
+                    { DependencyHandler dh -> dh.api(dh.include(("io.github.spair:imgui-java-lwjgl3:$imgui_version")) {
+                        exclude group: 'org.lwjgl'
+                        exclude group: 'org.lwjgl.lwjgl'
+                    }) },
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-natives-linux:$imgui_version")) },
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-natives-macos:$imgui_version")) },
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-natives-windows:$imgui_version")) }
+            ],
+            "forge": [
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-binding:$imgui_version")) },
+                    { DependencyHandler dh -> dh.api(dh.include(("io.github.spair:imgui-java-lwjgl3:$imgui_version")) {
+                        exclude group: 'org.lwjgl'
+                        exclude group: 'org.lwjgl.lwjgl'
+                    }) },
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-natives-linux:$imgui_version")) },
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-natives-macos:$imgui_version")) },
+                    { DependencyHandler dh -> dh.api(dh.include("io.github.spair:imgui-java-natives-windows:$imgui_version")) }
+            ]
+    ]
+}
+
+ */

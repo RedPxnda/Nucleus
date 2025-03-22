@@ -28,11 +28,15 @@ public class ClientPoseFacet extends ServerPoseFacet {
 
     public HumanoidPoseAnimation animation = null;
     public int frameIndex = 0;
+    public boolean reset;
 
     @Override
     public void loadNbt(CompoundTag tag) {
         super.loadNbt(tag);
         animation = pose == null || pose.equals("none") ? null : PoseAnimationResourceListener.animations.get(pose);
+        if (animation == null) {
+            reset = true;
+        }
         frameIndex = 0;
     }
 }

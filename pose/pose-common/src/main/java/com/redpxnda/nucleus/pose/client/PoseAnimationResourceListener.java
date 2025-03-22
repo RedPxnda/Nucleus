@@ -170,7 +170,11 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                 HumanoidArm arm = cap.usedHand == InteractionHand.MAIN_HAND ? entity.getMainArm() : entity.getMainArm().getOpposite();
                 HumanoidPoseAnimation animation = cap.animation;
                 if (animation.initialPose != null)
-                    positionModelToFrame(animation.leftHandMultiplier, animation.initialPose, model, arm, true); // setting initial state
+                    positionModelToFrame(animation.leftHandMultiplier, animation.initialPose, model, arm, true, false); // setting initial state
+                if (cap.reset) {
+                    cap.reset = false;
+                    positionModelToFrame(animation.leftHandMultiplier, animation.initialPose, model, arm, true, true); // setting initial state
+                }
 
                 if (animation.frames.size() == 1)
                     positionModelToFrame(animation.leftHandMultiplier, animation.frames.get(0), model, arm); // only use first frame and avoid extra calculations if there's only one frame
@@ -214,11 +218,11 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
 
     @Environment(EnvType.CLIENT)
     public static void positionModelToFrame(HumanoidPoseAnimation.FrameMultiplier leftHandMult, HumanoidPoseAnimation.Frame frame, HumanoidModel<? extends LivingEntity> model, HumanoidArm arm) {
-        positionModelToFrame(leftHandMult, frame, model, arm, false);
+        positionModelToFrame(leftHandMult, frame, model, arm, false, false);
     }
 
     @Environment(EnvType.CLIENT)
-    public static void positionModelToFrame(HumanoidPoseAnimation.FrameMultiplier leftHandMult, HumanoidPoseAnimation.Frame frame, HumanoidModel<? extends LivingEntity> model, HumanoidArm arm, boolean set) {
+    public static void positionModelToFrame(HumanoidPoseAnimation.FrameMultiplier leftHandMult, HumanoidPoseAnimation.Frame frame, HumanoidModel<? extends LivingEntity> model, HumanoidArm arm, boolean set, boolean reset) {
         HumanoidPoseAnimation.PartState rightHandState;
         HumanoidPoseAnimation.PartState leftHandState;
         if (arm == HumanoidArm.RIGHT) {
@@ -228,87 +232,70 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
             leftHandState = frame.usedArm;
             rightHandState = frame.unusedArm;
         }
-        positionModelPartToState(model.head, frame.head, set);
-        positionModelPartToState(model.hat, frame.head, set);
-        positionModelPartToState(model.body, frame.body, set);
-        positionModelPartToState(model.leftArm, leftHandState, set, leftHandMult);
-        positionModelPartToState(model.rightArm, rightHandState, set);
-        positionModelPartToState(model.leftArm, frame.leftArm, set);
-        positionModelPartToState(model.rightArm, frame.rightArm, set);
-        positionModelPartToState(model.leftLeg, frame.leftLeg, set);
-        positionModelPartToState(model.rightLeg, frame.rightLeg, set);
+        positionModelPartToState(model.head, frame.head, set, reset);
+        positionModelPartToState(model.hat, frame.head, set, reset);
+        positionModelPartToState(model.body, frame.body, set, reset);
+        positionModelPartToState(model.leftArm, leftHandState, set, reset, leftHandMult);
+        positionModelPartToState(model.rightArm, rightHandState, set, reset);
+        positionModelPartToState(model.leftArm, frame.leftArm, set, reset);
+        positionModelPartToState(model.rightArm, frame.rightArm, set, reset);
+        positionModelPartToState(model.leftLeg, frame.leftLeg, set, reset);
+        positionModelPartToState(model.rightLeg, frame.rightLeg, set, reset);
 
         if (model instanceof PlayerModel<? extends LivingEntity> pm) {
-            positionModelPartToState(pm.jacket, frame.body, set);
+            positionModelPartToState(pm.jacket, frame.body, set, reset);
             //positionModelPartToState(pm., frame.body, set); //todo cape and ears
-            positionModelPartToState(pm.leftSleeve, leftHandState, set, leftHandMult);
-            positionModelPartToState(pm.rightSleeve, rightHandState, set);
-            positionModelPartToState(pm.leftSleeve, frame.leftArm, set);
-            positionModelPartToState(pm.rightSleeve, frame.rightArm, set);
-            positionModelPartToState(pm.leftPants, frame.leftLeg, set);
-            positionModelPartToState(pm.rightPants, frame.rightLeg, set);
+            positionModelPartToState(pm.leftSleeve, leftHandState, set, reset, leftHandMult);
+            positionModelPartToState(pm.rightSleeve, rightHandState, set, reset);
+            positionModelPartToState(pm.leftSleeve, frame.leftArm, set, reset);
+            positionModelPartToState(pm.rightSleeve, frame.rightArm, set, reset);
+            positionModelPartToState(pm.leftPants, frame.leftLeg, set, reset);
+            positionModelPartToState(pm.rightPants, frame.rightLeg, set, reset);
         }
     }
 
     @Environment(EnvType.CLIENT)
-    public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set, HumanoidPoseAnimation.FrameMultiplier mult) {
+    public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set, boolean reset, HumanoidPoseAnimation.FrameMultiplier mult) {
         if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
         if (set) {
-            part.x = state.position.x * mult.position.x;
-            part.y = state.position.y * mult.position.y;
-            part.z = state.position.z * mult.position.z;
-
-            part.xRot = state.rotation.x * mult.rotation.x;
-            part.yRot = state.rotation.y * mult.rotation.y;
-            part.zRot = state.rotation.z * mult.rotation.z;
-
-            part.xScale = state.scale.x * mult.scale.x;
-            part.yScale = state.scale.y * mult.scale.y;
-            part.zScale = state.scale.z * mult.scale.z;
-            return;
+            part.loadPose(part.getInitialPose());
         }
 
-        part.x += state.position.x * mult.position.x;
-        part.y += state.position.y * mult.position.y;
-        part.z += state.position.z * mult.position.z;
+        part.x = state.position.x * mult.position.x;
+        part.y = state.position.y * mult.position.y;
+        part.z = state.position.z * mult.position.z;
 
-        part.xRot += state.rotation.x * mult.rotation.x;
-        part.yRot += state.rotation.y * mult.rotation.y;
-        part.zRot += state.rotation.z * mult.rotation.z;
+        part.xRot = state.rotation.x * mult.rotation.x;
+        part.yRot = state.rotation.y * mult.rotation.y;
+        part.zRot = state.rotation.z * mult.rotation.z;
 
-        part.xScale *= state.scale.x * mult.scale.x;
-        part.yScale *= state.scale.y * mult.scale.y;
-        part.zScale *= state.scale.z * mult.scale.z;
+        part.xScale = state.scale.x * mult.scale.x;
+        part.yScale = state.scale.y * mult.scale.y;
+        part.zScale = state.scale.z * mult.scale.z;
+        if (reset) {
+            part.loadPose(part.getInitialPose());
+        }
     }
 
     @Environment(EnvType.CLIENT)
-    public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set) {
-        if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
+    public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set, boolean reset) {
         if (set) {
-            part.x = state.position.x;
-            part.y = state.position.y;
-            part.z = state.position.z;
-
-            part.xRot = state.rotation.x;
-            part.yRot = state.rotation.y;
-            part.zRot = state.rotation.z;
-
-            part.xScale = state.scale.x;
-            part.yScale = state.scale.y;
-            part.zScale = state.scale.z;
-            return;
+            part.loadPose(part.getInitialPose());
+            if (reset) {
+                return;
+            }
         }
+        if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
+        part.x = state.position.x;
+        part.y = state.position.y;
+        part.z = state.position.z;
 
-        part.x += state.position.x;
-        part.y += state.position.y;
-        part.z += state.position.z;
+        part.xRot = state.rotation.x;
+        part.yRot = state.rotation.y;
+        part.zRot = state.rotation.z;
 
-        part.xRot += state.rotation.x;
-        part.yRot += state.rotation.y;
-        part.zRot += state.rotation.z;
-
-        part.xScale *= state.scale.x;
-        part.yScale *= state.scale.y;
-        part.zScale *= state.scale.z;
+        part.xScale = state.scale.x;
+        part.yScale = state.scale.y;
+        part.zScale = state.scale.z;
     }
 }

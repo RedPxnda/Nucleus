@@ -264,6 +264,7 @@ public class ${forgeClassName} {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -360,6 +361,7 @@ subprojects { Project subproject ->
         repositories {
             mavenCentral()
             if (isNeoForge) maven { url "https://maven.neoforged.net/releases/" }
+            maven { url 'https://jitpack.io' }
         }
 
         dependencies {

@@ -7,6 +7,7 @@ import com.redpxnda.nucleus.pose.client.ClientPoseFacet;
 import com.redpxnda.nucleus.pose.client.PoseAnimationResourceListener;
 import com.redpxnda.nucleus.pose.network.clientbound.PoseFacetSyncPacket;
 import com.redpxnda.nucleus.pose.server.ServerPoseFacet;
+import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
@@ -38,6 +39,9 @@ public class NucleusPose {
                 if (!entity.level().isClientSide) attacher.add(ServerPoseFacet.KEY, new ServerPoseFacet(entity));
                 else attacher.add(ClientPoseFacet.KEY, new ClientPoseFacet(entity));
             }
+        });
+        CommandRegistrationEvent.EVENT.register((serverCommandSourceCommandDispatcher, registryAccess, listener) -> {
+            PoseCommands.register(serverCommandSourceCommandDispatcher);
         });
 
         EnvExecutor.runInEnv(Env.CLIENT, () -> () -> ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new PoseAnimationResourceListener())); // works for nucleus and addon namespaces
