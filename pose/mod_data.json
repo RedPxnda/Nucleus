@@ -8,7 +8,7 @@
   ],
   "contact": {},
   "license": "MIT",
-  "mixins": [],
+  "mixins": [    "nucleus-pose-common.mixins.json"],
   "depends": [
     {
       "id": "neoforge",
