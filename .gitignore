@@ -11,6 +11,7 @@ output/
 bin/
 libs/
 logs/
+.env
 
 publish.bat
 

@@ -47,12 +47,13 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     }
     @Inject(
             method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;setupRotations(Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;FFFF)V", shift = At.Shift.AFTER),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;isBodyVisible(Lnet/minecraft/world/entity/LivingEntity;)Z", shift = At.Shift.AFTER),
             cancellable = true)
     private void nucleus$livingRenderSetupPoseEvent(T livingEntity, float f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
         EventResult result = RenderEvents.LIVING_ENTITY_RENDER.invoker().render(RenderEvents.EntityRenderStage.POSE_SETUP, getModel(), livingEntity, f, g, poseStack, multiBufferSource, i);
         if (result.interruptsFurtherEvaluation())
             ci.cancel();
     }
+
 
 }

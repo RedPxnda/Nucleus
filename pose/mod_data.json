@@ -1,6 +1,6 @@
 {
   "id": "nucleus_pose",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Nucleus (Pose)",
   "description": "Adds a simple player animation system",
   "authors": [
@@ -8,7 +8,7 @@
   ],
   "contact": {},
   "license": "MIT",
-  "mixins": [],
+  "mixins": [    "nucleus-pose-common.mixins.json"],
   "depends": [
     {
       "id": "neoforge",

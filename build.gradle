@@ -21,7 +21,41 @@ plugins {
 group = maven_group
 version = mod_version
 
-def ENV = System.getenv()
+def ENV = new HashMap(System.getenv())
+
+
+def loadEnvFile(Map envTarget) {
+    def envFile = file('.env')
+    if (envFile.exists()) {
+        println "Loading .env file..."
+        envFile.eachLine { line ->
+            def trimmed = line.trim()
+            if (trimmed && !trimmed.startsWith("#") && trimmed.contains("=")) {
+                def (key, value) = trimmed.split("=", 2)
+                key = key.trim()
+                value = value.trim()
+                envTarget[key] = value
+            }
+        }
+    } else {
+        println ".env file not found — skipping"
+    }
+}
+
+
+loadEnvFile(ENV)
+
+
+tasks.register("printEnvProperties") {
+    doLast {
+        println "=== Loaded project properties ==="
+        ENV.each { key, value ->
+            if (key.startsWith("MAVEN_")) {
+                println "${key} = ${value}"
+            }
+        }
+    }
+}
 
 def props = new Properties()
 file("./gradle.properties").withInputStream { props.load(it) }

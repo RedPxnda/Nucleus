@@ -162,43 +162,63 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
             return EventResult.pass();
         });
         RenderEvents.LIVING_ENTITY_RENDER.register((stage, m, entity, entityYaw, partialTick, matrixStack, multiBufferSource, packedLight) -> {
+            if (stage == RenderEvents.EntityRenderStage.PRE) {
+                ClientPoseFacet cap = ClientPoseFacet.get(entity);
+                if (cap == null) return EventResult.pass();
+                if (m instanceof HumanoidModel<? extends LivingEntity> model && cap.animation != null) {
+                    resetModel(model);
+                }
+            }
             if (stage != RenderEvents.EntityRenderStage.POSE_SETUP) return EventResult.pass();
             if (m instanceof HumanoidModel<? extends LivingEntity> model) {
                 ClientPoseFacet cap = ClientPoseFacet.get(entity);
-                if (cap == null || cap.animation == null) return EventResult.pass();
+                if (cap == null) return EventResult.pass();
+                if (cap.reset) {
+                    cap.reset = false;
+                    resetModel(model);
+                }
+                if (cap.animation == null) {
+                    return EventResult.pass();
+                }
 
                 HumanoidArm arm = cap.usedHand == InteractionHand.MAIN_HAND ? entity.getMainArm() : entity.getMainArm().getOpposite();
                 HumanoidPoseAnimation animation = cap.animation;
-                if (animation.initialPose != null)
-                    positionModelToFrame(animation.leftHandMultiplier, animation.initialPose, model, arm, true, false); // setting initial state
-                if (cap.reset) {
-                    cap.reset = false;
-                    positionModelToFrame(animation.leftHandMultiplier, animation.initialPose, model, arm, true, true); // setting initial state
+                if (animation.initialPose != null) {
+                    positionModelToFrame(animation.leftHandMultiplier, animation.initialPose, model, arm, false, false); // setting initial state
                 }
-
                 if (animation.frames.size() == 1)
-                    positionModelToFrame(animation.leftHandMultiplier, animation.frames.get(0), model, arm); // only use first frame and avoid extra calculations if there's only one frame
+                    positionModelToFrame(animation.leftHandMultiplier, animation.frames.get(0), model, arm, false, false); // only use first frame and avoid extra calculations if there's only one frame
                 else if (animation.frames.size() > 0) {
                     // configuring elapsedTime (making loops work and making sure it doesn't go over maxLength)
                     float maxLength = animation.length * 20f;
-                    double elapsedTime = Rendering.getGameAndPartialTime() - cap.updateTime;
-                    if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength * animation.loops)) && elapsedTime >= maxLength) {
+                    double elapsedTime = Rendering.getGameTime() + Rendering.getGameAndPartialTime() - cap.updateTime;
+                    //Nucleus.getLogger().info("" + Rendering.getGameTime() + " " + Rendering.getGameAndDeltaTime() + " " + Rendering.getGameAndPartialTime());
+                    boolean anotherLoop = (animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength * animation.loops)) && elapsedTime >= maxLength;
+                    if (anotherLoop) {
                         cap.frameIndex = 0;
                         elapsedTime %= maxLength;
                     } else elapsedTime = Math.min(elapsedTime, maxLength);
 
                     HumanoidPoseAnimation.Frame frame = animation.frames.get(cap.frameIndex);
                     while (frame.endTime * 20 < elapsedTime) {
-                        cap.frameIndex++;
+                        cap.frameIndex = (cap.frameIndex + 1) % animation.frames.size();
                         frame = animation.frames.get(cap.frameIndex);
                     }
-                    int nextIndex = cap.frameIndex + 1;
+                    int nextIndex = (cap.frameIndex + 1) % animation.frames.size();
                     HumanoidPoseAnimation.Frame nextFrame = nextIndex >= animation.frames.size() ? animation.frames.get(0) : animation.frames.get(nextIndex);
 
-                    float cTime = frame.endTime * 20;
-                    float nTime = nextFrame.endTime * 20;
-                    float delta = (float) ((elapsedTime + 20 - cTime) / (nTime - cTime));
-                    positionModelToFrame(animation.leftHandMultiplier, frame.interpTo(delta, nextFrame), model, arm);
+                    double cTime = frame.endTime * 20;
+                    double nTime = nextFrame.endTime * 20;
+                    if (nextIndex == 0 && anotherLoop) {
+                        nTime += maxLength;
+                    }
+                    double delta;
+                    if (nTime == cTime) {
+                        delta = 0;
+                    } else {
+                        delta = ((elapsedTime + 20 - cTime) / (nTime - cTime));
+                    }
+                    positionModelToFrame(animation.leftHandMultiplier, frame.interpTo((float) delta, nextFrame), model, arm);
                 }
             }
             return EventResult.pass();
@@ -219,6 +239,29 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
     @Environment(EnvType.CLIENT)
     public static void positionModelToFrame(HumanoidPoseAnimation.FrameMultiplier leftHandMult, HumanoidPoseAnimation.Frame frame, HumanoidModel<? extends LivingEntity> model, HumanoidArm arm) {
         positionModelToFrame(leftHandMult, frame, model, arm, false, false);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void resetModel(HumanoidModel<? extends LivingEntity> model) {
+        positionModelPartToState(model.head, null, false, true);
+        positionModelPartToState(model.hat, null, false, true);
+        positionModelPartToState(model.body, null, false, true);
+        positionModelPartToState(model.leftArm, null, false, true, null);
+        positionModelPartToState(model.rightArm, null, false, true);
+        positionModelPartToState(model.leftArm, null, false, true);
+        positionModelPartToState(model.rightArm, null, false, true);
+        positionModelPartToState(model.leftLeg, null, false, true);
+        positionModelPartToState(model.rightLeg, null, false, true);
+
+        if (model instanceof PlayerModel<? extends LivingEntity> pm) {
+            positionModelPartToState(pm.jacket, null, false, true);
+            positionModelPartToState(pm.leftSleeve, null, false, true, null);
+            positionModelPartToState(pm.rightSleeve, null, false, true);
+            positionModelPartToState(pm.leftSleeve, null, false, true);
+            positionModelPartToState(pm.rightSleeve, null, false, true);
+            positionModelPartToState(pm.leftPants, null, false, true);
+            positionModelPartToState(pm.rightPants, null, false, true);
+        }
     }
 
     @Environment(EnvType.CLIENT)
@@ -256,46 +299,48 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
 
     @Environment(EnvType.CLIENT)
     public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set, boolean reset, HumanoidPoseAnimation.FrameMultiplier mult) {
-        if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
-        if (set) {
-            part.loadPose(part.getInitialPose());
-        }
-
-        part.x = state.position.x * mult.position.x;
-        part.y = state.position.y * mult.position.y;
-        part.z = state.position.z * mult.position.z;
-
-        part.xRot = state.rotation.x * mult.rotation.x;
-        part.yRot = state.rotation.y * mult.rotation.y;
-        part.zRot = state.rotation.z * mult.rotation.z;
-
-        part.xScale = state.scale.x * mult.scale.x;
-        part.yScale = state.scale.y * mult.scale.y;
-        part.zScale = state.scale.z * mult.scale.z;
         if (reset) {
             part.loadPose(part.getInitialPose());
+            return;
         }
+        if(set){
+            part.loadPose(part.getInitialPose());
+        }
+        if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
+
+        part.x += state.position.x * mult.position.x;
+        part.y += state.position.y * mult.position.y;
+        part.z += state.position.z * mult.position.z;
+
+        part.xRot += state.rotation.x * mult.rotation.x;
+        part.yRot += state.rotation.y * mult.rotation.y;
+        part.zRot += state.rotation.z * mult.rotation.z;
+
+        part.xScale *= state.scale.x * mult.scale.x;
+        part.yScale *= state.scale.y * mult.scale.y;
+        part.zScale *= state.scale.z * mult.scale.z;
     }
 
     @Environment(EnvType.CLIENT)
     public static void positionModelPartToState(ModelPart part, HumanoidPoseAnimation.PartState state, boolean set, boolean reset) {
+        if (reset) {
+            part.loadPose(part.getInitialPose());
+            return;
+        }
         if (set) {
             part.loadPose(part.getInitialPose());
-            if (reset) {
-                return;
-            }
         }
         if (state == null || state == HumanoidPoseAnimation.PartState.EMPTY) return;
-        part.x = state.position.x;
-        part.y = state.position.y;
-        part.z = state.position.z;
+        part.x += state.position.x;
+        part.y += state.position.y;
+        part.z += state.position.z;
 
-        part.xRot = state.rotation.x;
-        part.yRot = state.rotation.y;
-        part.zRot = state.rotation.z;
+        part.xRot += state.rotation.x;
+        part.yRot += state.rotation.y;
+        part.zRot += state.rotation.z;
 
-        part.xScale = state.scale.x;
-        part.yScale = state.scale.y;
-        part.zScale = state.scale.z;
+        part.xScale *= state.scale.x;
+        part.yScale *= state.scale.y;
+        part.zScale *= state.scale.z;
     }
 }

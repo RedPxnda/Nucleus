@@ -1,0 +1,33 @@
+{
+  "name": "nucleus:arm_left_test",
+  "frames": [
+    {
+      "leftArm": {
+        "position": [1, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "interpolate": "easeInOut",
+      "endTime": 1
+    },
+    {
+      "leftArm": {
+        "position": [10, 0, 0],
+        "rotation": [180, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "interpolate": "easeInOut",
+      "endTime": 2
+    },
+    {
+      "leftArm": {
+        "position": [1, 10, 0],
+        "rotation": [360, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "interpolate": "easeInOut",
+      "endTime": 3
+    }
+  ],
+  "loops": -1
+}

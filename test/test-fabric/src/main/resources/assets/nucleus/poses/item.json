@@ -1,0 +1,30 @@
+{
+  "name": "nucleus:item_test",
+  "frames": [
+    {
+      "usedItem": {
+        "position": [1, 0, 0],
+        "rotation": [0, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "endTime": 1
+    },
+    {
+      "usedItem": {
+        "position": [1, 0, 0],
+        "rotation": [180, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "endTime": 2
+    },
+    {
+      "usedItem": {
+        "position": [1, 0, 0],
+        "rotation": [360, 0, 0],
+        "scale": [1, 1, 1]
+      },
+      "endTime": 3
+    }
+  ],
+  "loops": -1
+}

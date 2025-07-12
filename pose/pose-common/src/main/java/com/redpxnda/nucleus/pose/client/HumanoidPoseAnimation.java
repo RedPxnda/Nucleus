@@ -8,6 +8,7 @@ import com.redpxnda.nucleus.math.MathUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -182,12 +183,69 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         }
 
         public PartState interpTo(InterpolateMode mode, float delta, PartState other) {
+            if (true) {
+                return interpolatePartStateMatrix(mode, delta, this, other);
+            }
             return new PartState(
                     MathUtil.interpolateVector(mode, delta, position, other.position),
                     MathUtil.interpolateVector(mode, delta, rotation, other.rotation),
                     MathUtil.interpolateVector(mode, delta, scale, other.scale)
             );
         }
+
+        public static PartState interpolatePartStateMatrix(InterpolateMode mode, float delta, PartState a, PartState b) {
+            // Decompose a
+            Vector3f aTranslation = new Vector3f();
+            Quaternionf aRotation = new Quaternionf();
+            Vector3f aScale = new Vector3f();
+            a.generateMatrix().getTranslation(aTranslation);
+            a.generateMatrix().getUnnormalizedRotation(aRotation);
+            a.generateMatrix().getScale(aScale);
+
+            // Decompose b
+            Vector3f bTranslation = new Vector3f();
+            Quaternionf bRotation = new Quaternionf();
+            Vector3f bScale = new Vector3f();
+            b.generateMatrix().getTranslation(bTranslation);
+            b.generateMatrix().getUnnormalizedRotation(bRotation);
+            b.generateMatrix().getScale(bScale);
+
+            // Interpolate translation and scale linearly
+            Vector3f interpTranslation = new Vector3f();
+            interpTranslation.x = (float) mode.interpolate(delta, aTranslation.x, bTranslation.x);
+            interpTranslation.y = (float) mode.interpolate(delta, aTranslation.y, bTranslation.y);
+            interpTranslation.z = (float) mode.interpolate(delta, aTranslation.z, bTranslation.z);
+
+            Vector3f interpScale = new Vector3f();
+            interpScale.x = (float) mode.interpolate(delta, aScale.x, bScale.x);
+            interpScale.y = (float) mode.interpolate(delta, aScale.y, bScale.y);
+            interpScale.z = (float) mode.interpolate(delta, aScale.z, bScale.z);
+
+            // Interpolate rotation using SLERP
+            Quaternionf interpRotation = new Quaternionf();
+            aRotation.slerp(bRotation, delta, interpRotation);
+
+            // Compose new matrix
+            Matrix4f resultMatrix = new Matrix4f()
+                    .translate(interpTranslation)
+                    .rotate(interpRotation)
+                    .scale(interpScale);
+
+            // Decompose back to Euler angles for PartState
+            Vector3f resultTranslation = new Vector3f();
+            Quaternionf resultQuat = new Quaternionf();
+            Vector3f resultScale = new Vector3f();
+
+            resultMatrix.getTranslation(resultTranslation);
+            resultMatrix.getUnnormalizedRotation(resultQuat);
+            resultMatrix.getScale(resultScale);
+
+            // Convert quaternion to Euler angles
+            Vector3f resultEuler = resultQuat.getEulerAnglesXYZ(new Vector3f());
+
+            return new PartState(resultTranslation, resultEuler, resultScale);
+        }
+
 
         @Override
         public void additionalSetup() {
@@ -196,6 +254,22 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
         public Matrix4f generateMatrix() {
             Matrix4f translationMatrix = new Matrix4f().translate(position);
+
+            Matrix4f rotationMatrix = new Matrix4f()
+                    .rotateX(rotation.x)
+                    .rotateY(rotation.y)
+                    .rotateZ(rotation.z);
+
+            Matrix4f scaleMatrix = new Matrix4f().scale(scale);
+
+            return new Matrix4f()
+                    .mul(translationMatrix)
+                    .mul(rotationMatrix)
+                    .mul(scaleMatrix);
+        }
+
+        public Matrix4f generateMatrixScaled() {
+            Matrix4f translationMatrix = new Matrix4f().translate(position.mul(1 / 16f));
 
             Matrix4f rotationMatrix = new Matrix4f()
                     .rotateX(rotation.x)
