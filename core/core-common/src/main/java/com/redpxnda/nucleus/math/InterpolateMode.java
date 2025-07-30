@@ -33,7 +33,22 @@ public interface InterpolateMode {
                 if (creator == null) throw new JsonParseException("Could not find interpolate mode '" + key + "'! JSON: " + element);
                 return creator.createFrom(element);
             },
-            mode -> DataResult.error(() -> "Cannot turn InterpolateMode into JsonElement."));
+            mode -> {
+                try {
+                    return DataResult.success(mode.toJson());
+                } catch (Exception e) {
+                    return DataResult.error(() -> "Failed to encode InterpolateMode: " + e.getMessage());
+                }
+            }
+    );
+
+
+    default JsonElement toJson() {
+        if (this == NONE) return new JsonPrimitive("none");
+        if (this == LERP) return new JsonPrimitive("lerp");
+        if (this == COS) return new JsonPrimitive("cosine");
+        throw new UnsupportedOperationException("Encoding not implemented for InterpolateMode: " + this.getClass().getSimpleName());
+    }
 
     static void init() {
         interpolateModes.put("none", e -> InterpolateMode.NONE);
@@ -55,12 +70,28 @@ public interface InterpolateMode {
         public double interpolate(float delta, double last, double current) {
             return MathUtil.lerp(Math.pow(delta, amplifier), last, current);
         }
+
+        @Override
+        public JsonElement toJson() {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("type", "easeIn");
+            obj.addProperty("amplifier", amplifier);
+            return obj;
+        }
     }
 
     record EaseOut(float amplifier) implements InterpolateMode {
         @Override
         public double interpolate(float delta, double last, double current) {
             return MathUtil.lerp(MathUtil.flip(MathUtil.pow(MathUtil.flip(delta), amplifier)), last, current);
+        }
+
+        @Override
+        public JsonElement toJson() {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("type", "easeOut");
+            obj.addProperty("amplifier", amplifier);
+            return obj;
         }
     }
 
@@ -71,6 +102,14 @@ public interface InterpolateMode {
             float normalDelta = MathUtil.pow(delta, amplifier);
             float finalDelta = MathUtil.lerp(delta, normalDelta, flippedDelta);
             return MathUtil.lerp(finalDelta, last, current);
+        }
+
+        @Override
+        public JsonElement toJson() {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("type", "easeInOut");
+            obj.addProperty("amplifier", amplifier);
+            return obj;
         }
     }
 }
