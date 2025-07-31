@@ -7,12 +7,15 @@ import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
@@ -25,6 +28,7 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
     public @CodecBehavior.Optional Frame initialPose = new Frame();
     public @CodecBehavior.Optional boolean resetFirstPersonView = false;
     public @CodecBehavior.Optional FrameMultiplier leftHandMultiplier = FrameMultiplier.LEFT_HAND_INVERT;
+    public @CodecBehavior.Optional String nextPose = null;
 
     @Override
     public void additionalSetup() {
@@ -59,22 +63,22 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
     public static class Frame {
         public static final Codec<Frame> codec = AutoCodec.of(Frame.class).codec();
 
-        public PartState head = PartState.EMPTY;
-        public PartState body = PartState.EMPTY;
-        public PartState fpUsedArm = PartState.EMPTY; // fp = first person
-        public PartState fpUnusedArm = PartState.EMPTY;
-        public PartState fpRightArm = PartState.EMPTY;
-        public PartState fpLeftArm = PartState.EMPTY;
-        public PartState usedArm = PartState.EMPTY;
-        public PartState unusedArm = PartState.EMPTY;
-        public PartState rightArm = PartState.EMPTY;
-        public PartState leftArm = PartState.EMPTY;
-        public PartState usedItem = PartState.EMPTY;
-        public PartState unusedItem = PartState.EMPTY;
-        public PartState rightItem = PartState.EMPTY;
-        public PartState leftItem = PartState.EMPTY;
-        public PartState rightLeg = PartState.EMPTY;
-        public PartState leftLeg = PartState.EMPTY;
+        public @Nullable PartState head;
+        public @Nullable PartState body;
+        public @Nullable PartState fpUsedArm; // fp = first person
+        public @Nullable PartState fpUnusedArm;
+        public @Nullable PartState fpRightArm;
+        public @Nullable PartState fpLeftArm;
+        public @Nullable PartState usedArm;
+        public @Nullable PartState unusedArm;
+        public @Nullable PartState rightArm;
+        public @Nullable PartState leftArm;
+        public @Nullable PartState usedItem;
+        public @Nullable PartState unusedItem;
+        public @Nullable PartState rightItem;
+        public @Nullable PartState leftItem;
+        public @Nullable PartState rightLeg;
+        public @Nullable PartState leftLeg;
         public InterpolateMode interpolate = InterpolateMode.NONE;
         public float endTime = 0; // in seconds
 
@@ -127,38 +131,110 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
             this.endTime = endTime;
         }
 
-        public Frame interpFpTo(float delta, Frame other) {
-            return new Frame(
-                    fpUsedArm.interpTo(interpolate, delta, other.fpUsedArm),
-                    fpUnusedArm.interpTo(interpolate, delta, other.fpUnusedArm),
-                    fpRightArm.interpTo(interpolate, delta, other.fpRightArm),
-                    fpLeftArm.interpTo(interpolate, delta, other.fpLeftArm),
-                    interpolate, endTime
-            );
+        public static @Nullable PartState interpolateOverFrames(
+                List<Frame> frames,
+                int currentIndex,
+                int nextIndex,
+                double elapsedTime,
+                boolean looping,
+                Function<Frame, @Nullable PartState> partExtractor
+        ) {
+            int size = frames.size();
+            currentIndex = findFrameIndex(frames, elapsedTime, looping);
+            nextIndex = (currentIndex + 1) % frames.size();
+
+
+            double loopDuration = frames.get(size - 1).endTime * 20;
+
+            if (looping) {
+                elapsedTime = elapsedTime % loopDuration;
+            }
+
+            // Backward search for 'from' frame
+            PartState from = null;
+            Frame current = frames.get(currentIndex);
+            int fromIndex = currentIndex;
+            for (int i = 0; i < size; i++) {
+                Frame f = frames.get(fromIndex);
+                current = f;
+                from = partExtractor.apply(f);
+                if (from != null) break;
+
+                int prev = (fromIndex - 1 + size) % size;
+                if (!looping && prev > fromIndex) break; // avoid wrap in non-looping
+                fromIndex = prev;
+
+                if (fromIndex == nextIndex) break;
+            }
+
+            // Forward search for 'to' frame
+            PartState to = null;
+            int toIndex = nextIndex % size;
+            for (int i = 0; i < size; i++) {
+                Frame f = frames.get(toIndex);
+                to = partExtractor.apply(f);
+                if (to != null) break;
+
+                int next = (toIndex + 1) % size;
+                if (!looping && next < toIndex) break; // avoid wrap in non-looping
+                toIndex = next;
+
+                if (toIndex == fromIndex) break;
+            }
+
+            if (from == null && to == null) {
+                return null;
+            }
+
+            if (from == null) from = PartState.EMPTY;
+            if (to == null) to = PartState.EMPTY;
+
+
+            double cTime = frames.get(fromIndex).endTime * 20;
+            double nTime = frames.get(toIndex).endTime * 20;
+
+            // Calculate wrapped distances
+            double totalDist = timeDistance(cTime, nTime, looping, loopDuration);
+            double elapsedDist = timeDistance(cTime, elapsedTime, looping, loopDuration);
+
+            float actualDelta = (totalDist == 0) ? 0f : (float) (elapsedDist / totalDist);
+            while (actualDelta > 1) {
+                actualDelta--;
+            }
+            DecimalFormat df = new DecimalFormat("0.00");
+            actualDelta = Math.max(0f, Math.min(1f, actualDelta));
+
+
+            InterpolateMode mode = current.interpolate;
+            return from.interpTo(mode, actualDelta, to);
         }
 
-        public Frame interpItemTo(float delta, Frame other) {
-            return new Frame(
-                    usedItem.interpTo(interpolate, delta, other.usedItem),
-                    unusedItem.interpTo(interpolate, delta, other.unusedItem),
-                    rightItem.interpTo(interpolate, delta, other.rightItem),
-                    leftItem.interpTo(interpolate, delta, other.leftItem)
-            );
+        public static int findFrameIndex(List<Frame> frames, double elapsedTime, boolean looping) {
+            double loopDuration = frames.get(frames.size() - 1).endTime * 20;
+            double time = looping ? elapsedTime % loopDuration : elapsedTime;
+
+            for (int i = 0; i < frames.size() - 1; i++) {
+                double t1 = frames.get(i).endTime * 20;
+                double t2 = frames.get(i + 1).endTime * 20;
+                if (time >= t1 && time < t2) return i;
+            }
+
+            return frames.size() - 1; // last frame
         }
 
-        public Frame interpTo(float delta, Frame other) {
-            return new Frame(
-                    head.interpTo(interpolate, delta, other.head),
-                    body.interpTo(interpolate, delta, other.body),
-                    usedArm.interpTo(interpolate, delta, other.usedArm),
-                    unusedArm.interpTo(interpolate, delta, other.unusedArm),
-                    rightArm.interpTo(interpolate, delta, other.rightArm),
-                    leftArm.interpTo(interpolate, delta, other.leftArm),
-                    rightLeg.interpTo(interpolate, delta, other.rightLeg),
-                    leftLeg.interpTo(interpolate, delta, other.leftLeg),
-                    interpolate, endTime
-            );
+
+        /**
+         * Calculates the forward-wrapped distance from `fromTime` to `toTime`,
+         * using the given `loopDuration` if looping is enabled.
+         */
+        private static double timeDistance(double fromTime, double toTime, boolean looping, double loopDuration) {
+            double dist = toTime - fromTime;
+            if (looping && dist < 0) {
+                dist += loopDuration;
+            }
+            return dist;
         }
+
     }
 
     @AutoCodec.Settings(defaultOptionalBehavior = @CodecBehavior.Optional)
@@ -172,29 +248,25 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
         public Vector3f position = EMPTY_VEC;
         public Vector3f rotation = EMPTY_VEC;
         public Vector3f scale = ONE_VEC;
+        public InterpolateMode interpolateMode = null;
 
         public PartState() {
         }
 
-        public PartState(Vector3f position, Vector3f rotation, Vector3f scale) {
+        public PartState(Vector3f position, Vector3f rotation, Vector3f scale, InterpolateMode mode) {
             this.position = position;
             this.rotation = rotation;
             this.scale = scale;
+            this.interpolateMode = mode;
         }
 
         public PartState interpTo(InterpolateMode mode, float delta, PartState other) {
-            if (true) {
-                return interpolatePartStateMatrix(mode, delta, this, other);
-            }
-            return new PartState(
-                    MathUtil.interpolateVector(mode, delta, position, other.position),
-                    MathUtil.interpolateVector(mode, delta, rotation, other.rotation),
-                    MathUtil.interpolateVector(mode, delta, scale, other.scale)
-            );
+            return interpolatePartStateMatrix(interpolateMode == null ? mode : interpolateMode, delta, this, other);
         }
 
         public static PartState interpolatePartStateMatrix(InterpolateMode mode, float delta, PartState a, PartState b) {
             // Decompose a
+            mode = a.interpolateMode == null ? mode : a.interpolateMode;
             Vector3f aTranslation = new Vector3f();
             Quaternionf aRotation = new Quaternionf();
             Vector3f aScale = new Vector3f();
@@ -243,7 +315,7 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
             // Convert quaternion to Euler angles
             Vector3f resultEuler = resultQuat.getEulerAnglesXYZ(new Vector3f());
 
-            return new PartState(resultTranslation, resultEuler, resultScale);
+            return new PartState(resultTranslation, resultEuler, resultScale, a.interpolateMode);
         }
 
 

@@ -26,5 +26,6 @@
       "endTime": 3
     }
   ],
-  "loops": -1
+  "loops": 3,
+  "nextPose": "nucleus:multi_interpolation_test"
 }
