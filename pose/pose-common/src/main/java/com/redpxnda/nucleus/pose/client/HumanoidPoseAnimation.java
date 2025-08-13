@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
     public static final Codec<HumanoidPoseAnimation> codec = AutoCodec.of(HumanoidPoseAnimation.class).codec();
 
-    public List<Frame> frames;
+    public @CodecBehavior.Optional List<Frame> frames = List.of();
     public @CodecBehavior.Optional int loops = 1; // -1 for indefinite
     public @AutoCodec.Ignored float length = -1;
     public @CodecBehavior.Optional Frame initialPose = new Frame();
