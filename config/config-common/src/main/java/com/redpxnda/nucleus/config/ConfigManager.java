@@ -184,6 +184,7 @@ public class ConfigManager {
                 LOGGER.warn("Failed to setup config file watching!", e);
             }
         });
+        thread.setDaemon(true);
         thread.start();
 
         LOGGER.info("Successfully created file watcher (and thread) for config folder. ({})", Platform.getConfigFolder());
