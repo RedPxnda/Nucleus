@@ -32,8 +32,12 @@ public class HumanoidPoseAnimation implements AutoCodec.AdditionalConstructing {
 
     @Override
     public void additionalSetup() {
-        frames = frames.stream().sorted((f1, f2) -> Float.compare(f1.endTime, f2.endTime)).collect(Collectors.toCollection(ArrayList::new));
-        length = frames.get(frames.size() - 1).endTime;
+        if (frames == null || frames.isEmpty()) {
+            frames = new ArrayList<>();
+        } else {
+            frames = frames.stream().sorted((f1, f2) -> Float.compare(f1.endTime, f2.endTime)).collect(Collectors.toCollection(ArrayList::new));
+            length = frames.get(frames.size() - 1).endTime;
+        }
     }
 
     @AutoCodec.Settings(defaultOptionalBehavior = @CodecBehavior.Optional)

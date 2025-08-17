@@ -76,8 +76,9 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
         RenderEvents.ITEM_HAND_LAYER_RENDER.register((model, player, stack, displayContext, arm, matrices, buffer, light) -> {
             ClientPoseFacet cap = ClientPoseFacet.get(player);
             if (cap == null || cap.animation == null) return EventResult.pass();
-            cap.frameIndex = cap.frameIndex % cap.animation.frames.size();
-
+            if (!cap.animation.frames.isEmpty()) {
+                cap.frameIndex = cap.frameIndex % cap.animation.frames.size();
+            }
             HumanoidArm playerArm = player.getMainArm();
             boolean isUsedArm = (arm == playerArm && cap.usedHand == InteractionHand.MAIN_HAND) || (arm != playerArm && cap.usedHand != InteractionHand.MAIN_HAND);
             boolean isRightArm = arm == HumanoidArm.RIGHT;
@@ -90,11 +91,11 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
             if (animation.initialPose != null) {
                 positionMatricesToState(leftHandMult, relPartState.apply(animation.initialPose), exactPartState.apply(animation.initialPose), matrices);
             }
-
             if (animation.frames.size() == 1) {
                 HumanoidPoseAnimation.Frame fm = animation.frames.get(0);
                 positionMatricesToState(leftHandMult, relPartState.apply(fm), exactPartState.apply(fm), matrices);
             } else if (animation.frames.size() > 0) {
+
                 float maxLength = animation.length * 20f;
                 double elapsedTime = Rendering.getGameAndPartialTime() - cap.updateTime;
                 if ((animation.loops == -1 || (animation.loops > 1 && elapsedTime < maxLength * animation.loops)) && elapsedTime >= maxLength) {
@@ -122,7 +123,9 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
             if (stage == RenderEvents.ArmRenderStage.ARM || stage == RenderEvents.ArmRenderStage.ITEM) {
                 ClientPoseFacet cap = ClientPoseFacet.get(player);
                 if (cap == null || cap.animation == null) return EventResult.pass();
-                cap.frameIndex = cap.frameIndex % cap.animation.frames.size();
+                if (!cap.animation.frames.isEmpty()) {
+                    cap.frameIndex = cap.frameIndex % cap.animation.frames.size();
+                }
 
                 boolean isUsedArm = cap.usedHand == hand;
                 HumanoidArm arm = armRenderer.side();
@@ -150,7 +153,6 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
 
                 List<HumanoidPoseAnimation.Frame> frames = animation.frames;
                 if (frames.isEmpty()) return EventResult.pass();
-
                 if (frames.size() == 1) {
                     HumanoidPoseAnimation.Frame fm = frames.get(0);
                     positionMatricesToState(
@@ -208,7 +210,9 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                 if (cap.animation == null) {
                     return EventResult.pass();
                 }
-                cap.frameIndex = cap.frameIndex % cap.animation.frames.size();
+                if (!cap.animation.frames.isEmpty()) {
+                    cap.frameIndex = cap.frameIndex % cap.animation.frames.size();
+                }
 
                 HumanoidArm arm = cap.usedHand == InteractionHand.MAIN_HAND ? entity.getMainArm() : entity.getMainArm().getOpposite();
                 HumanoidPoseAnimation animation = cap.animation;
