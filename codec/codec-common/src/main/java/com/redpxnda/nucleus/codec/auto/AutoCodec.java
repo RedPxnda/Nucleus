@@ -15,10 +15,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -101,6 +99,8 @@ public class AutoCodec<C> extends MapCodec<C> {
     protected final String errorMsg;
     public final Map<String, AutoCodecField> fields = new LinkedHashMap<>();
 
+    public Map<String, Supplier<?>> recordDefaultGetter = new HashMap<>();
+
     public AutoCodec(Class<C> cls, String errorMsg) {
         this(cls, errorMsg, performFieldSearch(cls));
     }
@@ -122,6 +122,11 @@ public class AutoCodec<C> extends MapCodec<C> {
 
     public static <T> AutoCodec<T> of(Class<T> cls) {
         return new AutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".");
+    }
+
+    public AutoCodec<C> setRecordDefaults(Map<String, Supplier<?>> recordDefaultGetter) {
+        this.recordDefaultGetter = recordDefaultGetter;
+        return this;
     }
 
     public static <T> AutoCodec<T> of(Class<T> cls, String errorMsg) {
@@ -195,7 +200,6 @@ public class AutoCodec<C> extends MapCodec<C> {
                 RecordComponent rc = components[i];
                 paramTypes[i] = rc.getType();
 
-                // ✅ find field by JSON name OR Java name
                 AutoCodecField fieldInfo = fields.getOrDefault(rc.getName(), findByJavaName(rc.getName()));
 
                 if (fieldInfo == null) {
@@ -215,9 +219,16 @@ public class AutoCodec<C> extends MapCodec<C> {
                         (rc.isAnnotationPresent(CodecBehavior.Optional.class)) ||
                         (fieldInfo.field != null && fieldInfo.field.isAnnotationPresent(CodecBehavior.Optional.class));
 
-                if (value == null && !setIfNull  && !isOptional) {
-                    return DataResult.error(() -> "Record component '" + rc.getName() + "' in '" +
-                                                  cls.getSimpleName() + "' is null but not marked optional");
+                Supplier<?> defaultSupplier = recordDefaultGetter.get(fieldInfo.name);
+                if (value == null) {
+                    if (defaultSupplier != null) {
+                        value = defaultSupplier.get();
+                    } else if (!isOptional && !setIfNull) {
+                        return DataResult.error(() -> "Record component '" + rc.getName() +
+                                                      "' in '" + cls.getSimpleName() + "' is null but not marked optional and has no default");
+                    } else {
+                        value = defaultValue(rc.getType());
+                    }
                 }
 
                 args[i] = (value == null) ? defaultValue(rc.getType()) : value;

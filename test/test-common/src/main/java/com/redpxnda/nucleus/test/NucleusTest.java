@@ -21,6 +21,7 @@ import net.fabricmc.api.EnvType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -227,6 +228,63 @@ public class NucleusTest {
                 Nucleus.getLogger().warn("❌ optional field not null when explicitly null");
             } else {
                 Nucleus.getLogger().info("✅ optional field correctly handled when explicitly null");
+            }
+        }
+
+        AutoCodec<TestRecord> codecWithDefaults = AutoCodec.of(TestRecord.class)
+                .setRecordDefaults(Map.of(
+                        "opt_string", () -> "default_string",
+                        "opt_int", () -> 123
+                ));
+
+        // JSON missing optional fields
+        JsonObject missingFields = new JsonObject();
+        missingFields.addProperty("test", "required");
+        missingFields.addProperty("number", 5);
+
+        var defaultResult = codecWithDefaults.codec()
+                .decode(JsonOps.INSTANCE, missingFields)
+                .result();
+
+        if (defaultResult.isEmpty()) {
+            Nucleus.getLogger().warn("❌ decode failed when defaults should be applied");
+        } else {
+            TestRecord record = defaultResult.get().getFirst();
+            if (!"required".equals(record.testString()) || record.number() != 5) {
+                Nucleus.getLogger().warn("❌ wrong values for required fields with defaults");
+            }
+            if (!"default_string".equals(record.optionalString())) {
+                Nucleus.getLogger().warn("❌ default not applied to optionalString");
+            }
+            if (!Integer.valueOf(123).equals(record.optionalInt())) {
+                Nucleus.getLogger().warn("❌ default not applied to optionalInt");
+            } else {
+                Nucleus.getLogger().info("✅ recordDefaultGetter applied correctly to missing fields");
+            }
+        }
+
+        // JSON with explicit null for optional fields (should still use defaults)
+        JsonObject nullFields = new JsonObject();
+        nullFields.addProperty("test", "required2");
+        nullFields.addProperty("number", 6);
+        nullFields.add("opt_string", JsonNull.INSTANCE);
+        nullFields.add("opt_int", JsonNull.INSTANCE);
+
+        var nullDefaultResult = codecWithDefaults.codec()
+                .decode(JsonOps.INSTANCE, nullFields)
+                .result();
+
+        if (nullDefaultResult.isEmpty()) {
+            Nucleus.getLogger().warn("❌ decode failed for null fields with defaults");
+        } else {
+            TestRecord record = nullDefaultResult.get().getFirst();
+            if (!"default_string".equals(record.optionalString())) {
+                Nucleus.getLogger().warn("❌ default not applied to optionalString when null");
+            }
+            if (!Integer.valueOf(123).equals(record.optionalInt())) {
+                Nucleus.getLogger().warn("❌ default not applied to optionalInt when null");
+            } else {
+                Nucleus.getLogger().info("✅ recordDefaultGetter applied correctly to null fields");
             }
         }
     }
