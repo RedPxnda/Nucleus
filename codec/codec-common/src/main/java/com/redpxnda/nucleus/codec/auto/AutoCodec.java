@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.util.MiscUtil;
+import io.netty.handler.codec.DecoderException;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -59,13 +60,36 @@ public class AutoCodec<C> extends MapCodec<C> {
     public static Map<String, Field> performFieldSearch(Class<?> cls) {
         Map<String, Field> result = new LinkedHashMap<>();
 
-        for (Field field : cls.getFields()) {
-            field.setAccessible(true);
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
-            Name nameAnnotation = field.getAnnotation(Name.class);
-            String name = nameAnnotation == null ? field.getName() : nameAnnotation.value();
-            result.put(name, field);
+        if (cls.isRecord()) {
+            for (RecordComponent rc : cls.getRecordComponents()) {
+                try {
+                    Field field = cls.getDeclaredField(rc.getName());
+                    field.setAccessible(true);
+                    if (Modifier.isStatic(field.getModifiers())) continue;
+
+                    if (rc.isAnnotationPresent(Ignored.class) || field.isAnnotationPresent(Ignored.class))
+                        continue;
+
+                    Name nameAnnotation = rc.getAnnotation(Name.class);
+                    if (nameAnnotation == null)
+                        nameAnnotation = field.getAnnotation(Name.class);
+
+                    String name = nameAnnotation == null ? rc.getName() : nameAnnotation.value();
+
+                    result.put(name, field);
+                } catch (NoSuchFieldException e) {
+                    // shouldn't happen, but skip safely
+                }
+            }
+        } else {
+            for (Field field : cls.getFields()) {
+                field.setAccessible(true);
+                int modifiers = field.getModifiers();
+                if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
+                Name nameAnnotation = field.getAnnotation(Name.class);
+                String name = nameAnnotation == null ? field.getName() : nameAnnotation.value();
+                result.put(name, field);
+            }
         }
 
         return result;
@@ -127,6 +151,9 @@ public class AutoCodec<C> extends MapCodec<C> {
 
     @java.lang.Override
     public <T> DataResult<C> decode(DynamicOps<T> ops, MapLike<T> map) {
+        if (cls.isRecord()) {
+            return decodeRecord(ops, map, cls);
+        }
         Object instance = createCInstance(cls);
         fields.forEach((key, field) -> {
             Object value = field.codec.decode(
@@ -141,6 +168,62 @@ public class AutoCodec<C> extends MapCodec<C> {
         });
         if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
         return DataResult.success((C) instance);
+    }
+
+    private static Object defaultValue(Class<?> t) {
+        if (!t.isPrimitive()) return null;
+        if (t == boolean.class) return false;
+        if (t == byte.class) return (byte) 0;
+        if (t == short.class) return (short) 0;
+        if (t == int.class) return 0;
+        if (t == long.class) return 0L;
+        if (t == float.class) return 0f;
+        if (t == double.class) return 0d;
+        if (t == char.class) return '\0';
+        return null;
+    }
+
+    private <T> DataResult<C> decodeRecord(DynamicOps<T> ops, MapLike<T> map, Class<C> cls) {
+        try {
+            var components = cls.getRecordComponents();
+            Object[] args = new Object[components.length];
+            Class<?>[] paramTypes = new Class<?>[components.length];
+
+            for (int i = 0; i < components.length; i++) {
+                RecordComponent rc = components[i];
+                paramTypes[i] = rc.getType();
+                var fieldInfo = fields.get(rc.getName());
+
+                if (fieldInfo == null) {
+                    LOGGER.warn("No codec found for record component '{}' in '{}'", rc.getName(), cls.getSimpleName());
+                    args[i] = defaultValue(rc.getType());
+                    continue;
+                }
+
+                Object value = fieldInfo.codec.decode(ops, map)
+                        .getOrThrow(s -> new DecoderException(
+                                "Failed to parse record component '" + rc.getName() + "' in AutoCodec decoding of '" + cls.getSimpleName() + "'! -> " + s));
+
+                boolean setIfNull = defaultSetIfNullBehavior(fieldInfo, value, null);
+                if (fieldInfo.codec instanceof NullabilityHandler nh) {
+                    setIfNull = nh.shouldSetToNull(ops, map);
+                }
+
+                args[i] = (value == null && !setIfNull) ? defaultValue(rc.getType()) : value;
+            }
+
+            var canonicalCtor = cls.getDeclaredConstructor(paramTypes);
+            canonicalCtor.setAccessible(true);
+            C instance = (C) canonicalCtor.newInstance(args);
+
+            if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
+
+            return DataResult.success(instance);
+
+        } catch (Exception e) {
+            LOGGER.error("Failed to decode record of type '{}'", cls.getSimpleName(), e);
+            return DataResult.error(() -> "Failed to decode record " + cls.getName() + ": " + e.getMessage());
+        }
     }
 
     protected boolean defaultSetIfNullBehavior(AutoCodecField field, @Nullable Object value, Object classInstance) {

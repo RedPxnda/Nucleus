@@ -44,10 +44,12 @@ public class Nucleus {
     }
 
     public static <T extends NucleusPacket> void registerPacket(NetworkManager.Side side, CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
-        if (side == NetworkManager.Side.S2C && Platform.getEnvironment() != Env.CLIENT)
+        if (side == NetworkManager.Side.S2C && Platform.getEnvironment() != Env.CLIENT) {
             NetworkManager.registerS2CPayloadType(type, streamCodec);
-        else
+        }
+        else {
             NetworkManager.registerReceiver(side, type, streamCodec, (packet, context) -> context.queue(() -> packet.handle(context)));
+        }
     }
 
     public static ResourceLocation loc(String str) {

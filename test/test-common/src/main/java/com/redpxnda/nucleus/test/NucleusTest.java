@@ -1,5 +1,10 @@
 package com.redpxnda.nucleus.test;
 
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
+import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigType;
@@ -170,5 +175,18 @@ public class NucleusTest {
 
         invokerExecutor.shutdown();
         //System.out.println("All invoker calls finished.");
+        JsonObject object = new JsonObject();
+        object.addProperty("test", "string");
+        object.addProperty("number", 10);
+        TestRecord test = AutoCodec.of(TestRecord.class).codec().decode(JsonOps.INSTANCE, object).result().get().getFirst();
+        if (!"string".equals(test.testString())) {
+            Nucleus.getLogger().warn("failed string record test");
+        }
+        if (!(10 == test.number())) {
+            Nucleus.getLogger().warn("failed number test");
+        }
+    }
+
+    public record TestRecord(@AutoCodec.Name("test") String testString, float number, @CodecBehavior.Optional String testing) {
     }
 }

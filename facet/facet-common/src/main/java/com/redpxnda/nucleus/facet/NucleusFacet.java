@@ -4,6 +4,9 @@ import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.facet.network.TrackingUpdateSyncer;
 import com.redpxnda.nucleus.facet.network.clientbound.FacetSyncPacket;
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
+import net.fabricmc.api.Environment;
 
 public class NucleusFacet {
     public static final String MOD_ID = "nucleus_facet";
