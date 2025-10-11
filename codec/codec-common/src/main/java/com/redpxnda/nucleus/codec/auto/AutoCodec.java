@@ -67,6 +67,8 @@ public class AutoCodec<C> extends MapCodec<C> {
                     field.setAccessible(true);
                     if (Modifier.isStatic(field.getModifiers())) continue;
 
+                    var annotations = rc.getAnnotations();
+
                     if (rc.isAnnotationPresent(Ignored.class) || field.isAnnotationPresent(Ignored.class))
                         continue;
 
@@ -192,12 +194,13 @@ public class AutoCodec<C> extends MapCodec<C> {
             for (int i = 0; i < components.length; i++) {
                 RecordComponent rc = components[i];
                 paramTypes[i] = rc.getType();
-                var fieldInfo = fields.get(rc.getName());
+
+                // ✅ find field by JSON name OR Java name
+                AutoCodecField fieldInfo = fields.getOrDefault(rc.getName(), findByJavaName(rc.getName()));
 
                 if (fieldInfo == null) {
-                    LOGGER.warn("No codec found for record component '{}' in '{}'", rc.getName(), cls.getSimpleName());
-                    args[i] = defaultValue(rc.getType());
-                    continue;
+                    throw new DecoderException("No codec found for record component '" +
+                                               rc.getName() + "' in '" + cls.getSimpleName() + "'");
                 }
 
                 Object value = fieldInfo.codec.decode(ops, map)
@@ -208,8 +211,16 @@ public class AutoCodec<C> extends MapCodec<C> {
                 if (fieldInfo.codec instanceof NullabilityHandler nh) {
                     setIfNull = nh.shouldSetToNull(ops, map);
                 }
+                boolean isOptional =
+                        (rc.isAnnotationPresent(CodecBehavior.Optional.class)) ||
+                        (fieldInfo.field != null && fieldInfo.field.isAnnotationPresent(CodecBehavior.Optional.class));
 
-                args[i] = (value == null && !setIfNull) ? defaultValue(rc.getType()) : value;
+                if (value == null && !setIfNull  && !isOptional) {
+                    return DataResult.error(() -> "Record component '" + rc.getName() + "' in '" +
+                                                  cls.getSimpleName() + "' is null but not marked optional");
+                }
+
+                args[i] = (value == null) ? defaultValue(rc.getType()) : value;
             }
 
             var canonicalCtor = cls.getDeclaredConstructor(paramTypes);
@@ -220,11 +231,21 @@ public class AutoCodec<C> extends MapCodec<C> {
 
             return DataResult.success(instance);
 
+        } catch (DecoderException e) {
+            return DataResult.error(e::getMessage);
         } catch (Exception e) {
             LOGGER.error("Failed to decode record of type '{}'", cls.getSimpleName(), e);
             return DataResult.error(() -> "Failed to decode record " + cls.getName() + ": " + e.getMessage());
         }
     }
+
+    private AutoCodecField findByJavaName(String javaName) {
+        for (AutoCodecField f : fields.values()) {
+            if (f.field.getName().equals(javaName)) return f;
+        }
+        return null;
+    }
+
 
     protected boolean defaultSetIfNullBehavior(AutoCodecField field, @Nullable Object value, Object classInstance) {
         return true;
