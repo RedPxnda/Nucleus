@@ -45,11 +45,11 @@ import java.util.stream.Stream;
  * IMPORTANT NOTE: {@link AutoCodec}s aren't directly codecs, but rather are {@link MapCodec}s. To get the actual codec
  * object, use {@link AutoCodec#codec()}.
  *
+ * @param <C> The type this {@link AutoCodec} represents
  * @see CodecBehavior.Override
  * @see Ignored
  * @see CodecBehavior.Optional
  * @see Settings
- * @param <C> The type this {@link AutoCodec} represents
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class AutoCodec<C> extends MapCodec<C> {
@@ -58,13 +58,36 @@ public class AutoCodec<C> extends MapCodec<C> {
     public static Map<String, Field> performFieldSearch(Class<?> cls) {
         Map<String, Field> result = new LinkedHashMap<>();
 
-        for (Field field : cls.getFields()) {
-            field.setAccessible(true);
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
-            Name nameAnnotation = field.getAnnotation(Name.class);
-            String name = nameAnnotation == null ? field.getName() : nameAnnotation.value();
-            result.put(name, field);
+        if (cls.isRecord()) {
+            for (RecordComponent rc : cls.getRecordComponents()) {
+                try {
+                    Field field = cls.getDeclaredField(rc.getName());
+                    field.setAccessible(true);
+                    if (Modifier.isStatic(field.getModifiers())) continue;
+
+                    if (rc.isAnnotationPresent(Ignored.class) || field.isAnnotationPresent(Ignored.class))
+                        continue;
+
+                    Name nameAnnotation = rc.getAnnotation(Name.class);
+                    if (nameAnnotation == null)
+                        nameAnnotation = field.getAnnotation(Name.class);
+
+                    String name = nameAnnotation == null ? rc.getName() : nameAnnotation.value();
+
+                    result.put(name, field);
+                } catch (NoSuchFieldException e) {
+                    // shouldn't happen, but skip safely
+                }
+            }
+        } else {
+            for (Field field : cls.getFields()) {
+                field.setAccessible(true);
+                int modifiers = field.getModifiers();
+                if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
+                Name nameAnnotation = field.getAnnotation(Name.class);
+                String name = nameAnnotation == null ? field.getName() : nameAnnotation.value();
+                result.put(name, field);
+            }
         }
 
         return result;
@@ -92,9 +115,11 @@ public class AutoCodec<C> extends MapCodec<C> {
             fields.put(name, new AutoCodecField(name, codec, fieldType, field.getType(), field));
         }
     }
+
     public static <T> AutoCodec<T> of(Class<T> cls) {
         return new AutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".");
     }
+
     public static <T> AutoCodec<T> of(Class<T> cls, String errorMsg) {
         return new AutoCodec<>(cls, errorMsg);
     }
@@ -102,10 +127,11 @@ public class AutoCodec<C> extends MapCodec<C> {
     protected C createCInstance(Class<C> cls) {
         return (C) createClassInstance(cls);
     }
+
     protected static Object createClassInstance(Class<?> cls) {
         if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || cls.isAnnotation()) {
             LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! Cannot instantiate interfaces/abstract classes.\n" +
-                    "Please override the codec for this class.", cls.getSimpleName());
+                         "Please override the codec for this class.", cls.getSimpleName());
             throw new IllegalArgumentException("Cannot instantiate interfaces/abstract classes.");
         }
 
@@ -113,7 +139,9 @@ public class AutoCodec<C> extends MapCodec<C> {
             Constructor<?> constructor = cls.getDeclaredConstructor();
             constructor.setAccessible(true);
             return constructor.newInstance();
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException ignored) {}
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+                 NoSuchMethodException ignored) {
+        }
         //sun.misc.Unsafe? for now, no.
         LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! No available nullary constructor.", cls.getSimpleName());
         throw new IllegalArgumentException("No available nullary constructor!");
@@ -121,6 +149,9 @@ public class AutoCodec<C> extends MapCodec<C> {
 
     @java.lang.Override
     public <T> DataResult<C> decode(DynamicOps<T> ops, MapLike<T> map) {
+        if (cls.isRecord()) {
+            return decodeRecord(ops, map, cls);
+        }
         Object instance = createCInstance(cls);
         fields.forEach((key, field) -> {
             Object value = field.codec.decode(
@@ -136,6 +167,65 @@ public class AutoCodec<C> extends MapCodec<C> {
         if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
         return DataResult.success((C) instance);
     }
+
+    private static Object defaultValue(Class<?> t) {
+        if (!t.isPrimitive()) return null;
+        if (t == boolean.class) return false;
+        if (t == byte.class) return (byte) 0;
+        if (t == short.class) return (short) 0;
+        if (t == int.class) return 0;
+        if (t == long.class) return 0L;
+        if (t == float.class) return 0f;
+        if (t == double.class) return 0d;
+        if (t == char.class) return '\0';
+        return null;
+    }
+
+    private <T> DataResult<C> decodeRecord(DynamicOps<T> ops, MapLike<T> map, Class<C> cls) {
+        try {
+            var components = cls.getRecordComponents();
+            Object[] args = new Object[components.length];
+            Class<?>[] paramTypes = new Class<?>[components.length];
+
+            for (int i = 0; i < components.length; i++) {
+                RecordComponent rc = components[i];
+                paramTypes[i] = rc.getType();
+                var fieldInfo = fields.get(rc.getName());
+
+                if (fieldInfo == null) {
+                    LOGGER.warn("No codec found for record component '{}' in '{}'", rc.getName(), cls.getSimpleName());
+                    args[i] = defaultValue(rc.getType());
+                    continue;
+                }
+
+                Object value = fieldInfo.codec.decode(ops, map)
+                        .getOrThrow(false, s -> LOGGER.error(
+                                "Failed to parse record component '{}' in AutoCodec decoding of '{}'! -> {}",
+                                rc.getName(), cls.getSimpleName(), s
+                        ));
+
+                boolean setIfNull = defaultSetIfNullBehavior(fieldInfo, value, null);
+                if (fieldInfo.codec instanceof NullabilityHandler nh) {
+                    setIfNull = nh.shouldSetToNull(ops, map);
+                }
+
+                args[i] = (value == null && !setIfNull) ? defaultValue(rc.getType()) : value;
+            }
+
+            var canonicalCtor = cls.getDeclaredConstructor(paramTypes);
+            canonicalCtor.setAccessible(true);
+            C instance = (C) canonicalCtor.newInstance(args);
+
+            if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
+
+            return DataResult.success(instance);
+
+        } catch (Exception e) {
+            LOGGER.error("Failed to decode record of type '{}'", cls.getSimpleName(), e);
+            return DataResult.error(() -> "Failed to decode record " + cls.getName() + ": " + e.getMessage());
+        }
+    }
+
 
     protected boolean defaultSetIfNullBehavior(AutoCodecField field, @Nullable Object value, Object classInstance) {
         return true;
@@ -173,9 +263,9 @@ public class AutoCodec<C> extends MapCodec<C> {
     @java.lang.Override
     public String toString() {
         return "AutoCodec{" +
-                "cls=" + cls +
-                ", fields=" + fields +
-                '}';
+               "cls=" + cls +
+               ", fields=" + fields +
+               '}';
     }
 
     @java.lang.Override
@@ -228,9 +318,11 @@ public class AutoCodec<C> extends MapCodec<C> {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    public @interface Ignored {}
+    public @interface Ignored {
+    }
 
-    public record AutoCodecField(String name, MapCodec<?> codec, Type type, Class<?> clazz, Field field) {}
+    public record AutoCodecField(String name, MapCodec<?> codec, Type type, Class<?> clazz, Field field) {
+    }
 
     /*private static class TestVessel {
         @IntegerRange(min = 0, max = 10)
