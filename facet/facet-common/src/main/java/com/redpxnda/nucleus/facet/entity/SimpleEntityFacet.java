@@ -46,6 +46,9 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
             SimpleEntityFacet<T> facet = facetBuilder.getCreator().apply(entity);
             if (facet != null) {
                 attacher.add(key, facet);
+                if(facet.updateOnSet){
+                    facet.sendToTrackers(entity);
+                }
             }
         });
 
