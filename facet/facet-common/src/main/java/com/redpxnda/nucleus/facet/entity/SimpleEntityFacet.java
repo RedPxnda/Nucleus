@@ -55,7 +55,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         return facetBuilder;
     }
 
-    public SimpleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, T defaultValue, boolean updateOnSet, Entity owner) {
+    public SimpleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, @Nullable T defaultValue, boolean updateOnSet, Entity owner) {
         this.codec = codec;
         this.key = key;
         value = defaultValue;
@@ -68,12 +68,21 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         return codec;
     }
 
+    /**
+     * get the value of the entity, can be null
+     * @return
+     */
     @Nullable
     @Override
     public T get() {
         return value;
     }
 
+    /**
+     * set the value of this facet.
+     * can be set to null
+     * @param value
+     */
     @Override
     public void set(@Nullable T value) {
         this.value = value;
@@ -97,25 +106,39 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
             this.codec = codec;
         }
 
+        /**
+         * predicate to what entities this predicate should be attached to.
+         * @param entityPredicate
+         * @return
+         */
         public Builder<T> setPredicate(Predicate<Entity> entityPredicate) {
             this.entityPredicate = entityPredicate;
             return this;
         }
 
+        /**
+         * set the default value - what an unset facet should contain.
+         * can be null
+         */
         public Builder<T> setDefaultValue(@Nullable T defaultValue) {
             this.value = defaultValue;
             return this;
         }
 
+        /**
+         * if the Facet should be auto-synced to the clients on set
+         * @param shouldUpdate
+         * @return
+         */
         public Builder<T> syncToClientsOnSet(boolean shouldUpdate) {
             this.updateOnSet = shouldUpdate;
             return this;
         }
 
         private Function<Entity, SimpleEntityFacet<T>> getCreator() {
-            return (e) -> {
-                if (entityPredicate.test(e)) {
-                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, e);
+            return (entity) -> {
+                if (entityPredicate.test(entity)) {
+                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, entity);
                 } else {
                     return null;
                 }
