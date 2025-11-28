@@ -36,16 +36,14 @@ public class FacetRegistry {
      * Creates and registers a simple data holder Facet by giving it a Codec
      * @param id the id to register under. will be in entity save data
      * @param codec the codec to encode data
-     * @param shouldAttach if it should attach
      * @return the key to retrieve the data form any entity
      * @param <T> your custom data
      */
-    public static <T> FacetKey<SimpleEntityFacet<T>> registerSimple(
+    public static <T> SimpleEntityFacet.Builder<T> registerSimple(
             ResourceLocation id,
-            Codec<T> codec,
-            Predicate<Entity> shouldAttach
+            Codec<T> codec
     ) {
-        return SimpleEntityFacet.createSimple(id,codec,shouldAttach);
+        return SimpleEntityFacet.createSimple(id,codec);
     }
 
     public static FacetKey<?> get(ResourceLocation id) {

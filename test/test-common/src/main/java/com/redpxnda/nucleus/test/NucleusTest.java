@@ -68,9 +68,12 @@ public class NucleusTest {
         });
 
         FacetKey<SimpleEntityFacet<String>> FACETKEY = FacetRegistry.registerSimple(
-                ResourceLocation.fromNamespaceAndPath("example", "primitive"),
-                ExtraCodecs.ESCAPED_STRING,
-                (e) -> true);
+                        ResourceLocation.fromNamespaceAndPath("example", "primitive"),
+                        ExtraCodecs.ESCAPED_STRING)
+                .setDefaultValue(null)
+                .syncToClientsOnSet(false)
+                .setPredicate((entity -> true))
+                .build();
 
         PlayerEvent.PLAYER_JOIN.register(player -> {
             FACETKEY.getOptional(player).ifPresent((stringFacet) -> {
