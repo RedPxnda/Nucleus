@@ -12,13 +12,16 @@ import com.redpxnda.nucleus.config.ConfigType;
 import com.redpxnda.nucleus.editor.core.ClientLoader;
 import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
+import com.redpxnda.nucleus.facet.FacetKey;
 import com.redpxnda.nucleus.facet.FacetRegistry;
+import com.redpxnda.nucleus.facet.entity.SimpleEntityFacet;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
@@ -62,6 +65,18 @@ public class NucleusTest {
                 facet.someIntegerValue++;
                 facet.sendToClient(player);
             }
+        });
+
+        FacetKey<SimpleEntityFacet<String>> FACETKEY = FacetRegistry.registerSimple(
+                ResourceLocation.fromNamespaceAndPath("example", "primitive"),
+                ExtraCodecs.ESCAPED_STRING,
+                (e) -> true);
+
+        PlayerEvent.PLAYER_JOIN.register(player -> {
+            FACETKEY.getOptional(player).ifPresent((stringFacet) -> {
+                stringFacet.set("Testing!");
+                stringFacet.sendToClient(player);
+            });
         });
 
         /*
@@ -295,13 +310,15 @@ public class NucleusTest {
             @AutoCodec.Name("number") int number,
             @CodecBehavior.Optional @AutoCodec.Name("opt_string") String optionalString,
             @CodecBehavior.Optional @AutoCodec.Name("opt_int") Integer optionalInt
-    ) {}
+    ) {
+    }
 
 
     static PrioritizedEvent<MiscEvents.SingleInput<String>> EVENT = PrioritizedEvent.createEventResult();
 
     /**
      * earlier events sometimes produced concurrent exceptions
+     *
      * @throws InterruptedException
      */
     public static void eventTest() throws InterruptedException {

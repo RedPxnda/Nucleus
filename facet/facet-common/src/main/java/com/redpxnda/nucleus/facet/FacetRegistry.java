@@ -1,12 +1,16 @@
 package com.redpxnda.nucleus.facet;
 
+import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
+import com.redpxnda.nucleus.facet.entity.SimpleEntityFacet;
 import com.redpxnda.nucleus.facet.event.FacetAttachmentEvent;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
+
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -26,6 +30,22 @@ public class FacetRegistry {
         FacetKey<T> key = new FacetKey<>(id, cls);
         REGISTERED_FACETS.put(id, key);
         return key;
+    }
+
+    /**
+     * Creates and registers a simple data holder Facet by giving it a Codec
+     * @param id the id to register under. will be in entity save data
+     * @param codec the codec to encode data
+     * @param shouldAttach if it should attach
+     * @return the key to retrieve the data form any entity
+     * @param <T> your custom data
+     */
+    public static <T> FacetKey<SimpleEntityFacet<T>> registerSimple(
+            ResourceLocation id,
+            Codec<T> codec,
+            Predicate<Entity> shouldAttach
+    ) {
+        return SimpleEntityFacet.createSimple(id,codec,shouldAttach);
     }
 
     public static FacetKey<?> get(ResourceLocation id) {
