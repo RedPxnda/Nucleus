@@ -38,31 +38,27 @@ public record TestRecord(
 @CodecBehavior.Optional String optionalField
 ) {}
 ```
-- **Class-Level Defaults** – Configure default nullability and behavior using `@Settings`.
+- **Class-Level Defaults** – Configure default nullability and behavior using `@Settings`.  
 ```java
 @Settings(nullableByDefault = true)
 public record TestRecord(String alwaysNullable) {}
-```
-- **Custom Field Names** – Rename serialized fields using `@AutoCodec.Name`.
+```  
+- **Custom Field Names** – Rename serialized fields using `@AutoCodec.Name`.  
 ```java
 public record TestRecord (
         @AutoCodec.Name("json_name") String javaField
-) implements AdditionalConstructing {
-    public void additionalSetup(){
-        //Custom logic while javaField is already set by the AutoCodec
-    }
-        }
-```
-Serialized as "json_name" instead of "javaField"
-- **Ignored Fields** – Exclude fields from encoding/decoding with `@Ignored`.
+){ }
+```  
+Serialized as "json_name" instead of "javaField"  
+- **Ignored Fields** – Exclude fields from encoding/decoding with `@Ignored`.  
 ```java
 public record TestRecord(
         String included,
         @Ignored String ignored
 ) {}
 ```
-"ignored" field is skipped during encoding/decoding
-- **Custom Codecs** – Override field codecs using `@CodecBehavior.Override`.
+"ignored" field is skipped during encoding/decoding  
+- **Custom Codecs** – Override field codecs using `@CodecBehavior.Override`.  
 Consider using CodecBehaviour.registerClass(Class<?>, Codec<?> codec); to register the codec instead.
 ```java
 public record TestRecord(
@@ -77,7 +73,11 @@ public record TestRecord(
 ```java
 public record TestRecord(
         @CodecBehavior.Optional String optionalField
-) {}
+) implements AdditionalConstructing {
+    public void additionalSetup() {
+        //Custom logic while javaField is already set by the AutoCodec
+    }
+}
 ```
 
 To register Codecs used in AutoCodecs, simply call
