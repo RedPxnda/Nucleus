@@ -19,7 +19,18 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static io.netty.util.internal.shaded.org.jctools.util.UnsafeAccess.UNSAFE;
+
 /**
+ * An {@code AutoCodec} automatically derives a {@link Codec} for a class by inspecting its fields.
+ * It is intended for simple, data-oriented objects where writing a manual {@link Codec} would be
+ * unnecessary boilerplate.
+ *
+ * <h2>Typical Usage</h2>
+ * <pre>{@code
+ * Codec<MyClass> codec = AutoCodec.of(MyClass.class).codec();
+ * }</pre>
+ * see {@link AutoCodec#of(Class)} for more usage information.
  * {@link AutoCodec}s are comparable to {@link Gson}. They automatically generate a codec from some class,
  * scanning fields to add as parameters. Inevitably, as auto-generation tends to be, {@link AutoCodec}s can
  * be very unstable. They require classes to either: <br>
@@ -82,7 +93,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                 }
             }
         } else {
-            for (Field field : cls.getFields()) {
+            for (Field field : cls.getDeclaredFields()) {
                 field.setAccessible(true);
                 int modifiers = field.getModifiers();
                 if (Modifier.isStatic(modifiers) || field.isAnnotationPresent(Ignored.class)) continue;
@@ -95,11 +106,14 @@ public class AutoCodec<C> extends MapCodec<C> {
         return result;
     }
 
+    /**
+     * Class of the Codec
+     */
     protected final Class<C> cls;
     protected final String errorMsg;
+    protected Supplier<C> customConstructor = null;
     public final Map<String, AutoCodecField> fields = new LinkedHashMap<>();
-
-    public Map<String, Supplier<?>> recordDefaultGetter = new HashMap<>();
+    protected Map<String, Supplier<?>> overWriteDefaultSupplier = new HashMap<>();
 
     public AutoCodec(Class<C> cls, String errorMsg) {
         this(cls, errorMsg, performFieldSearch(cls));
@@ -120,28 +134,71 @@ public class AutoCodec<C> extends MapCodec<C> {
         }
     }
 
+    /**
+     * Create an AutoCodec for a specific class.
+     * for default behaviour read {@link AutoCodec#setRecordDefaults(Map)}
+     * for nullable behaviour on fields use {@link CodecBehavior.Optional}
+     * for default nullable behaviour for a class use {@link Settings}
+     * for custom data names use {@link Name}
+     * to ignore fields use {@link Ignored}
+     * to set custom codecs use {@link com.redpxnda.nucleus.codec.behavior.CodecBehavior.Override}
+     * for additional past decode logic implement {@link AdditionalConstructing}
+     * @param cls the class or record in question
+     */
     public static <T> AutoCodec<T> of(Class<T> cls) {
         return new AutoCodec<>(cls, "Field not present for " + cls.getSimpleName() + ".");
     }
 
+    /**
+     * Only for Records.
+     * Allows for setting custom default behaviour, so if the data is empty these will be used.
+     * for classes simply set the field for the same behaviour.
+     * @return itself
+     */
     public AutoCodec<C> setRecordDefaults(Map<String, Supplier<?>> recordDefaultGetter) {
-        this.recordDefaultGetter = recordDefaultGetter;
+        this.overWriteDefaultSupplier = recordDefaultGetter;
         return this;
     }
 
+    /**
+     * Creates a custom AutoCodec with a custom error message on fail.
+     *
+     * @param cls the class in question
+     * @param errorMsg custom error message
+     */
     public static <T> AutoCodec<T> of(Class<T> cls, String errorMsg) {
         return new AutoCodec<>(cls, errorMsg);
     }
 
     protected C createCInstance(Class<C> cls) {
-        return (C) createClassInstance(cls);
+        return (C) createClassInstance(cls, customConstructor);
     }
 
-    protected static Object createClassInstance(Class<?> cls) {
+    protected static Object createClassInstance(Class<?> cls, Supplier<?> supplier) {
+        if (supplier != null) {
+            try {
+                return supplier.get();
+            } catch (Exception e) {
+                LOGGER.error(
+                        "Failed to create instance for class '{}' using registered supplier.",
+                        cls.getSimpleName(),
+                        e
+                );
+                throw new IllegalArgumentException(
+                        "Supplier failed for class " + cls.descriptorString(), e
+                );
+            }
+        }
+
         if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers()) || cls.isAnnotation()) {
             LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! Cannot instantiate interfaces/abstract classes.\n" +
                          "Please override the codec for this class.", cls.getSimpleName());
             throw new IllegalArgumentException("Cannot instantiate interfaces/abstract classes.");
+        }
+
+        if(cls.isMemberClass() && !Modifier.isStatic(cls.getModifiers())
+        ){
+            throw new IllegalArgumentException("Cannot instantiate non static inner class!.");
         }
 
         try {
@@ -149,11 +206,37 @@ public class AutoCodec<C> extends MapCodec<C> {
             constructor.setAccessible(true);
             return constructor.newInstance();
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException |
-                 NoSuchMethodException ignored) {
+                 NoSuchMethodException suppressed) {
+            LOGGER.error("No available nullary constructor.{} should contain an null constructor!", cls.descriptorString(), suppressed);
         }
-        //sun.misc.Unsafe? for now, no.
-        LOGGER.error("Failed to create instance for class '{}' during AutoCodec decoding! No available nullary constructor.", cls.getSimpleName());
-        throw new IllegalArgumentException("No available nullary constructor!");
+
+        try {
+            LOGGER.error("Attempting misc.Unsafe");
+            return UNSAFE.allocateInstance(cls);
+        } catch (InstantiationException e) {
+            LOGGER.error(
+                    "Failed to create instance for class '{}' using Unsafe during AutoCodec decoding!",
+                    cls.getSimpleName(),
+                    e
+            );
+            throw new IllegalArgumentException(
+                    "Unable to instantiate class " + cls.descriptorString() + " via Unsafe", e
+            );
+        }
+    }
+
+    /**
+     * Allows to set a custom constructor.
+     * Some classes like inner non-static or abstract/interfaces cant work otherwise.
+     * Also usefull for custom behaviour
+     * If you want to have custom behaviour after the fields are set, look at {@link AdditionalConstructing}
+     * @param constructor
+     * @return
+     */
+    @SuppressWarnings("unused")
+    public AutoCodec<C> setClassConstructor(Supplier<C> constructor) {
+        this.customConstructor = constructor;
+        return this;
     }
 
     @java.lang.Override
@@ -162,17 +245,31 @@ public class AutoCodec<C> extends MapCodec<C> {
             return decodeRecord(ops, map, cls);
         }
         Object instance = createCInstance(cls);
-        fields.forEach((key, field) -> {
-            Object value = field.codec.decode(
-                    ops,
-                    map
-            ).getOrThrow(s -> MiscUtil.logError(LOGGER, "Failed to parse field '" + field.field.getName() + "' in AutoCodec decoding of '" + cls.getSimpleName() + "! -> " + s));
+        for (String key : fields.keySet()) {
+            AutoCodecField field = fields.get(key);
+            try {
+                var optional = field.codec.decode(
+                        ops,
+                        map
+                );
+                String message = "Failed to parse field '" + field.field.getName() + "' in AutoCodec decoding of '" + cls.getSimpleName() + "! -> ";
+                if (optional.isError()) {
+                    return DataResult.error(() -> message + optional.error().get().message());
+                }
+                Object value = optional.getOrThrow(s -> {
+                    LOGGER.error(message + s);
+                    return new DecoderException(message + s);
+                });
+                boolean setIfNull = defaultSetIfNullBehavior(field, value, instance);
+                if (field.codec instanceof NullabilityHandler nh) {
+                    setIfNull = nh.shouldSetToNull(ops, map);
+                }
 
-            boolean setIfNull = defaultSetIfNullBehavior(field, value, instance);
-            if (field.codec instanceof NullabilityHandler nh) setIfNull = nh.shouldSetToNull(ops, map);
-
-            setFieldVal(field, value, instance, setIfNull);
-        });
+                setFieldVal(field, value, instance, setIfNull);
+            } catch (DecoderException e) {
+                return DataResult.error(e::getMessage);
+            }
+        }
         if (instance instanceof AdditionalConstructing ac) ac.additionalSetup();
         return DataResult.success((C) instance);
     }
@@ -219,7 +316,7 @@ public class AutoCodec<C> extends MapCodec<C> {
                         (rc.isAnnotationPresent(CodecBehavior.Optional.class)) ||
                         (fieldInfo.field != null && fieldInfo.field.isAnnotationPresent(CodecBehavior.Optional.class));
 
-                Supplier<?> defaultSupplier = recordDefaultGetter.get(fieldInfo.name);
+                Supplier<?> defaultSupplier = overWriteDefaultSupplier.get(fieldInfo.name);
                 if (value == null) {
                     if (defaultSupplier != null) {
                         value = defaultSupplier.get();
@@ -305,7 +402,8 @@ public class AutoCodec<C> extends MapCodec<C> {
     }
 
     /**
-     * Implement this interface if you want to run code after the fields set by AutoCodec have been set.
+     * Implement this interface in your Target class
+     * if you want to run code after the fields set by AutoCodec have been set.
      */
     public interface AdditionalConstructing {
         void additionalSetup();
@@ -354,39 +452,4 @@ public class AutoCodec<C> extends MapCodec<C> {
 
     public record AutoCodecField(String name, MapCodec<?> codec, Type type, Class<?> clazz, Field field) {
     }
-
-    /*private static class TestVessel {
-        @IntegerRange(min = 0, max = 10)
-        public int i = 5;
-
-        public String str = "gah";
-
-        public int[] array = {1, 2, 3};
-    }
-
-    public static void main(String[] args) {
-        String json = """
-                {
-                    "i": 15,
-                    "str": "hi, actually",
-                    "array": [4, 5, 6]
-                }
-                """;
-        Gson g = new Gson();
-        JsonElement el = g.fromJson(json, JsonElement.class);
-
-        Codec<TestVessel> codec = AutoCodec.of(TestVessel.class).codec();
-        java.util.Optional<TestVessel> v = codec.parse(JsonOps.INSTANCE, el).result();
-        System.out.println(v);
-        v.ifPresent(testVessel -> {
-            System.out.println(testVessel.i);
-            System.out.println(testVessel.str);
-            System.out.println(Arrays.toString(testVessel.array));
-        });
-
-        TestVessel vessel = new TestVessel();
-        vessel.i=-1;
-        vessel.array = new int[] {95, 96, 96};
-        System.out.println(codec.encodeStart(JsonOps.INSTANCE, vessel));
-    }*/
 }

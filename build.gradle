@@ -414,6 +414,7 @@ subprojects { Project subproject ->
                 shadowCommon(project(path: ":${module}:${module}-common", configuration: "transformProductionFabric")) { transitive false }
             } else if (isNeoForge) {
                 neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
+                //neoForge rootProject.neoforge_version
                 modApi "dev.architectury:architectury-neoforge:${rootProject.architectury_version}"
 
                 /*implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
