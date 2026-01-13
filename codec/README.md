@@ -79,14 +79,13 @@ public record TestRecord(
     }
 }
 ```
-
-To register Codecs used in AutoCodecs, simply call
+## AutoCodec – Supported Classes (Default Registrations)
+To register custom Codecs for classes used in AutoCodecs, simply call
 ```java 
 static {
     CodecBehaviour.registerClass(Integer.class, Codec.INT);
 }
 ```
-## AutoCodec – Supported Classes (Default Registrations)
 
 ### Primitive Types and Boxed Variants
 - Integer / int
