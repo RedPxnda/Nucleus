@@ -20,6 +20,7 @@ Features summary:
 * Environment-based evaluation control - define whether your config is client only, server only, or both
 * (1.1.0+) Automatic screen creation - automatically create an in-game editor for your config
 * (1.1.0+) Config presets - allow users to apply specific built-in presets to your config
+* (1.1.0+) in-game UIs (Forge Config UI support and Fabric Modmenu support).
 
 Here's a basic example of creating a config:
 

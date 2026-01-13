@@ -84,11 +84,20 @@ public class RegistryComponent<T> extends AbstractWidget implements ConfigCompon
                 T val = entry.getValue();
 
                 if (separated) {
-                    if (strKey.contains(text))
+                    String[] parts = strKey.split(":", 2);
+                    if (key.getPath().contains(parts[1])) {
                         options.put(strKey, val);
+                    }
+                    if (key.getPath().contains(parts[0])) {
+                        options.put(strKey, val);
+                    }
                 } else {
-                    if (key.getPath().contains(text))
+                    if (key.getPath().contains(text)) {
                         options.put(strKey, val);
+                    }
+                    if (key.getNamespace().contains(text)) {
+                        options.put(strKey, val);
+                    }
                 }
                 //if (options.size() >= 5) break;
             }
