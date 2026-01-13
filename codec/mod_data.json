@@ -1,6 +1,6 @@
 {
   "id": "nucleus_codec",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "name": "Nucleus (Codec)",
   "description": "Various utilities for interaction with data, serialization, and deserialization",
   "authors": [

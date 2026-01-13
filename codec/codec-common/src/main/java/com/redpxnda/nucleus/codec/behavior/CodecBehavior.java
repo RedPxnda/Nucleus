@@ -171,21 +171,24 @@ public class CodecBehavior {
         registerAnnotator(IntegerRange.class, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             if (cls.equals(int.class) || cls.equals(Integer.class)) {
                 if (annot.failHard()) return Codec.intRange(annot.min(), annot.max());
-                else return Codec.INT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
+                else
+                    return Codec.INT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
             }
             return null;
         });
         registerAnnotator(DoubleRange.class, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             if (cls.equals(double.class) || cls.equals(Double.class)) {
                 if (annot.failHard()) return Codec.doubleRange(annot.min(), annot.max());
-                else return Codec.DOUBLE.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
+                else
+                    return Codec.DOUBLE.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
             }
             return null;
         });
         registerAnnotator(FloatRange.class, (annot, field, cls, rawFieldType, typeParams, passes) -> {
             if (cls.equals(float.class) || cls.equals(Float.class)) {
                 if (annot.failHard()) return Codec.floatRange(annot.min(), annot.max());
-                else return Codec.FLOAT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
+                else
+                    return Codec.FLOAT.xmap(i -> MathUtil.clamp(i, annot.min(), annot.max()), i -> MathUtil.clamp(i, annot.min(), annot.max()));
             }
             return null;
         });
@@ -298,9 +301,9 @@ public class CodecBehavior {
     }
 
     /**
-     * @param field the field to be used as reference... used for things like annotations
-     * @param cls the class of the field, or the class of the codec if no field
-     * @param raw the raw "generic type" of the field, or the class if no field
+     * @param field  the field to be used as reference... used for things like annotations
+     * @param cls    the class of the field, or the class of the codec if no field
+     * @param raw    the raw "generic type" of the field, or the class if no field
      * @param params the type params of the field, or null if no field
      * @param passes false if recursive call, true otherwise
      * @return a codec for this field/class
@@ -345,9 +348,9 @@ public class CodecBehavior {
     }
 
     /**
-     * @param field the field to be used as reference... used for things like annotations
-     * @param cls the class of the field, or the class of the codec if no field
-     * @param raw the raw "generic type" of the field, or the class if no field
+     * @param field  the field to be used as reference... used for things like annotations
+     * @param cls    the class of the field, or the class of the codec if no field
+     * @param raw    the raw "generic type" of the field, or the class if no field
      * @param params the type params of the field, or null if no field
      * @param passes false if recursive call, true otherwise
      * @return a codec for this field/class
@@ -477,6 +480,7 @@ public class CodecBehavior {
     @Target({ElementType.FIELD, ElementType.TYPE})
     public @interface Override {
         String value() default "CODEC";
+
         boolean auto() default false;
     }
 }

@@ -72,7 +72,9 @@ public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends
                 Object value;
                 if ((value = secondaryFieldCache.get(field)) == null) {
                     value = getSecondaryWithoutCache(field, cls, raw, params, passes, key);
-                    secondaryFieldCache.put(field, value);
+                    if (value != null) {
+                        secondaryTypeCache.put(raw, value);
+                    }
                 }
                 return value;
             }
@@ -82,7 +84,9 @@ public class BiBehaviorOutline<B extends TypeBehaviorGetter.Bi<?, ?, ?>> extends
             Object value;
             if ((value = secondaryTypeCache.get(raw)) == null) {
                 value = getSecondaryWithoutCache(null, cls, raw, params, passes, key);
-                secondaryTypeCache.put(raw, value);
+                if (value != null) {
+                    secondaryTypeCache.put(raw, value);
+                }
             }
             return value;
         }
