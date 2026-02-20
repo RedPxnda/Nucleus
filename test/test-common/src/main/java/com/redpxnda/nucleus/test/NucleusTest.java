@@ -67,7 +67,7 @@ public class NucleusTest {
             }
         });
 
-        FacetKey<SimpleEntityFacet<String>> FACETKEY = FacetRegistry.registerSimple(
+        /*FacetKey<SimpleEntityFacet<String>> FACETKEY = FacetRegistry.registerSimple(
                         ResourceLocation.fromNamespaceAndPath("example", "primitive"),
                         ExtraCodecs.ESCAPED_STRING)
                 .setDefaultValue(null)
@@ -80,7 +80,7 @@ public class NucleusTest {
                 stringFacet.set("Testing!");
                 stringFacet.sendToClient(player);
             });
-        });
+        });*/
 
         /*
          ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗ ███████╗

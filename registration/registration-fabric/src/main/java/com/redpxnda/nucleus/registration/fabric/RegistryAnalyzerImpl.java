@@ -72,6 +72,7 @@ public class RegistryAnalyzerImpl {
                 RegistryAnalyzer.LOGGER.warn("Failed to register key '" + identifier + "' for registry class '" + cls.getSimpleName() + "'! -> ", e);
             }
         }
+        RegistryAnalyzer.LOGGER.info("Finished registration for registry class '{}' of mod '{}'.", cls.getSimpleName(), modId);
     }
 
     public static void register(String modId, Supplier<Class<?>> holderClass) {
