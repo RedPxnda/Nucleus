@@ -16,4 +16,9 @@ public class ParticleProviderRegistry {
     public static <T extends ParticleOptions> void register(ParticleType<T> type, ParticleProvider<T> provider) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static <T extends ParticleOptions> void register(ParticleType<T> type, dev.architectury.registry.client.particle.ParticleProviderRegistry.DeferredParticleProvider<T> provider) {
+        throw new AssertionError();
+    }
 }
