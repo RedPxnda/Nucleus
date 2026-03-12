@@ -1,6 +1,6 @@
 {
   "id": "nucleus_trinket",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Nucleus (Trinket)",
   "description": "Compat layer for accesories like Accessories or Curio",
   "authors": [

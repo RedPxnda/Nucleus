@@ -30,8 +30,8 @@ public class TagGroupLoaderMixin {
         for (ResourceLocation id : ids) {
             List<TagLoader.EntryWithSource> tags = map.get(id);
             if (
-                    id.getNamespace().equals(NucleusTrinket.MOD_ID) ||
-                    NucleusTrinket.WATCHED_NAMESPACES.contains(id.getNamespace())
+                    id.getNamespace().equals(NucleusTrinket.MOD_ID)
+                    //|| NucleusTrinket.WATCHED_NAMESPACES.contains(id.getNamespace())
             ) {
                 tags.forEach(entryWithSource -> {
                     var curioList = map.computeIfAbsent(ResourceLocation.fromNamespaceAndPath("curios", id.getPath()), i -> new ArrayList<>());
