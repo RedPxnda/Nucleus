@@ -3,15 +3,21 @@ package com.redpxnda.nucleus.test;
 import com.redpxnda.nucleus.registration.ItemGroupCreator;
 import com.redpxnda.nucleus.registration.RegistryId;
 import dev.architectury.registry.CreativeTabRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CompassItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+import java.util.function.Supplier;
+
 public class TestRegistries {
+    public static final Supplier<Registry<?>> myCustomRegistry = () -> BuiltInRegistries.ITEM;
+
     @RegistryId("cool_item")
     public static final CompassItem testItem = new CompassItem(new Item.Properties());
 
@@ -26,4 +32,7 @@ public class TestRegistries {
             CreativeTabRegistry.create(Component.literal("YOOO WASSGOOD"), () -> Items.STICK.getDefaultInstance()),
             testItem,trinketItem
     );
+
+    @RegistryId(value = "coolest_item", registry = "myCustomRegistry")
+    public static final Object myItem = new BlockItem(Blocks.BAMBOO_BLOCK, new Item.Properties());
 }

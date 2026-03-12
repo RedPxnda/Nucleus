@@ -301,14 +301,14 @@ public class Rendering {
     }
 
     public static void addParticleVertex(VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.addVertex(x, y, z).setUv(u, v).setColor(red, green, blue, 1.0f).setLight(light);
+        vc.addVertex(x, y, z).setUv(u, v).setColor(red, green, blue, alpha).setLight(light);
     }
 
     public static void addParticleVertex(PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.addVertex(stack.last().pose(),x, y, z).setUv(u, v).setColor(red, green, blue, 1.0f).setLight(light);
+        vc.addVertex(stack.last().pose(),x, y, z).setUv(u, v).setColor(red, green, blue, alpha).setLight(light);
     }
 
     public static void addVertex(PoseStack stack, VertexConsumer vc, float red, float green, float blue, float alpha, float x, float y, float z, float u, float v, int light) {
-        vc.addVertex(stack.last().pose(),x, y, z).setUv(u, v).setColor(red, green, blue, 1.0f).setLight(light).setNormal(stack.last(), 1.0f, 0.0f, 0.0f);
+        vc.addVertex(stack.last().pose(),x, y, z).setUv(u, v).setColor(red, green, blue, alpha).setLight(light).setNormal(stack.last(), 1.0f, 0.0f, 0.0f);
     }
 }

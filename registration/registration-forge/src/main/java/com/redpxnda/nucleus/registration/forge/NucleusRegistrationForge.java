@@ -2,6 +2,7 @@ package com.redpxnda.nucleus.registration.forge;
 
 import com.redpxnda.nucleus.registration.NucleusRegistration;
 import com.redpxnda.nucleus.registration.RegistrationListener;
+import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
@@ -37,6 +38,7 @@ public class NucleusRegistrationForge {
                     event.register(key, id, () -> obj);
                     RegistrationListener.callAllFor(obj);
                 });
+            RegistryAnalyzer.LOGGER.info("Finished registration for mod '{}'.", entry.getKey());
         }
     }
 }
