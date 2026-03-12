@@ -1,7 +1,9 @@
 repositories {
     maven { url 'https://maven.terraformersmc.com/' }
+    maven { url 'https://maven.wispforest.io/releases' }
 }
 
 dependencies {
     modImplementation "com.terraformersmc:modmenu:11.0.1"
+    modImplementation("io.wispforest:accessories-fabric:${project.accessories_version}")
 }

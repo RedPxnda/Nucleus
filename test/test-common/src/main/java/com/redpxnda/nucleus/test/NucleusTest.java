@@ -9,6 +9,7 @@ import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigType;
+import com.redpxnda.nucleus.config.screen.NucleusConfigScreens;
 import com.redpxnda.nucleus.editor.core.ClientLoader;
 import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
@@ -24,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -98,6 +100,16 @@ public class NucleusTest {
                 .updateListener(i -> TestConfig.INSTANCE = i)
                 .presetGetter(i -> i.preset)
         );
+
+        ConfigManager.CONFIG_SCREENS_REGISTRY.register(registerer -> {
+            registerer.add(Nucleus.MOD_ID, parent ->
+                    NucleusConfigScreens.createMultiScreenSupplier(parent, Nucleus.MOD_ID,
+                            List.of(
+                            )
+                    )
+            );
+        });
+
 
         if (Platform.getEnv() == EnvType.CLIENT)
             ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", ResourceLocation.parse("nucleus:test-common")));

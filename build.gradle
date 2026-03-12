@@ -60,6 +60,27 @@ tasks.register("printEnvProperties") {
 def props = new Properties()
 file("./gradle.properties").withInputStream { props.load(it) }
 
+gradle.projectsEvaluated {
+    def previousTask = null
+
+    subprojects.each { proj ->
+        def publishTask = proj.tasks.findByName("publish")
+        if (publishTask != null) {
+            /*
+            tasks.named("staggeredRelease").configure {
+                dependsOn(publishTask)
+            }
+            if (previousTask != null) {
+                publishTask.mustRunAfter(previousTask)
+            }
+            previousTask = publishTask
+
+             */
+        }
+    }
+}
+
+
 tasks.register("createNewModule") {
     group = "nucleus"
     description = "Creates a new nucleus module"
@@ -165,7 +186,7 @@ public class ${fabricClassName} implements ModInitializer {
 }
 """
 
-        paths.forge.root.resolve("gradle.properties").toFile().text = "loom.platform=forge"
+        paths.forge.root.resolve("gradle.properties").toFile().text = "loom.platform=neoforge"
 
         def forgeClassName = "Nucleus${name.capitalize()}Forge"
         paths.forge.java.resolve("${forgeClassName}.java").toFile().text =

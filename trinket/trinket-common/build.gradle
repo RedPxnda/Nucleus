@@ -1,0 +1,16 @@
+repositories {
+    maven { url 'https://maven.theillusivec4.top/' }
+    maven { url 'https://maven.wispforest.io/releases' }
+    maven { url 'https://maven.su5ed.dev/releases' }
+    maven { url 'https://maven.fabricmc.net' }
+    maven { url 'https://maven.shedaniel.me/' }
+}
+
+dependencies {
+
+    modCompileOnly ("io.wispforest:accessories-common:${project.accessories_version}")
+    //we implement curious in common for cases like kiln or connector
+    //this is also why we dont enforce any of the mods on any loader
+    modCompileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+    modCompileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+}

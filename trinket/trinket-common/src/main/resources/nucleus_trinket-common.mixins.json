@@ -1,0 +1,15 @@
+{
+    "required": true,
+    "package": "com.redpxnda.nucleus.trinket.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "minVersion": "0.8",
+    "client": [
+    ],
+    "mixins": [
+        "ItemStackMixin",
+        "TagGroupLoaderMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+  }
+}

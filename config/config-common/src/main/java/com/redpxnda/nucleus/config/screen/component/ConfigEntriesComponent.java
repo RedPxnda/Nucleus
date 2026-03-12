@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.config.screen.component;
 
 import com.redpxnda.nucleus.Nucleus;
+import com.redpxnda.nucleus.config.screen.AbstractConfigScreen;
 import com.redpxnda.nucleus.config.screen.ConfigScreen;
 import com.redpxnda.nucleus.util.Color;
 import com.redpxnda.nucleus.util.Comment;
@@ -57,7 +58,7 @@ public class ConfigEntriesComponent<T> extends AbstractScrollWidget implements R
         minimizer = Button.builder(minimizedText, wid -> {
             if (Screen.hasControlDown()) {
                 Screen oldScreen = Minecraft.getInstance().screen;
-                if (oldScreen instanceof ConfigScreen<?> cs) cs.skipNextInit = true;
+                if (oldScreen instanceof AbstractConfigScreen<?> cs) cs.skipNextInit = true;
                 ConfigScreen<T> newScreen = new ConfigScreen<>(oldScreen, this);
                 Minecraft.getInstance().setScreen(newScreen);
             } else {

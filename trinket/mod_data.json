@@ -1,0 +1,73 @@
+{
+  "id": "nucleus_trinket",
+  "version": "1.0.1",
+  "name": "Nucleus (Trinket)",
+  "description": "Compat layer for accesories like Accessories or Curio",
+  "authors": [
+    "RedPxnda"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "mixins": [
+    "nucleus_trinket.mixins.json",
+    "nucleus_trinket-common.mixins.json"
+  ],
+  "depends": [
+    {
+      "id": "neoforge",
+      "mandatory": true,
+      "version": "[21.0.0-beta,)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "forge"
+    },
+    {
+      "id": "fabric",
+      "mandatory": true,
+      "version": "*",
+      "platform": "fabric"
+    },
+    {
+      "id": "minecraft",
+      "mandatory": true,
+      "version": "[${minecraft_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    },
+    {
+      "id": "architectury",
+      "mandatory": true,
+      "version": "[${architectury_version},)",
+      "ordering": "NONE",
+      "side": "BOTH",
+      "platform": "*"
+    }
+  ],
+  "fabric": {
+    "schemaVersion": 1,
+    "entrypoints": {
+      "main": [
+        "com.redpxnda.nucleus.trinket.fabric.NucleusTrinketFabric"
+      ]
+    },
+    "custom": {
+      "modmenu": {
+        "badges": [ "library" ],
+        "parent": {
+          "id": "nucleus",
+          "name": "Nucleus",
+          "description": "A library mod focused on making multi-platform mod development easier.",
+          "badges": [ "library" ]
+        }
+      }
+    }
+  },
+  "forge": {
+    "general": {
+      "modLoader": "javafml",
+      "loaderVersion": "[1,)"
+    },
+    "mod": {}
+  }
+}

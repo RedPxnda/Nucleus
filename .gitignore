@@ -12,7 +12,7 @@ bin/
 libs/
 logs/
 .env
-
+weaver/
 publish.bat
 
 .classpath

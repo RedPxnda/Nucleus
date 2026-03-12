@@ -1,7 +1,6 @@
 package com.redpxnda.nucleus.config.screen.component;
 
 import com.google.gson.JsonElement;
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;

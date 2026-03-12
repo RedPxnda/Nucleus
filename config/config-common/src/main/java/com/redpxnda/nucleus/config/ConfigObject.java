@@ -196,6 +196,7 @@ public class ConfigObject<T> {
 
     public static class Automatic<T> extends ConfigObject<T> {
         protected @Environment(EnvType.CLIENT) Function<Object, Object> screenCreator; // forge is weird, @OnlyIn doesn't work on fields so: Object - should always be a screen -> screen function
+        protected Map<String, Field> fieldMap;
 
         public Automatic(
                 String fileLocation, ResourceLocation id, ConfigType type,
@@ -207,6 +208,7 @@ public class ConfigObject<T> {
             if (fieldMap != null && Platform.getEnv() == EnvType.CLIENT) {
                 setupScreenSupplier(fieldMap);
             }
+            this.fieldMap = fieldMap;
         }
 
         @Environment(EnvType.CLIENT)
@@ -225,6 +227,10 @@ public class ConfigObject<T> {
         @Environment(EnvType.CLIENT)
         public Screen getScreen(Screen parent) {
             return (Screen) screenCreator.apply(parent);
+        }
+
+        public Map<String, Field> getFieldMap() {
+            return fieldMap;
         }
     }
 }

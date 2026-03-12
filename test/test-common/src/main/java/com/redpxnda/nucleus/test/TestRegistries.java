@@ -15,12 +15,15 @@ public class TestRegistries {
     @RegistryId("cool_item")
     public static final CompassItem testItem = new CompassItem(new Item.Properties());
 
+    @RegistryId("cool_trinket_item")
+    public static final TrinketItem trinketItem = new TrinketItem(new Item.Properties());
+
     @RegistryId("cool_block")
     public static final Block coolBlock = new Block(BlockBehaviour.Properties.of());
 
     @RegistryId("cool_tab")
     public static final CreativeModeTab group = ItemGroupCreator.populate(
             CreativeTabRegistry.create(Component.literal("YOOO WASSGOOD"), () -> Items.STICK.getDefaultInstance()),
-            testItem
+            testItem,trinketItem
     );
 }
