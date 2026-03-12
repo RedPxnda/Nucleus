@@ -1,5 +1,8 @@
 package com.redpxnda.nucleus.trinket;
 
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
 /**
  * Common SlotReference for Trinkets and Curious
  */
@@ -27,4 +30,5 @@ public interface CommonSlotReference {
      * @return
      */
     int getSlotIndex();
+
 }

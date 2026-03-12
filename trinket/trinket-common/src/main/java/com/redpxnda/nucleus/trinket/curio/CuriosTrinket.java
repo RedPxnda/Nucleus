@@ -75,17 +75,7 @@ public class CuriosTrinket implements ICurioItem {
     @Override
     public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(
             SlotContext ctx, ResourceLocation id, ItemStack stack) {
-
-        LivingEntity entity = entity(ctx);
-        UUID uuid = UUID.nameUUIDFromBytes(id.toString().getBytes());
-
-        if (entity == null)
-            return ICurioItem.super.getAttributeModifiers(ctx, id, stack);
-
-        if (getTrinket().useNbtAttributeBehavior(stack, entity, CurioApiMirror.convert(ctx), uuid))
-            return ICurioItem.super.getAttributeModifiers(ctx, id, stack);
-
-        return com.google.common.collect.HashMultimap.create();
+        return trinket.getAttributeModifiers(CurioApiMirror.convert(ctx), id, stack);
     }
 
     /* ---------------- drop rule ---------------- */

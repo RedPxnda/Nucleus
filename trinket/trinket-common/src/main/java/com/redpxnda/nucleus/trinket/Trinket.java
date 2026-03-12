@@ -1,7 +1,14 @@
 package com.redpxnda.nucleus.trinket;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import top.theillusivec4.curios.api.SlotContext;
 
 import java.util.UUID;
 
@@ -13,8 +20,8 @@ public interface Trinket {
     /**
      * Called every tick on the client and server side
      *
-     * @param stack The stack being ticked
-     * @param entity The entity wearing the stack
+     * @param stack     The stack being ticked
+     * @param entity    The entity wearing the stack
      * @param slotIndex The index of the slot
      */
     default void tick(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
@@ -23,7 +30,7 @@ public interface Trinket {
     /**
      * Called when an entity equips a trinket
      *
-     * @param stack The stack being equipped
+     * @param stack  The stack being equipped
      * @param entity The entity that equipped the stack
      */
     default void onEquip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
@@ -32,7 +39,7 @@ public interface Trinket {
     /**
      * Called when an entity equips a trinket
      *
-     * @param stack The stack being unequipped
+     * @param stack  The stack being unequipped
      * @param entity The entity that unequipped the stack
      */
     default void onUnequip(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex) {
@@ -41,7 +48,7 @@ public interface Trinket {
     /**
      * Determines whether an entity can equip a trinket
      *
-     * @param stack The stack being equipped
+     * @param stack  The stack being equipped
      * @param entity The entity that is equipping the stack
      * @return Whether the stack can be equipped
      */
@@ -52,7 +59,7 @@ public interface Trinket {
     /**
      * Determines whether an entity can unequip a trinket
      *
-     * @param stack The stack being unequipped
+     * @param stack  The stack being unequipped
      * @param entity The entity that is unequipping the stack
      * @return Whether the stack can be unequipped
      */
@@ -61,19 +68,14 @@ public interface Trinket {
     }
 
     /**
-     * Determines whether this trinket should overwrite (return false) or extend (return true)
-     * the default attribute modifier behavior. (Default behavior being nbt based attribute modifiers)
-     * This essentially determines whether the super should be called.
-     * <p></p>
-     * NOTE: might not work on forge for curios, untested
-     * <p></p>
-     * @param stack The stack holding the potential attributes
-     * @param entity The entity wearing the ItemStack
-     * @param uuid The generated UUID for use in attribute modifiers (See ICurioItem's and Trinket's getAttributeModifiers, they explain it better)
-     * @return whether this trinket should extend default behavior attribute modifier behavior
+     * @param ctx   the slot in question
+     * @param id    a potential attribute id to be used
+     * @param stack the itemstack in question
+     * @return
      */
-    default boolean useNbtAttributeBehavior(ItemStack stack, LivingEntity entity, CommonSlotReference slotIndex, UUID uuid) {
-        return true;
+    default Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(
+            CommonSlotReference ctx, ResourceLocation id, ItemStack stack) {
+        return ArrayListMultimap.create();
     }
 
     default DropRule getDropRule(ItemStack stack, LivingEntity entity, int slotIndex) {
