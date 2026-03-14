@@ -58,7 +58,15 @@ public class AccessoriesTrinket implements Accessory {
     @Override
     public void getDynamicModifiers(ItemStack stack, SlotReference reference, AccessoryAttributeBuilder builder) {
         CommonSlotReference reference1 = AccessoriesApiMirror.convert(reference);
-        trinket.getAttributeModifiers(reference1, ResourceLocation.fromNamespaceAndPath("accessories", reference1.getSlotId() + reference1.getSlotIndex()), stack).forEach((builder::addExclusive));
+        trinket.getAttributeModifiers(reference1, id(reference.slotName()), stack).forEach((builder::addExclusive));
+    }
+
+    public static ResourceLocation id(String string) {
+        String[] parts = string.split(":");
+        if (parts.length > 1) {
+            return ResourceLocation.fromNamespaceAndPath(parts[0], parts[1]);
+        }
+        return ResourceLocation.fromNamespaceAndPath("accessories", string);
     }
 
     /* ---------------- drop rule ---------------- */

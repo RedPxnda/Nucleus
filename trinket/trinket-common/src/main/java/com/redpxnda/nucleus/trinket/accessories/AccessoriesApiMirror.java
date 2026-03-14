@@ -39,7 +39,7 @@ public class AccessoriesApiMirror implements TrinketApiMirror {
         EntitySlotLoader.getEntitySlots(wearer).forEach((id, slot) -> {
             SlotReference slotReference = SlotReference.of(wearer, slot.name(), slot.amount());
             ItemStack stack = slotReference.getStack();
-            if(stack!=null && !stack.isEmpty()){
+            if (stack != null && !stack.isEmpty()) {
                 map.put(convert(slotReference), slotReference.getStack());
             }
         });
@@ -52,12 +52,13 @@ public class AccessoriesApiMirror implements TrinketApiMirror {
         EntitySlotLoader.getEntitySlots(wearer).forEach((id, slot) -> {
             SlotReference slotReference = SlotReference.of(wearer, slot.name(), slot.amount());
             ItemStack stack = slotReference.getStack();
-            if(stack!=null && !stack.isEmpty()){
+            if (stack != null && !stack.isEmpty()) {
                 list.add(stack);
             }
         });
         return list;
     }
+
 
     public static CommonSlotReference convert(SlotReference reference) {
         return new CommonSlotReference() {
