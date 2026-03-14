@@ -1,9 +1,6 @@
 package com.redpxnda.nucleus.trinket.accessories;
 
 import com.redpxnda.nucleus.trinket.*;
-import io.wispforest.accessories.Accessories;
-import io.wispforest.accessories.AccessoriesInternals;
-import io.wispforest.accessories.api.AccessoriesAPI;
 import io.wispforest.accessories.api.slot.SlotReference;
 import io.wispforest.accessories.data.EntitySlotLoader;
 import net.minecraft.world.entity.LivingEntity;

@@ -13,8 +13,6 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
-import java.util.UUID;
-
 public class CuriosTrinket implements ICurioItem {
     Trinket trinket;
 

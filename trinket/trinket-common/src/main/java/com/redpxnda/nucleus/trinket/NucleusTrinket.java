@@ -64,13 +64,13 @@ public class NucleusTrinket {
         }
     }
 
-    public Map<CommonSlotReference, ItemStack> getItems(LivingEntity wearer) {
+    public static Map<CommonSlotReference, ItemStack> getItems(LivingEntity wearer) {
         Map<CommonSlotReference, ItemStack> map = new HashMap<>();
         CREATOR.forEach(c -> map.putAll(c.getItems(wearer)));
         return map;
     }
 
-    public List<ItemStack> getTrinketList(LivingEntity wearer) {
+    public static List<ItemStack> getTrinketList(LivingEntity wearer) {
         List<ItemStack> list = new ArrayList<>();
         CREATOR.forEach(c -> list.addAll(c.getTrinketList(wearer)));
         return list;
