@@ -411,7 +411,7 @@ public class CodecTests {
         int number;
         String optional;
 
-        public static final Codec<TestCodecField> CODEC = RecordCodecBuilder.create(instance ->
+        public static final Codec<TestCodecField> CODECFULL = RecordCodecBuilder.create(instance ->
                 instance.group(
                         Codec.STRING.fieldOf("test").forGetter(o -> o.value),
                         Codec.INT.fieldOf("number").forGetter(o -> o.number),

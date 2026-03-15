@@ -107,60 +107,83 @@ public class CodecBehavior {
             return null;
         });
         registerDynamic(10, new Getter<Object>() {
+
             @java.lang.Override
             public Codec<Object> get(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, List<String> passes) {
-                try {
-                    Field field1 = cls.getField("CODEC");
-                    if (Modifier.isStatic(field1.getModifiers()) && field1.canAccess(null)) {
-                        Type generic = field1.getGenericType();
+                Codec<Object> found = null;
 
-                        if (generic instanceof ParameterizedType pt) {
-                            Type rawType = pt.getRawType();
+                for (Field f : cls.getFields()) {
+                    try {
+                        if (!Modifier.isStatic(f.getModifiers()) || !f.canAccess(null)) continue;
 
-                            if (rawType == Codec.class) {
-                                Type actual = pt.getActualTypeArguments()[0];
+                        Type generic = f.getGenericType();
+                        if (!(generic instanceof ParameterizedType pt)) continue;
 
-                                if (actual == cls) {
-                                    Object potentialCodec = field1.get(null);
-                                    if (potentialCodec instanceof Codec<?> codec) {
-                                        registerClass(cls, (Codec<Object>) codec);
-                                        return (Codec<Object>) codec;
-                                    }
-                                }
-                            }
+                        if (pt.getRawType() != Codec.class) continue;
+
+                        Type actual = pt.getActualTypeArguments()[0];
+                        if (actual != cls) continue;
+
+                        Object value = f.get(null);
+                        if (!(value instanceof Codec<?> codec)) continue;
+
+                        if (found != null) {
+                            throw new RuntimeException(
+                                    "Multiple Codec<" + cls.getName() + "> fields found in " + cls.getName() +
+                                    ". Use CodecBehaviour.register() to explicitly register the desired codec."
+                            );
                         }
+
+                        found = (Codec<Object>) codec;
+
+                    } catch (IllegalAccessException ignored) {
                     }
-                } catch (NoSuchFieldException | SecurityException | IllegalAccessException ignored) {
                 }
-                return null;
+
+                if (found != null) {
+                    registerClass(cls, found);
+                }
+
+                return found;
             }
 
             @java.lang.Override
             public MapCodec<Object> getSecondary(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
-                try {
-                    Field field1 = cls.getField("CODEC");
-                    if (Modifier.isStatic(field1.getModifiers()) && field1.canAccess(null)) {
-                        Type generic = field1.getGenericType();
+                MapCodec<Object> found = null;
 
-                        if (generic instanceof ParameterizedType pt) {
-                            Type rawType = pt.getRawType();
+                for (Field f : cls.getFields()) {
+                    try {
+                        if (!Modifier.isStatic(f.getModifiers()) || !f.canAccess(null)) continue;
 
-                            if (rawType == MapCodec.class) {
-                                Type actual = pt.getActualTypeArguments()[0];
+                        Type generic = f.getGenericType();
+                        if (!(generic instanceof ParameterizedType pt)) continue;
 
-                                if (actual == cls) {
-                                    Object potentialCodec = field1.get(null);
-                                    if (potentialCodec instanceof MapCodec<?> codec) {
-                                        registerClass(cls, ((MapCodec<Object>) codec).codec());
-                                        return (MapCodec<Object>) codec;
-                                    }
-                                }
-                            }
+                        if (pt.getRawType() != MapCodec.class) continue;
+
+                        Type actual = pt.getActualTypeArguments()[0];
+                        if (actual != cls) continue;
+
+                        Object value = f.get(null);
+                        if (!(value instanceof MapCodec<?> codec)) continue;
+
+                        if (found != null) {
+                            throw new RuntimeException(
+                                    "Multiple MapCodec<" + cls.getName() + "> fields found in " + cls.getName() +
+                                    ". Use CodecBehaviour.register() to explicitly register the desired codec."
+                            );
                         }
+
+                        found = (MapCodec<Object>) codec;
+
+                    } catch (IllegalAccessException ignored) {
                     }
-                } catch (NoSuchFieldException | SecurityException | IllegalAccessException ignored) {
                 }
-                return null;
+
+                if (found != null) {
+                    registerClass(cls, found.codec());
+                }
+
+                return found;
             }
         });
         registerDynamic((f, cls, raw, params, passes) -> {
