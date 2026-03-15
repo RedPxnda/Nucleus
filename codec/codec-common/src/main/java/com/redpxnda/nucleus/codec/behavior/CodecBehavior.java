@@ -15,7 +15,13 @@ import com.redpxnda.nucleus.codec.tag.TaggableEntryCodec;
 import com.redpxnda.nucleus.math.InterpolateMode;
 import com.redpxnda.nucleus.math.MathUtil;
 import com.redpxnda.nucleus.util.*;
+import net.minecraft.core.Registry;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -27,13 +33,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Supplier;
-import net.minecraft.core.Registry;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class CodecBehavior {
@@ -106,6 +105,63 @@ public class CodecBehavior {
                 }
             }
             return null;
+        });
+        registerDynamic(10, new Getter<Object>() {
+            @java.lang.Override
+            public Codec<Object> get(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, List<String> passes) {
+                try {
+                    Field field1 = cls.getField("CODEC");
+                    if (Modifier.isStatic(field1.getModifiers()) && field1.canAccess(null)) {
+                        Type generic = field1.getGenericType();
+
+                        if (generic instanceof ParameterizedType pt) {
+                            Type rawType = pt.getRawType();
+
+                            if (rawType == Codec.class) {
+                                Type actual = pt.getActualTypeArguments()[0];
+
+                                if (actual == cls) {
+                                    Object potentialCodec = field1.get(null);
+                                    if (potentialCodec instanceof Codec<?> codec) {
+                                        registerClass(cls, (Codec<Object>) codec);
+                                        return (Codec<Object>) codec;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (NoSuchFieldException | SecurityException | IllegalAccessException ignored) {
+                }
+                return null;
+            }
+
+            @java.lang.Override
+            public MapCodec<Object> getSecondary(@Nullable Field field, Class<Object> cls, Type raw, @Nullable Type[] params, List<String> passes, String key) {
+                try {
+                    Field field1 = cls.getField("CODEC");
+                    if (Modifier.isStatic(field1.getModifiers()) && field1.canAccess(null)) {
+                        Type generic = field1.getGenericType();
+
+                        if (generic instanceof ParameterizedType pt) {
+                            Type rawType = pt.getRawType();
+
+                            if (rawType == MapCodec.class) {
+                                Type actual = pt.getActualTypeArguments()[0];
+
+                                if (actual == cls) {
+                                    Object potentialCodec = field1.get(null);
+                                    if (potentialCodec instanceof MapCodec<?> codec) {
+                                        registerClass(cls, ((MapCodec<Object>) codec).codec());
+                                        return (MapCodec<Object>) codec;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (NoSuchFieldException | SecurityException | IllegalAccessException ignored) {
+                }
+                return null;
+            }
         });
         registerDynamic((f, cls, raw, params, passes) -> {
             if (cls.isArray()) {
@@ -366,12 +422,15 @@ public class CodecBehavior {
     public static <T> void registerClass(Class<T> cls, Getter<T> getter) {
         getters.statics.put(cls, getter);
     }
+
     public static <T> void registerClassIfAbsent(Class<T> cls, Getter<T> getter) {
         getters.statics.putIfAbsent(cls, getter);
     }
+
     public static <T> void registerClass(Class<T> cls, Supplier<Codec<T>> getter) {
         getters.statics.put(cls, Getter.fromSupplier(getter));
     }
+
     public static <T> void registerClass(Class<T> cls, Codec<T> getter) {
         getters.statics.put(cls, Getter.fromCodec(getter));
     }

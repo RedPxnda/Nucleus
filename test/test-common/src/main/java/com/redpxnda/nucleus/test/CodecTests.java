@@ -2,13 +2,16 @@ package com.redpxnda.nucleus.test;
 
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.auto.AutoCodec;
 import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class CodecTests {
 
@@ -171,6 +174,24 @@ public class CodecTests {
             } else {
                 Nucleus.getLogger().info("success recordDefaultGetter applied correctly to null fields (class)");
             }
+        }
+
+        JsonObject test = new JsonObject();
+        test.addProperty("test", "required2");
+        test.addProperty("number", 6);
+        JsonObject inner = new JsonObject();
+        inner.addProperty("test", "testing");
+        inner.addProperty("number", 5);
+        test.add("codec_from_field", inner);
+
+        var codecFieldTest = codecWithDefaults.codec()
+                .decode(JsonOps.INSTANCE, test)
+                .result();
+        if (codecFieldTest.get().getFirst().testCodecField != null &&
+            "null".equals(codecFieldTest.get().getFirst().testCodecField.optional)) {
+            Nucleus.getLogger().info("success CODEC field as codec supplier");
+        } else {
+            Nucleus.getLogger().error("failed to use CODEC field correctly");
         }
     }
 
@@ -376,9 +397,36 @@ public class CodecTests {
         @AutoCodec.Name("opt_int")
         Integer optionalInt;
 
+        @CodecBehavior.Optional
+        @AutoCodec.Name("codec_from_field")
+        TestCodecField testCodecField;
+
         public TestClass() {
 
         }
     }
 
+    public static class TestCodecField {
+        String value;
+        int number;
+        String optional;
+
+        public static final Codec<TestCodecField> CODEC = RecordCodecBuilder.create(instance ->
+                instance.group(
+                        Codec.STRING.fieldOf("test").forGetter(o -> o.value),
+                        Codec.INT.fieldOf("number").forGetter(o -> o.number),
+                        Codec.STRING.optionalFieldOf("optional").forGetter(o -> Optional.ofNullable(o.optional))
+                ).apply(instance, TestCodecField::new)
+        );
+
+        public TestCodecField(String value, int number, Optional<String> optional) {
+            this.value = value;
+            this.number = number;
+            this.optional = optional.orElse("null");
+            Nucleus.getLogger().info("used Codec Constructor correctly!");
+        }
+
+        public TestCodecField() {
+        }
+    }
 }
