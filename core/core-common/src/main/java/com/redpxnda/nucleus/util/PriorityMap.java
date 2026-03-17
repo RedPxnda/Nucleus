@@ -1,30 +1,37 @@
 package com.redpxnda.nucleus.util;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.google.common.collect.ForwardingMap;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class PriorityMap<K> extends LinkedHashMap<K, Float> {
+public class PriorityMap<K> extends ForwardingMap<K, Float> {
     protected boolean hasBeenSorted = false;
+    private volatile Map<K, Float> delegate;
+    // Immutable snapshots (fast path)
+    private volatile Set<Map.Entry<K, Float>> entrySnapshot = Set.of();
+    private volatile List<Map.Entry<K, Float>> entryListSnapshot = List.of();
 
     public PriorityMap(int initialCapacity, float loadFactor) {
-        super(initialCapacity, loadFactor);
+        delegate = Collections.synchronizedMap(new LinkedHashMap<>(initialCapacity, loadFactor));
     }
 
     public PriorityMap(int initialCapacity) {
-        super(initialCapacity);
+        delegate = Collections.synchronizedMap(new LinkedHashMap<>(initialCapacity));
     }
 
     public PriorityMap() {
-        super();
+        delegate = Collections.synchronizedMap(new LinkedHashMap<>(0));
     }
 
-    public PriorityMap(Map<? extends K, ? extends Float> m) {
-        super(m);
+    @Override
+    protected @NotNull Map<K, Float> delegate() {
+        return delegate;
     }
 
     public PriorityMap(int initialCapacity, float loadFactor, boolean accessOrder) {
-        super(initialCapacity, loadFactor, accessOrder);
+        delegate = Collections.synchronizedMap(new LinkedHashMap<>(initialCapacity, loadFactor, accessOrder));
     }
 
     public boolean hasBeenSorted() {
@@ -35,15 +42,47 @@ public class PriorityMap<K> extends LinkedHashMap<K, Float> {
      * Sort the map so that the LOWEST value is first and the HIGHEST value is last
      */
     public void sort() {
-        LinkedHashMap<K, Float> map = entrySet().stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-        clear();
-        putAll(map);
-        hasBeenSorted = true;
+        Map<K, Float> newMap;
+
+        synchronized (delegate) {
+            newMap = delegate.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (a, b) -> a,
+                            LinkedHashMap::new
+                    ));
+        }
+
+        // Build immutable snapshots (no further locking needed)
+        List<Map.Entry<K, Float>> list = List.copyOf(newMap.entrySet());
+        Set<Map.Entry<K, Float>> set = Set.copyOf(list);
+
+        // Publish atomically via volatile writes
+        this.delegate = Collections.synchronizedMap(newMap);
+        this.entryListSnapshot = list;
+        this.entrySnapshot = set;
+        this.hasBeenSorted = true;
     }
+
     public void sortIfUnsorted() {
         if (!hasBeenSorted()) sort();
+    }
+
+    /**
+     * FAST PATH — immutable, no allocation, no locking
+     */
+    public List<Map.Entry<K, Float>> entries() {
+        return entryListSnapshot;
+    }
+
+    /**
+     * FAST PATH — immutable set view
+     */
+    @Override
+    public @NotNull Set<Map.Entry<K, Float>> entrySet() {
+        return entrySnapshot;
     }
 
     /**
@@ -58,6 +97,6 @@ public class PriorityMap<K> extends LinkedHashMap<K, Float> {
      */
     public Map.Entry<K, Float> last() {
         if (size() == 0) return null;
-        return (Map.Entry<K, Float>) entrySet().toArray()[size()-1];
+        return (Map.Entry<K, Float>) entrySet().toArray()[size() - 1];
     }
 }

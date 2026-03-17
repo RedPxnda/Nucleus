@@ -23,8 +23,6 @@ import java.util.function.Supplier;
 public class NucleusTrinket {
     public static final String MOD_ID = "nucleus_trinket";
     private static final Map<Item, Trinket> ITEMS = new HashMap<>();
-    @Environment(EnvType.CLIENT)
-    private static final Map<Item, Supplier<TrinketRenderer>> RENDERER = new HashMap<>();
     @ApiStatus.Internal
     public static final List<TrinketApiMirror> CREATOR = new ArrayList<>();
     private static boolean initialized = false;
@@ -54,7 +52,7 @@ public class NucleusTrinket {
 
     @Environment(EnvType.CLIENT)
     public static void registerRenderer(Item item, Supplier<TrinketRenderer> trinket) {
-        RENDERER.put(item, trinket);
+        NucleusTrinketClient.RENDERER.put(item, trinket);
         if (initialized) {
             CREATOR.forEach(c -> {
                 if (c.enabled()) {
@@ -84,15 +82,8 @@ public class NucleusTrinket {
                 creator.registerCurioTrinket(entry.getKey(), entry.getValue());
             }
             if (Platform.getEnv() == EnvType.CLIENT) {
-                registerCreatorClient(creator);
+                NucleusTrinketClient.registerCreatorClient(creator);
             }
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    private static void registerCreatorClient(TrinketApiMirror creator) {
-        for (var entry : RENDERER.entrySet()) {
-            creator.registerCurioTrinketRenderer(entry.getKey(), entry.getValue());
         }
     }
 
@@ -128,14 +119,8 @@ public class NucleusTrinket {
             CREATOR.forEach(c -> c.registerCurioTrinket(entry.getKey(), entry.getValue()));
         }
         if (Platform.getEnv() == EnvType.CLIENT) {
-            flushRegistrationsClient();
+            NucleusTrinketClient.flushRegistrationsClient();
         }
     }
 
-    @Environment(EnvType.CLIENT)
-    private static void flushRegistrationsClient() {
-        for (var entry : RENDERER.entrySet()) {
-            CREATOR.forEach(c -> c.registerCurioTrinketRenderer(entry.getKey(), entry.getValue()));
-        }
-    }
 }

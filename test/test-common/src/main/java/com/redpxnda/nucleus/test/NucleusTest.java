@@ -1,11 +1,6 @@
 package com.redpxnda.nucleus.test;
 
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
 import com.redpxnda.nucleus.Nucleus;
-import com.redpxnda.nucleus.codec.auto.AutoCodec;
-import com.redpxnda.nucleus.codec.behavior.CodecBehavior;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import com.redpxnda.nucleus.config.ConfigManager;
 import com.redpxnda.nucleus.config.ConfigType;
@@ -13,20 +8,16 @@ import com.redpxnda.nucleus.config.screen.NucleusConfigScreens;
 import com.redpxnda.nucleus.editor.core.ClientLoader;
 import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
-import com.redpxnda.nucleus.facet.FacetKey;
 import com.redpxnda.nucleus.facet.FacetRegistry;
-import com.redpxnda.nucleus.facet.entity.SimpleEntityFacet;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,19 +92,18 @@ public class NucleusTest {
                 .presetGetter(i -> i.preset)
         );
 
-        ConfigManager.CONFIG_SCREENS_REGISTRY.register(registerer -> {
-            registerer.add(Nucleus.MOD_ID, parent ->
-                    NucleusConfigScreens.createMultiScreenSupplier(parent, Nucleus.MOD_ID,
-                            List.of(
-                            )
-                    )
-            );
-        });
 
-
-        if (Platform.getEnv() == EnvType.CLIENT)
+        if (Platform.getEnv() == EnvType.CLIENT) {
+            ConfigManager.CONFIG_SCREENS_REGISTRY.register(registerer -> {
+                registerer.add(Nucleus.MOD_ID, parent ->
+                        NucleusConfigScreens.createMultiScreenSupplier(parent, Nucleus.MOD_ID,
+                                List.of(
+                                )
+                        )
+                );
+            });
             ConfigManager.CONFIG_SCREENS_REGISTRY.register(r -> r.add("nucleus_test", ResourceLocation.parse("nucleus:test-common")));
-
+        }
         /*
         ███████╗██████╗ ██╗████████╗ ██████╗ ██████╗
         ██╔════╝██╔══██╗██║╚══██╔══╝██╔═══██╗██╔══██╗
