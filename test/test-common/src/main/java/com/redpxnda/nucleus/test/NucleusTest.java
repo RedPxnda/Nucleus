@@ -10,6 +10,9 @@ import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
 import com.redpxnda.nucleus.facet.FacetRegistry;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
+import com.redpxnda.nucleus.test.codec.CodecTests;
+import com.redpxnda.nucleus.test.codec.OverWriteCodecTest;
+import com.redpxnda.nucleus.test.codec.RecordCodecTests;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
@@ -124,8 +127,9 @@ public class NucleusTest {
         if (Platform.getEnv() == EnvType.CLIENT) {
             ClientLoader.RENDER.add(ImGuiDebugPanels::onRender);
         }
-        CodecTests.runAutoCodecTests();
+        RecordCodecTests.runAutoCodecTests();
         CodecTests.runAutoCodecClassTests();
+        OverWriteCodecTest.runOverrideTests();
     }
 
 

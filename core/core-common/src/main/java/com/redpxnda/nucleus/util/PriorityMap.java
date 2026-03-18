@@ -11,6 +11,7 @@ public class PriorityMap<K> extends ForwardingMap<K, Float> {
     private volatile Map<K, Float> delegate;
     // Immutable snapshots (fast path)
     private volatile Set<Map.Entry<K, Float>> entrySnapshot = Set.of();
+    private volatile Set<K> entrySetSnapshot = Set.of();
     private volatile List<Map.Entry<K, Float>> entryListSnapshot = List.of();
 
     public PriorityMap(int initialCapacity, float loadFactor) {
@@ -58,11 +59,13 @@ public class PriorityMap<K> extends ForwardingMap<K, Float> {
         // Build immutable snapshots (no further locking needed)
         List<Map.Entry<K, Float>> list = List.copyOf(newMap.entrySet());
         Set<Map.Entry<K, Float>> set = Set.copyOf(list);
+        Set<K> kSet = newMap.keySet();
 
         // Publish atomically via volatile writes
         this.delegate = Collections.synchronizedMap(newMap);
         this.entryListSnapshot = list;
         this.entrySnapshot = set;
+        this.entrySetSnapshot = kSet;
         this.hasBeenSorted = true;
     }
 
@@ -75,6 +78,11 @@ public class PriorityMap<K> extends ForwardingMap<K, Float> {
      */
     public List<Map.Entry<K, Float>> entries() {
         return entryListSnapshot;
+    }
+
+    @Override
+    public @NotNull Set<K> keySet() {
+        return entrySetSnapshot;
     }
 
     /**

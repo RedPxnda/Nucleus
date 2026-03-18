@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.codec.auto.AutoCodec;
+import com.redpxnda.nucleus.codec.auto.AutoCodecSetupException;
 import com.redpxnda.nucleus.codec.auto.ConfigAutoCodec;
 import com.redpxnda.nucleus.codec.misc.*;
 import com.redpxnda.nucleus.codec.tag.TagList;
@@ -77,7 +78,7 @@ public class CodecBehavior {
                         field.setAccessible(true);
                         int mods = field.getModifiers();
                         if (!Modifier.isStatic(mods))
-                            LOGGER.error("Field mentioned in CodecBehavior Override annotation for class '{}' must be static!", cls.getSimpleName());
+                            throw new AutoCodecSetupException("Field mentioned in CodecBehavior Override annotation for class '" + cls.getSimpleName() + "' must be static!");
 
                         Object obj = field.get(null);
                         if (obj instanceof Codec codec) {
@@ -89,7 +90,7 @@ public class CodecBehavior {
                         registerClass((Class) cls, getter);
                         return getter.get(f, (Class) cls, raw, params, new ArrayList<>());
                     } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-                        LOGGER.error("Field mentioned in CodecBehavior Override annotation for class '" + cls.getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)!", e);
+                        throw new AutoCodecSetupException("Field mentioned in CodecBehavior Override annotation for class '" + cls.getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec(or CodecGetter)!", e);
                     }
                 }
             }
@@ -128,7 +129,7 @@ public class CodecBehavior {
                         if (!(value instanceof Codec<?> codec)) continue;
 
                         if (found != null) {
-                            throw new RuntimeException(
+                            throw new AutoCodecSetupException(
                                     "Multiple Codec<" + cls.getName() + "> fields found in " + cls.getName() +
                                     ". Use CodecBehaviour.register() to explicitly register the desired codec."
                             );
@@ -167,7 +168,7 @@ public class CodecBehavior {
                         if (!(value instanceof MapCodec<?> codec)) continue;
 
                         if (found != null) {
-                            throw new RuntimeException(
+                            throw new AutoCodecSetupException(
                                     "Multiple MapCodec<" + cls.getName() + "> fields found in " + cls.getName() +
                                     ". Use CodecBehaviour.register() to explicitly register the desired codec."
                             );
@@ -229,8 +230,7 @@ public class CodecBehavior {
                 Field codecField = field.getDeclaringClass().getField(annot.value());
                 return (Codec<?>) codecField.get(null);
             } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-                LOGGER.error("Field mentioned in CodecBehavior Override annotation for field '" + field.getName() + "' in class '" + field.getDeclaringClass().getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec!", e);
-                return null;
+                throw new AutoCodecSetupException("Field mentioned in CodecBehavior Override annotation for field '" + field.getName() + "' in class '" + field.getDeclaringClass().getSimpleName() + "' is either non-existent, inaccessible, or not a valid Codec!", e);
             }
         });
         registerAnnotator(Optional.class, -9, new AnnotationGetter<>() {
@@ -348,7 +348,7 @@ public class CodecBehavior {
         Codec<T> result = getCodec(type, passes);
         if (result == null) {
             LOGGER.error("Failed to find Codec for type: {}", type);
-            throw new IllegalArgumentException("No CodecBehavior defined for type: " + type);
+            throw new AutoCodecSetupException("No CodecBehavior defined for type: " + type);
         }
         return result;
     }
@@ -357,7 +357,7 @@ public class CodecBehavior {
         Codec<T> result = getCodec(field, passes);
         if (result == null) {
             LOGGER.error("Failed to find Codec for field: {}", field);
-            throw new IllegalArgumentException("No CodecBehavior defined for type: " + field);
+            throw new AutoCodecSetupException("No CodecBehavior defined for type: " + field);
         }
         return result;
     }
@@ -366,7 +366,7 @@ public class CodecBehavior {
         Codec<T> result = getCodec(field, cls, raw, params, passes);
         if (result == null) {
             LOGGER.error("Failed to find Codec for: FIELD: {} ... CLASS: {} ... RAW TYPE: {} ... PARAMS: {}", field, cls, raw, params == null ? null : Arrays.toString(params));
-            throw new IllegalArgumentException("No CodecBehavior defined for inputted values. See logger error above.");
+            throw new AutoCodecSetupException("No CodecBehavior defined for inputted values. See logger error above.");
         }
         return result;
     }
@@ -395,7 +395,7 @@ public class CodecBehavior {
         MapCodec<T> result = getMapCodec(type, passes, key);
         if (result == null) {
             LOGGER.error("Failed to find MapCodec for type: {}", type);
-            throw new IllegalArgumentException("No CodecBehavior defined for type: " + type);
+            throw new AutoCodecSetupException("No CodecBehavior defined for type: " + type);
         }
         return result;
     }
@@ -404,7 +404,7 @@ public class CodecBehavior {
         MapCodec<T> result = getMapCodec(field, passes, key);
         if (result == null) {
             LOGGER.error("Failed to find MapCodec for field: {}", field);
-            throw new IllegalArgumentException("No CodecBehavior defined for type: " + field);
+            throw new AutoCodecSetupException("No CodecBehavior defined for type: " + field);
         }
         return result;
     }
@@ -413,7 +413,7 @@ public class CodecBehavior {
         MapCodec<T> result = getMapCodec(field, cls, raw, params, passes, key);
         if (result == null) {
             LOGGER.error("Failed to find MapCodec for: FIELD: {} ... CLASS: {} ... RAW TYPE: {} ... PARAMS: {}", field, cls, raw, params == null ? null : Arrays.toString(params));
-            throw new IllegalArgumentException("No CodecBehavior defined for inputted values. See logger error above.");
+            throw new AutoCodecSetupException("No CodecBehavior defined for inputted values. See logger error above.");
         }
         return result;
     }
