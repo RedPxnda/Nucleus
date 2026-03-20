@@ -60,10 +60,41 @@ public class PoseAnimationResourceListener extends SimpleJsonResourceReloadListe
                         list.add(object);
                 });
 
-            list.forEach(obj -> animations.put(
-                    ResourceLocation.parse(obj.get("name").getAsString()).toString(),
-                    MiscCodecs.quickParse(obj, HumanoidPoseAnimation.codec, s -> MiscUtil.logError(LOGGER, "Failed to parse HumanoidPoseAnimation at " + key + "! -> " + s))
-            ));
+            list.forEach(obj -> {
+                try {
+                    if (obj == null || !obj.has("name")) {
+                        MiscUtil.logError(LOGGER, "Missing 'name' field in animation entry: " + obj);
+                        return;
+                    }
+
+                    String rawName = obj.get("name").getAsString();
+                    ResourceLocation id;
+
+                    try {
+                        id = ResourceLocation.parse(rawName);
+                    } catch (Exception e) {
+                        MiscUtil.logError(LOGGER, "Invalid ResourceLocation '" + rawName + "': " + e.getMessage());
+                        return;
+                    }
+
+                    var animation = MiscCodecs.quickParse(
+                            obj,
+                            HumanoidPoseAnimation.codec,
+                            s -> MiscUtil.logError(LOGGER,
+                                    "Failed to parse HumanoidPoseAnimation for '" + rawName + "': " + s + " | JSON: " + obj)
+                    );
+
+                    if (animation == null) {
+                        MiscUtil.logError(LOGGER, "Parsed animation is null for '" + rawName + "'");
+                        return;
+                    }
+
+                    animations.put(id.toString(), animation);
+
+                } catch (Exception e) {
+                    MiscUtil.logError(LOGGER, "Unexpected error while processing animation entry: " + obj + " -> " + e);
+                }
+            });
         });
     }
 
