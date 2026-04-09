@@ -1,5 +1,5 @@
 license = 'MIT'
-mods = [{modId = 'nucleus_facet', version = '1.1.0', displayName = 'Nucleus (Facet)', description = 'Multiplatform object data management and storage for entities, item stacks, status effect instances, and more', authors = 'RedPxnda', logoFile = 'icon.png'}]
+mods = [{modId = 'nucleus_facet', version = '1.1.1', displayName = 'Nucleus (Facet)', description = 'Multiplatform object data management and storage for entities, item stacks, status effect instances, and more', authors = 'RedPxnda', logoFile = 'icon.png'}]
 dependencies.nucleus_facet = [{modId = 'neoforge', mandatory = true, versionRange = '[21.0.0-beta,)', ordering = 'NONE', side = 'BOTH'}, {modId = 'minecraft', mandatory = true, versionRange = '[${minecraft_version},)', ordering = 'NONE', side = 'BOTH'}, {modId = 'architectury', mandatory = true, versionRange = '[${architectury_version},)', ordering = 'NONE', side = 'BOTH'}]
 mixins = [{config = 'nucleus-facet.mixins.json'}, {config = 'nucleus-facet-common.mixins.json'}]
 modLoader = 'javafml'

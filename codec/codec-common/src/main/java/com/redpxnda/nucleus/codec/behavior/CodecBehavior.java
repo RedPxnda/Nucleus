@@ -37,6 +37,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class CodecBehavior {
+    //TODO add support for Optional<>
     private static final Logger LOGGER = Nucleus.getLogger();
     protected static final BiBehaviorOutline<Getter<?>> getters = new BiBehaviorOutline<>(true, true, true, false);
 

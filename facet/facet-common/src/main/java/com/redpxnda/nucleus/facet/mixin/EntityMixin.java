@@ -36,7 +36,11 @@ public abstract class EntityMixin implements FacetHolder {
     @Inject(method = "saveWithoutId", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V"))
     private void nucleus$saveFacets(CompoundTag root, CallbackInfoReturnable<CompoundTag> cir) {
         CompoundTag tag = new CompoundTag();
-        nucleus$facets.forEach((key, facet) -> tag.put(key.id().toString(), facet.toNbt()));
+        nucleus$facets.forEach((key, facet) -> {
+            if(facet.shouldSave()){
+                tag.put(key.id().toString(), facet.toNbt());
+            }
+        });
         root.put(FacetRegistry.TAG_FACETS_ID, tag);
     }
 

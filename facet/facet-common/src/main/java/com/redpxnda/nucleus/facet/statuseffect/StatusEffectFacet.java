@@ -46,7 +46,12 @@ public interface StatusEffectFacet<F extends StatusEffectFacet<F, T>, T extends 
 
     static void writeFacetsToNbt(CompoundTag root, FacetHolder holder) {
         CompoundTag facetsNbt = new CompoundTag();
-        holder.getFacets().forEach((key, facet) -> facetsNbt.put(key.id().toString(), facet.toNbt()));
+        holder.getFacets().forEach((key, facet) -> {
+            if(facet.shouldSave()){
+
+                facetsNbt.put(key.id().toString(), facet.toNbt());
+            }
+        });
         root.put(FacetRegistry.TAG_FACETS_ID, facetsNbt);
     }
 }

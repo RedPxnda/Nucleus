@@ -22,13 +22,14 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
     FacetKey<SimpleEntityFacet<T>> key;
     boolean updateOnSet;
     Entity owner;
+    Predicate<T> shouldSave;
 
     /**
      * Creates and registers a simple data holder Facet by giving it a Codec
      *
-     * @param id           the id to register under. will be in entity save data
-     * @param codec        the codec to encode data
-     * @param <T>          your custom data
+     * @param id    the id to register under. will be in entity save data
+     * @param codec the codec to encode data
+     * @param <T>   your custom data
      * @return the key to retrieve the data form any entity
      */
     public static <T> Builder<T> createSimple(
@@ -46,7 +47,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
             SimpleEntityFacet<T> facet = facetBuilder.getCreator().apply(entity);
             if (facet != null) {
                 attacher.add(key, facet);
-                if(facet.updateOnSet){
+                if (facet.updateOnSet) {
                     facet.sendToTrackers(entity);
                 }
             }
@@ -55,7 +56,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         return facetBuilder;
     }
 
-    public SimpleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, @Nullable T defaultValue, boolean updateOnSet, Entity owner) {
+    public SimpleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, @Nullable T defaultValue, boolean updateOnSet, Entity owner, Predicate<T> shouldSave) {
         this.codec = codec;
         this.key = key;
         value = defaultValue;
@@ -70,6 +71,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
 
     /**
      * get the value of the entity, can be null
+     *
      * @return
      */
     @Nullable
@@ -81,6 +83,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
     /**
      * set the value of this facet.
      * can be set to null
+     *
      * @param value
      */
     @Override
@@ -99,6 +102,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         FacetKey<SimpleEntityFacet<T>> key;
         T value = null;
         boolean updateOnSet = true;
+        Predicate<T> shouldSave = (t->true);
         Predicate<Entity> entityPredicate = (entity -> true);
 
         private Builder(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key) {
@@ -108,11 +112,21 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
 
         /**
          * predicate to what entities this predicate should be attached to.
+         *
          * @param entityPredicate
          * @return
          */
         public Builder<T> setPredicate(Predicate<Entity> entityPredicate) {
             this.entityPredicate = entityPredicate;
+            return this;
+        }
+
+        /**
+         * this can be used to skip save to files.
+         * should be used to prevent saving unnecessary data
+         */
+        public Builder<T> setSaveCondition(Predicate<T> defaultValue) {
+            this.shouldSave = defaultValue;
             return this;
         }
 
@@ -127,6 +141,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
 
         /**
          * if the Facet should be auto-synced to the clients on set
+         *
          * @param shouldUpdate
          * @return
          */
@@ -138,7 +153,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         private Function<Entity, SimpleEntityFacet<T>> getCreator() {
             return (entity) -> {
                 if (entityPredicate.test(entity)) {
-                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, entity);
+                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, entity,shouldSave);
                 } else {
                     return null;
                 }
