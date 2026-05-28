@@ -16,14 +16,41 @@ data into nbt, and create it from nbt.
 
 Currently, you can attach facets to:
 * Entities
-* ItemStacks
 * Status Effect Instances (MobEffectInstance on mojang mappings)
 
 World, chunk, and block entity facets are planned.
 
-## Usage
-First, create a class implementing EntityFacet, ItemStackFacet, or StatusEffectFacet(etc.). If this is for some other unspecified usage, you can always just
-implement Facet itself. ItemStackFacets and StatusEffectFacets have two type parameters while EntityFacet only has one. ItemStackFacet and StatusEffectFacet's
+## Simple common usage
+In case no logic is required on the attached data you can simply use the new builder.
+```java
+FacetKey<SimpleEntityFacet<String>> key = SimpleEntityFacet
+    .createSimple(ResourceLocation.fromNamespaceAndPath("example","cool_data"), Codec.STRING)
+    .syncToClientsOnSet(false)
+    .setPredicate(Player.class::isInstance)
+    .setDefaultValue("super empty")
+    .setSaveCondition(s -> !"super empty".equals(s))
+    .build();
+```
+and reading/writing to/from the facet is done via the FacetKey, it contains the information about the class and key so
+it can be retrieved.
+depending on your predicate settings you might wanna use getOptional calls or nullcheck the set facet.
+
+```java
+        PlayerEvent.ATTACK_ENTITY.register(new PlayerEvent.AttackEntity() {
+            @Override
+            public EventResult attack(Player player, Level level, Entity target, InteractionHand hand, @Nullable EntityHitResult result) {
+                key.getOptional(player).ifPresent(facet->{
+                    facet.get();
+                });
+                return EventResult.pass();
+            }
+        });
+```
+
+## Or with Full control over all logic:
+
+First, create a class implementing EntityFacet or StatusEffectFacet(etc.). If this is for some other unspecified usage, you can always just
+implement Facet itself. StatusEffectFacets has two type parameters while EntityFacet only has one. StatusEffectFacet's
 first type parameter should be your facet class. This may seem odd, but it's to ensure copying returns the correct type of facet. The next type parameter and
 EntityFacet's only type parameter is the nbt type you serialize to and deserialize from. (How your facet will be stored.) 
 

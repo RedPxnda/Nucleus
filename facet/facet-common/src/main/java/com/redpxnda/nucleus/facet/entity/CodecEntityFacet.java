@@ -71,9 +71,6 @@ public interface CodecEntityFacet<T> extends EntityFacet<CompoundTag> {
     default void loadNbt(CompoundTag nbt) {
         Tag inner = nbt.get("data");
         if (inner == null) {
-            Nucleus.getLogger().warn(
-                    "Facet " + getClass().getName() + " did not contain 'data' field while loading!"
-            );
             return;
         }
 

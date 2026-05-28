@@ -1,11 +1,9 @@
 package com.redpxnda.nucleus.trinket;
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
-
 /**
  * Common SlotReference for Trinkets and Curious
  */
+@SuppressWarnings("unused")
 public interface CommonSlotReference {
     /**
      * for Trinket(fabric) this will return the base Slot Id (leg/feet etc)

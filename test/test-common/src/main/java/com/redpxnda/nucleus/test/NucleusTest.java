@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.test;
 
+import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.config.ConfigBuilder;
 import com.redpxnda.nucleus.config.ConfigManager;
@@ -8,7 +9,9 @@ import com.redpxnda.nucleus.config.screen.NucleusConfigScreens;
 import com.redpxnda.nucleus.editor.core.ClientLoader;
 import com.redpxnda.nucleus.event.MiscEvents;
 import com.redpxnda.nucleus.event.PrioritizedEvent;
+import com.redpxnda.nucleus.facet.FacetKey;
 import com.redpxnda.nucleus.facet.FacetRegistry;
+import com.redpxnda.nucleus.facet.entity.SimpleEntityFacet;
 import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import com.redpxnda.nucleus.test.codec.CodecTests;
 import com.redpxnda.nucleus.test.codec.OverWriteCodecTest;
@@ -18,7 +21,12 @@ import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -49,6 +57,23 @@ public class NucleusTest {
         ╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝   ╚═╝   ╚══════╝
         */
         CoolEntityFacet.KEY = FacetRegistry.register(ResourceLocation.fromNamespaceAndPath("example", "cool_entity_facet"), CoolEntityFacet.class);
+        FacetKey<SimpleEntityFacet<String>> key =
+                SimpleEntityFacet
+                        .createSimple(ResourceLocation.fromNamespaceAndPath("example","cool_data"), Codec.STRING)
+                        .syncToClientsOnSet(false)
+                        .setPredicate(Player.class::isInstance)
+                        .setSaveCondition(s -> !"super empty".equals(s))
+                        .build("super empty");
+
+        PlayerEvent.ATTACK_ENTITY.register(new PlayerEvent.AttackEntity() {
+            @Override
+            public EventResult attack(Player player, Level level, Entity target, InteractionHand hand, @Nullable EntityHitResult result) {
+                key.getOptional(player).ifPresent(facet->{
+                    facet.get();
+                });
+                return EventResult.pass();
+            }
+        });
 
         FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
             if (entity instanceof Player)

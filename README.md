@@ -11,7 +11,7 @@ Nucleus is a multiplatform all-purpose library. Each module has its own features
 - Core (Base for everything - no readme)
 - [Facet](https://github.com/RedPxnda/Nucleus/blob/1.20.1/facet/README.md) (Equivalent to Forge's Capability System)
 - Pose (Simple player animation lib - no readme *yet*)
-- ~~Trinket (Trinket and Curios API abstraction - no readme *yet*)~~ removed as 1.21, curios has ceased development
+- Trinket (Accessories and Curios API abstraction) so you don't require either
 
 ## Maven
 ```groovy

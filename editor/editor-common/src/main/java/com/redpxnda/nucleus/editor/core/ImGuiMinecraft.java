@@ -42,7 +42,8 @@ public class ImGuiMinecraft {
     public static void setupFrame() {
         if (frameActive) {
             NucleusEditor.LOGGER.error("setupFrame was called again before finishFrame!");
-            finishFrame(true);
+            //finishFrame(true);
+            return;
         }
 
         frameActive = true;

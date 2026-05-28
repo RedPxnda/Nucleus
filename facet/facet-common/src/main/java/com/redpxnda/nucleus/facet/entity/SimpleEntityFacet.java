@@ -16,13 +16,11 @@ import java.util.function.Predicate;
  * @param <T> Custom Facet Data
  */
 public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
-    @Nullable
     T value;
     Codec<T> codec;
     FacetKey<SimpleEntityFacet<T>> key;
     boolean updateOnSet;
     Entity owner;
-    Predicate<T> shouldSave;
 
     /**
      * Creates and registers a simple data holder Facet by giving it a Codec
@@ -56,7 +54,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         return facetBuilder;
     }
 
-    public SimpleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, @Nullable T defaultValue, boolean updateOnSet, Entity owner, Predicate<T> shouldSave) {
+    public SimpleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, T defaultValue, boolean updateOnSet, Entity owner, Predicate<T> shouldSave) {
         this.codec = codec;
         this.key = key;
         value = defaultValue;
@@ -74,7 +72,6 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
      *
      * @return
      */
-    @Nullable
     @Override
     public T get() {
         return value;
@@ -101,8 +98,9 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         Codec<T> codec;
         FacetKey<SimpleEntityFacet<T>> key;
         T value = null;
+        T fallbackValue = null;
         boolean updateOnSet = true;
-        Predicate<T> shouldSave = (t->true);
+        Predicate<T> shouldSave = (t -> true);
         Predicate<Entity> entityPredicate = (entity -> true);
 
         private Builder(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key) {
@@ -131,15 +129,6 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         }
 
         /**
-         * set the default value - what an unset facet should contain.
-         * can be null
-         */
-        public Builder<T> setDefaultValue(@Nullable T defaultValue) {
-            this.value = defaultValue;
-            return this;
-        }
-
-        /**
          * if the Facet should be auto-synced to the clients on set
          *
          * @param shouldUpdate
@@ -153,15 +142,41 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
         private Function<Entity, SimpleEntityFacet<T>> getCreator() {
             return (entity) -> {
                 if (entityPredicate.test(entity)) {
-                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, entity,shouldSave);
+                    if (value == null) {
+                        new NullAbleEntityFacet<>(codec, key, updateOnSet, entity, shouldSave);
+                    }
+                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, entity, shouldSave);
                 } else {
                     return null;
                 }
             };
         }
 
-        public FacetKey<SimpleEntityFacet<T>> build() {
+        public FacetKey<SimpleEntityFacet<T>> build(T defaultValue) {
+            this.value = defaultValue;
             return key;
+        }
+
+        public FacetKey<SimpleEntityFacet<T>> buildNullable() {
+            return key;
+        }
+    }
+
+    public static class NullAbleEntityFacet<T> extends SimpleEntityFacet<T> {
+
+        public NullAbleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, boolean updateOnSet, Entity owner, Predicate<T> shouldSave) {
+            super(codec, key, null, updateOnSet, owner, shouldSave);
+        }
+
+        /**
+         * get the value of the entity, can be null
+         *
+         * @return
+         */
+        @Override
+        @Nullable
+        public T get() {
+            return value;
         }
     }
 }
