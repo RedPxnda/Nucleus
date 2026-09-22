@@ -1,0 +1,514 @@
+package com.redpxnda.nucleus.widgets.widgets;
+
+import com.mojang.datafixers.util.Either;
+import com.redpxnda.nucleus.widgets.NucleusWidgets;
+import com.redpxnda.nucleus.widgets.state.UiAttachable;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FastColor;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2d;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * An BasicHirarchyWidget that supports children and forwards events to them.
+ * Use this class in conjunction with the ParentHandledScreen to correctly handle children.
+ * If you want to handle some events yourself and still support children, you should call the
+ * corresponding super method or handle the children yourself.
+ * this is package private because its just one feature of the full {@link NucleusWidget}
+ */
+@Environment(EnvType.CLIENT)
+@SuppressWarnings("unused")
+abstract class BasicHirarchyWidget extends AbstractWidget implements Renderable, GuiEventListener {
+    protected final List<GuiEventListener> children = new ArrayList<>();
+    protected final List<BasicHirarchyWidget> hoverElements = new ArrayList<>();
+    public boolean debug = false;
+    Either<Screen, BasicHirarchyWidget> parent;
+    public int randomColor = FastColor.ARGB32.color(180, (int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255));
+
+    /**
+     * This is a Widget build to support Children and parse the events down to them.
+     * Best use in conjunction with the ParentHandledScreen as it also handles Children correct,
+     * unlike the base vanilla classes.
+     * If you choose to handle some Events yourself and want to support Children yourself, you need to call the correct
+     * super method or handle the children yourself
+     *
+     * @param x      the X Position
+     * @param y      the y Position
+     * @param width  the width
+     * @param height the height
+     *               These for Params above are used to create feedback on isMouseOver() by default
+     * @param title  the Title of the Widget
+     */
+    protected BasicHirarchyWidget(int x, int y, int width, int height, Component title) {
+        super(x, y, width, height, title);
+    }
+
+    /*
+    Helper Functions for General use
+     */
+
+    /**
+     * This functions Renders a Square Border
+     *
+     * @param drawContext The drawContext used.
+     * @param x           top left Corner x
+     * @param y           top Left Corner y
+     * @param width       width of the square
+     * @param height      height of the square
+     * @param borderWidth with of the border, border is drawn inwards
+     * @param color       color of the border
+     */
+    public static void drawSquareBorder(GuiGraphics drawContext, int x, int y, int width, int height, int borderWidth, int color) {
+        //Top
+        drawContext.fill(x, y, x + width, y + borderWidth, 100, color);
+        //Bottom
+        drawContext.fill(x, y + height, x + width, y + height - borderWidth, 100, color);
+        //Left
+        drawContext.fill(x, y, x + borderWidth, y + height, 100, color);
+        //Right
+        drawContext.fill(x + width, y, x + width - borderWidth, y + height, 100, color);
+    }
+
+    /**
+     * Draws a texture with an edge around its border. The texture can be limited to a portion of itself by specifying the
+     * coordinates (u, v) and (u2, regionHeight).
+     * This is useful if a texture might be resized in the UI to still align its Edges
+     *
+     * @param context       The drawContext used.
+     * @param texture       The texture rendered.
+     * @param x             The x-coordinate to draw the texture at.
+     * @param y             The y-coordinate to draw the texture at.
+     * @param u             The x-coordinate of the top-left corner of the texture region to draw.
+     * @param v             The y-coordinate of the top-left corner of the texture region to draw.
+     * @param regionWidth   The x-coordinate of the bottom-right corner of the texture region to draw.
+     * @param regionHeight  The y-coordinate of the bottom-right corner of the texture region to draw.
+     * @param width         The width of the texture.
+     * @param height        The height of the texture.
+     * @param textureWidth  The width of the texture sheet.
+     * @param textureHeight The height of the texture sheet.
+     * @param borderWidth   The width of the border to draw around the texture.
+     */
+    public static void drawTextureWithEdgeAndScale(GuiGraphics context, ResourceLocation texture, int x, int y, int u, int v, int regionWidth, int regionHeight, int width, int height, int textureWidth, int textureHeight, int borderWidth, float scale) {
+        context.pose().last().pose().scale(1 / scale);
+        drawTextureWithEdge(context, texture, (int) (x * scale), (int) (y * scale), u, v, regionWidth, regionHeight, (int)
+                (width * scale), (int) (height * scale), textureWidth, textureHeight, borderWidth);
+        context.pose().last().pose().scale(scale);
+    }
+
+    /**
+     * Draws a texture with an edge around its border. The texture can be limited to a portion of itself by specifying the
+     * coordinates (u, v) and (u2, regionHeight).
+     * This is useful if a texture might be resized in the UI to still align its Edges
+     *
+     * @param drawContext   The drawContext used.
+     * @param texture       The texture rendered.
+     * @param x             The x-coordinate to draw the texture at.
+     * @param y             The y-coordinate to draw the texture at.
+     * @param u             The x-coordinate of the top-left corner of the texture region to draw.
+     * @param v             The y-coordinate of the top-left corner of the texture region to draw.
+     * @param regionWidth   The x-coordinate of the bottom-right corner of the texture region to draw.
+     * @param regionHeight  The y-coordinate of the bottom-right corner of the texture region to draw.
+     * @param width         The width of the texture.
+     * @param height        The height of the texture.
+     * @param textureWidth  The width of the texture sheet.
+     * @param textureHeight The height of the texture sheet.
+     * @param borderWidth   The width of the border to draw around the texture.
+     */
+    public static void drawTextureWithEdge(GuiGraphics drawContext, ResourceLocation texture, int x, int y, int u, int v, int regionWidth, int regionHeight, int width, int height, int textureWidth, int textureHeight, int borderWidth) {
+        //Center
+        drawContext.blit(texture, x + borderWidth, y + borderWidth, width - 2 * borderWidth, height - 2 * borderWidth, u + borderWidth, v + borderWidth, regionWidth - borderWidth * 2, regionHeight - borderWidth * 2, textureWidth, textureHeight);
+        //Top Left Corner
+        drawContext.blit(texture, x, y, borderWidth, borderWidth, u, v, borderWidth, borderWidth, textureWidth, textureHeight);
+        //Top Right Corner
+        drawContext.blit(texture, x + width - borderWidth, y, borderWidth, borderWidth, u + regionWidth - borderWidth, v, borderWidth, borderWidth, textureWidth, textureHeight);
+        //Bottom Left Corner
+        drawContext.blit(texture, x, y + height - borderWidth, borderWidth, borderWidth, u, v + regionHeight - borderWidth, borderWidth, borderWidth, textureWidth, textureHeight);
+        //Bottom Right Corner
+        drawContext.blit(texture, x + width - borderWidth, y + height - borderWidth, borderWidth, borderWidth, u + regionWidth - borderWidth, v + regionHeight - borderWidth, borderWidth, borderWidth, textureWidth, textureHeight);
+        //Bottom Bar
+        drawContext.blit(texture, x + borderWidth, y + height - borderWidth, width - 2 * borderWidth, borderWidth, u + borderWidth, v + regionHeight - borderWidth, regionWidth - borderWidth * 2, borderWidth, textureWidth, textureHeight);
+        //Right Bar
+        drawContext.blit(texture, x + width - borderWidth, y + borderWidth, borderWidth, height - 2 * borderWidth, u + regionWidth - borderWidth, v + borderWidth, borderWidth, regionHeight - borderWidth * 2, textureWidth, textureHeight);
+        //Left Bar
+        drawContext.blit(texture, x, y + borderWidth, borderWidth, height - 2 * borderWidth, u, v + borderWidth, borderWidth, regionHeight - borderWidth * 2, textureWidth, textureHeight);
+        //Top Bar
+        drawContext.blit(texture, x + borderWidth, y, width - 2 * borderWidth, borderWidth, u + borderWidth, v, regionWidth - borderWidth * 2, borderWidth, textureWidth, textureHeight);
+    }
+
+
+    /**
+     * Draws a texture with an edge around its border. The texture can be limited to a portion of itself by specifying the
+     * coordinates (u, v) and (u2, v2).
+     * This is useful if a texture might be resized in the UI to still align its Edges
+     *
+     * @param drawContext   The drawContext used.
+     * @param texture       The texture rendered.
+     * @param x             The x-coordinate to draw the texture at.
+     * @param y             The y-coordinate to draw the texture at.
+     * @param width         The width of the texture.
+     * @param height        The height of the texture.
+     * @param textureWidth  The width of the texture sheet.
+     * @param textureHeight The height of the texture sheet.
+     * @param borderWidth   The width of the border to draw around the texture.
+     */
+    public static void drawTextureWithEdge(GuiGraphics drawContext, ResourceLocation texture, int x, int y, int width, int height, int textureWidth, int textureHeight, int borderWidth) {
+        drawTextureWithEdge(drawContext, texture, x, y, 0, 0, textureWidth, textureHeight, width, height, textureWidth, textureHeight, borderWidth);
+    }
+
+    public List<BasicHirarchyWidget> getHoverElements() {
+        List<BasicHirarchyWidget> allHoverElements = new ArrayList<>(hoverElements);
+        children().forEach(currentChildren -> {
+            if (currentChildren instanceof BasicHirarchyWidget widget) {
+                allHoverElements.addAll(widget.getHoverElements());
+            }
+        });
+        return allHoverElements;
+    }
+
+
+    /**
+     * This Method adds a Child to this Widget
+     * native Access to the Array is given in children()
+     *
+     * @param element the Child to be Added
+     */
+    public void addChild(GuiEventListener element) {
+        children().add(element);
+        if (element instanceof UiAttachable uiAttachable) {
+            uiAttachable.attach();
+        }
+        if (element instanceof BasicHirarchyWidget basicHirarchyWidget) {
+            basicHirarchyWidget.setParent(this);
+        }
+    }
+
+    /**
+     * This Method removes a child Element from this Widget
+     * native Access to the Array is given in children()
+     *
+     * @param element the Child to be removed
+     */
+    public void removeChild(GuiEventListener element) {
+        children().remove(element);
+        if (element instanceof UiAttachable uiAttachable) {
+            uiAttachable.detach();
+        }
+    }
+
+    /**
+     * this does NOT set this as a child. only call this in rare circumstances.
+     * use {@link  BasicHirarchyWidget#addChild} instead!
+     */
+    public void setParent(@Nullable BasicHirarchyWidget basicHirarchyWidget) {
+        this.parent = Either.right(basicHirarchyWidget);
+    }
+
+    /**
+     * Sets this widget as a child to a screen
+     * This is done automaticly if {@link NucleusScreen#addChild(AbstractWidget)} is called
+     */
+    public void setParent(@Nullable Screen screen) {
+        this.parent = Either.left(screen);
+    }
+
+    /**
+     * This Method gives direct access to the ArrayList of Children
+     */
+    public List<GuiEventListener> children() {
+        return children;
+    }
+
+    /**
+     * This function triggers whenever the mouse is Moved above the Widget
+     *
+     * @param mouseX current X Position of the Mouse
+     * @param mouseY current Y Position of the Mouse
+     */
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        for (GuiEventListener child : this.children()) {
+            if (child.isMouseOver(mouseX, mouseY)) {
+                child.mouseMoved(mouseX, mouseY);
+            }
+        }
+        super.mouseMoved(mouseX, mouseY);
+    }
+
+    /**
+     * This function fires whenever the Mouse is clicked above the Widget
+     *
+     * @param mouseX current X Position of the Mouse
+     * @param mouseY current Y Position of the Mouse
+     * @param button the Number of the Button
+     * @return if this consumes the Click, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (GuiEventListener child : this.children()) {
+            if (child.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void playClickedSound() {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+    }
+
+    /**
+     * @param mouseX current X Position of the Mouse
+     * @param mouseY current Y Position of the Mouse
+     * @param button the Number of the Button
+     * @return if this consumes the Click, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        for (GuiEventListener child : this.children()) {
+            if (child.isMouseOver(mouseX, mouseY) && child.mouseReleased(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param mouseX current X Position of the Mouse
+     * @param mouseY current Y Position of the Mouse
+     * @param button the Number of the Button
+     * @param deltaX the Distance dragged X
+     * @param deltaY the Distance dragged Y
+     * @return if this consumes the action, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        for (GuiEventListener child : this.children()) {
+            if (
+                    child.isMouseOver(mouseX, mouseY) &&
+                    child.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param mouseX  current X Position of the Mouse
+     * @param mouseY  current Y Position of the Mouse
+     * @param scrollX the amount horizontal scrolled since the last time this was called
+     * @param scrollY the amount vertical scrolled since the last time this was called
+     * @return if this consumes the action, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        for (GuiEventListener child : this.children()) {
+            if (child.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param keyCode   the keyCode of the pressed Key
+     * @param scanCode  the scanCode of the pressed Key
+     * @param modifiers if addition buttons like ctrl or alt where held down
+     * @return if this consumes the action, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        for (GuiEventListener child : this.children()) {
+            if (child.keyPressed(keyCode, scanCode, modifiers)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param keyCode   the keyCode of the released Key
+     * @param scanCode  the scanCode of the released Key
+     * @param modifiers if addition buttons like ctrl or alt where held down
+     * @return if this consumes the action, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        for (GuiEventListener child : this.children()) {
+            if (child.keyReleased(keyCode, scanCode, modifiers)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param chr       the Character typed
+     * @param modifiers if keys like ctrl or alt where held down
+     * @return if this consumes the action, if you previewStack an action return true, if not return false
+     */
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        for (GuiEventListener child : this.children()) {
+            if (child.charTyped(chr, modifiers)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This Function handles if the Mouse is above the current Widget
+     * Its not recommended to adjustEnchantments this if your widget is a Rectangle,
+     * if it is not make sure this function returns true whenever the mouse is above the widget
+     *
+     * @param mouseX current mouseX coordinate
+     * @param mouseY current mouseY coordinate
+     * @return if the mouseCords are above the Widget
+     */
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return super.isMouseOver(mouseX, mouseY);
+    }
+
+    public Vector2d getScaledMouseCoords() {
+        Minecraft client = Minecraft.getInstance();
+        MouseHandler mouse = client.mouseHandler;
+        double x = mouse.xpos() * client.getWindow().getGuiScaledWidth() / client.getWindow().getScreenWidth();
+        double y = mouse.ypos() * client.getWindow().getGuiScaledHeight() / client.getWindow().getScreenHeight();
+
+        return new Vector2d(x, y);
+    }
+
+    @Override
+    public void setHeight(int height) {
+        super.setHeight(height);
+        sizeUpdate();
+        postSizeUpdate();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        super.setWidth(width);
+        sizeUpdate();
+        postSizeUpdate();
+    }
+
+    @Override
+    public void setX(int x) {
+        super.setX(x);
+        sizeUpdate();
+        postSizeUpdate();
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        sizeUpdate();
+        postSizeUpdate();
+    }
+
+    public void updateDimensions(int x, int y, int width, int height) {
+        super.setX(x);
+        super.setY(y);
+        super.setWidth(width);
+        super.setHeight(height);
+        sizeUpdate();
+        postSizeUpdate();
+    }
+
+    /**
+     * This function is always called when this widget gets rescaled or re-positioned.
+     * for more control overwright {@link BasicHirarchyWidget#setHeight(int)} or {@link BasicHirarchyWidget#setWidth(int)}
+     * {@link BasicHirarchyWidget#setX(int)} or {@link BasicHirarchyWidget#setY(int)}
+     * when calling this directly, make sure {@link BasicHirarchyWidget#postSizeUpdate()} is also always called!
+     */
+    public void sizeUpdate() {}
+
+    /**
+     * This function is always called AFTER this widget gets rescaled or re-positioned.
+     */
+    public void postSizeUpdate() {}
+
+    /**
+     * This functions handles the Rendering
+     * If you have children you should call super.render(matrices ,mouseX ,mouseY ,delta) at the end to render your children
+     *
+     * @param drawContext the current MatrixStack / PoseStack
+     * @param mouseX      current mouseX Position
+     * @param mouseY      current mouseY Position
+     * @param delta       the deltaTime between frames
+     *                    This is needed for animations and co
+     */
+    @Override
+    public void renderWidget(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        if (isDebug()) {
+            drawSquareBorder(drawContext, getX(), getY(), getWidth(), getHeight(), 1, randomColor);
+        } else {
+            //yeah, i dont fucking know, but remove this and EMI/JEI break their rendeirng on scrolllists scissorboxes
+            //nope, no clue why
+            //even less to why this remotly fixes it, gi some deeprooted issue with scissors
+            drawSquareBorder(drawContext, getX(), getY(), getWidth(), getHeight(), 1, 0000000000);
+        }
+
+        //RenderSystem.setShader(GameRenderer::getPositionShader);
+        List<GuiEventListener> reverse = new ArrayList<>(children());
+        Collections.reverse(reverse);
+
+        for (GuiEventListener element : reverse) {
+            if (element instanceof Renderable drawable) {
+                drawable.render(drawContext, mouseX, mouseY, delta);
+            }
+        }
+    }
+
+
+    /**
+     * intended to render additional debug context.
+     * normal end users will never see this true,
+     */
+    public boolean isDebug() {
+        return debug || (NucleusWidgets.IS_DEVELOPMENT && Screen.hasAltDown());
+    }
+
+    /**
+     * This functions handles the Rendering
+     * If you have children you should call super.render(matrices ,mouseX ,mouseY ,delta) at the end to render your children
+     *
+     * @param drawContext the current MatrixStack / PoseStack
+     * @param mouseX      current mouseX Position
+     * @param mouseY      current mouseY Position
+     * @param delta       the deltaTime between frames
+     *                    This is needed for animations and co
+     */
+    public void renderHover(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        hoverElements.forEach(widget -> {
+            widget.render(drawContext, mouseX, mouseY, delta);
+        });
+        children().forEach(element -> {
+            if (element instanceof BasicHirarchyWidget widget) {
+                widget.renderHover(drawContext, mouseX, mouseY, delta);
+            }
+        });
+    }
+
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
+
+    }
+}

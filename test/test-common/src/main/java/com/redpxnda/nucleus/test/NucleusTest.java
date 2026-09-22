@@ -59,17 +59,30 @@ public class NucleusTest {
         CoolEntityFacet.KEY = FacetRegistry.register(ResourceLocation.fromNamespaceAndPath("example", "cool_entity_facet"), CoolEntityFacet.class);
         FacetKey<SimpleEntityFacet<String>> key =
                 SimpleEntityFacet
-                        .createSimple(ResourceLocation.fromNamespaceAndPath("example","cool_data"), Codec.STRING)
+                        .createSimple(ResourceLocation.fromNamespaceAndPath("example", "cool_data"), Codec.STRING)
                         .syncToClientsOnSet(false)
                         .setPredicate(Player.class::isInstance)
                         .setSaveCondition(s -> !"super empty".equals(s))
                         .build("super empty");
 
+        NullableCoolEntityFacet.KEY = FacetRegistry.register(ResourceLocation.fromNamespaceAndPath("example", "cool_entity_facet"), NullableCoolEntityFacet.class);
+        FacetKey<SimpleEntityFacet.NullAbleEntityFacet<String>> nullableKey =
+                SimpleEntityFacet
+                        .createSimple(ResourceLocation.fromNamespaceAndPath("example", "cool_data"), Codec.STRING)
+                        .syncToClientsOnSet(false)
+                        .setPredicate(Player.class::isInstance)
+                        .setSaveCondition(s -> !"super empty".equals(s))
+                        .buildNullable();
+
+
         PlayerEvent.ATTACK_ENTITY.register(new PlayerEvent.AttackEntity() {
             @Override
             public EventResult attack(Player player, Level level, Entity target, InteractionHand hand, @Nullable EntityHitResult result) {
-                key.getOptional(player).ifPresent(facet->{
+                key.getOptional(player).ifPresent(facet -> {
                     facet.get();
+                });
+                nullableKey.getOptional(player).ifPresent(facet -> {
+                    Nucleus.getLogger().info("aa " + facet.get());
                 });
                 return EventResult.pass();
             }

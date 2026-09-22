@@ -7,7 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -34,22 +33,7 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
             ResourceLocation id,
             Codec<T> codec
     ) {
-        @SuppressWarnings("unchecked")
-        FacetKey<SimpleEntityFacet<T>> key =
-                (FacetKey<SimpleEntityFacet<T>>)
-                        (FacetKey<?>) FacetRegistry.register(id, SimpleEntityFacet.class);
-
-        Builder<T> facetBuilder = new Builder<>(codec, key);
-
-        FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
-            SimpleEntityFacet<T> facet = facetBuilder.getCreator().apply(entity);
-            if (facet != null) {
-                attacher.add(key, facet);
-                if (facet.updateOnSet) {
-                    facet.sendToTrackers(entity);
-                }
-            }
-        });
+        Builder<T> facetBuilder = new Builder<>(codec, id);
 
         return facetBuilder;
     }
@@ -90,20 +74,20 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
     }
 
     @Override
-    public FacetKey<SimpleEntityFacet<T>> getKey() {
+    public FacetKey<? extends SimpleEntityFacet<T>> getKey() {
         return key;
     }
 
     public static class Builder<T> {
         Codec<T> codec;
-        FacetKey<SimpleEntityFacet<T>> key;
+        ResourceLocation key;
         T value = null;
         T fallbackValue = null;
         boolean updateOnSet = true;
         Predicate<T> shouldSave = (t -> true);
         Predicate<Entity> entityPredicate = (entity -> true);
 
-        private Builder(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key) {
+        private Builder(Codec<T> codec, ResourceLocation key) {
             this.key = key;
             this.codec = codec;
         }
@@ -139,33 +123,53 @@ public class SimpleEntityFacet<T> implements CodecEntityFacet<T> {
             return this;
         }
 
-        private Function<Entity, SimpleEntityFacet<T>> getCreator() {
-            return (entity) -> {
-                if (entityPredicate.test(entity)) {
-                    if (value == null) {
-                        new NullAbleEntityFacet<>(codec, key, updateOnSet, entity, shouldSave);
-                    }
-                    return new SimpleEntityFacet<>(codec, key, value, updateOnSet, entity, shouldSave);
-                } else {
-                    return null;
-                }
-            };
-        }
-
         public FacetKey<SimpleEntityFacet<T>> build(T defaultValue) {
             this.value = defaultValue;
-            return key;
+            @SuppressWarnings("unchecked")
+            FacetKey<SimpleEntityFacet<T>> facetKey =
+                    (FacetKey<SimpleEntityFacet<T>>)
+                            (FacetKey<?>) FacetRegistry.register(this.key, SimpleEntityFacet.class);
+            FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
+                SimpleEntityFacet<T> facet = new SimpleEntityFacet<>(codec, facetKey, defaultValue, updateOnSet, entity, shouldSave);
+                if (facet != null) {
+                    attacher.add(facetKey, facet);
+                    if (facet.updateOnSet) {
+                        facet.sendToTrackers(entity);
+                    }
+                }
+            });
+            return facetKey;
         }
 
-        public FacetKey<SimpleEntityFacet<T>> buildNullable() {
-            return key;
+        public FacetKey<NullAbleEntityFacet<T>> buildNullable() {
+            @SuppressWarnings("unchecked")
+            FacetKey<NullAbleEntityFacet<T>> facetKey =
+                    (FacetKey<NullAbleEntityFacet<T>>)
+                            (FacetKey<?>) FacetRegistry.register(this.key, NullAbleEntityFacet.class);
+            FacetRegistry.ENTITY_FACET_ATTACHMENT.register((entity, attacher) -> {
+                NullAbleEntityFacet<T> facet = new NullAbleEntityFacet<>(codec, facetKey, updateOnSet, entity, shouldSave);
+                if (facet != null) {
+                    attacher.add(facetKey, facet);
+                    if (facet.updateOnSet) {
+                        facet.sendToTrackers(entity);
+                    }
+                }
+            });
+            return facetKey;
         }
     }
 
     public static class NullAbleEntityFacet<T> extends SimpleEntityFacet<T> {
+        FacetKey<NullAbleEntityFacet<T>> key;
 
-        public NullAbleEntityFacet(Codec<T> codec, FacetKey<SimpleEntityFacet<T>> key, boolean updateOnSet, Entity owner, Predicate<T> shouldSave) {
-            super(codec, key, null, updateOnSet, owner, shouldSave);
+        public NullAbleEntityFacet(Codec<T> codec, FacetKey<NullAbleEntityFacet<T>> key, boolean updateOnSet, Entity owner, Predicate<T> shouldSave) {
+            super(codec, null, null, updateOnSet, owner, shouldSave);
+            this.key = key;
+        }
+
+        @Override
+        public FacetKey<NullAbleEntityFacet<T>> getKey() {
+            return key;
         }
 
         /**

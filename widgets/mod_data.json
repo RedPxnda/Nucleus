@@ -1,17 +1,16 @@
 {
-  "id": "nucleus_facet",
-  "version": "1.1.3",
-  "name": "Nucleus (Facet)",
-  "description": "Multiplatform object data management and storage for entities, item stacks, status effect instances, and more",
+  "id": "nucleus_widgets",
+  "version": "1.0.0",
+  "name": "Nucleus (Widgets)",
+  "description": "Small UI libariries to allow for sensible navigation and even inworld rendering of UIs.",
   "authors": [
     "RedPxnda"
   ],
-  "icon": "icon.png",
   "contact": {},
   "license": "MIT",
   "mixins": [
-    "nucleus-facet.mixins.json",
-    "nucleus-facet-common.mixins.json"
+    "nucleus_widgets.mixins.json",
+    "nucleus_widgets-common.mixins.json"
   ],
   "depends": [
     {
@@ -49,10 +48,7 @@
     "schemaVersion": 1,
     "entrypoints": {
       "main": [
-        "com.redpxnda.nucleus.facet.fabric.NucleusFacetFabric"
-      ],
-      "controlify": [
-        "com.redpxnda.nucleus.widgets.controlify.NucleusControlifyEntrypoint"
+        "com.redpxnda.nucleus.widgets.fabric.NucleusWidgetsFabric"
       ]
     },
     "custom": {
