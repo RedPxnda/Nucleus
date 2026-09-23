@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.widgets.widgets;
 
+import com.redpxnda.nucleus.widgets.world.WorldWidget;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -9,7 +10,7 @@ import net.minecraft.network.chat.Component;
  * includes {@link com.redpxnda.nucleus.widgets.controller.ControllerNavigable}
  * full support for hierarchy, states, detachment support and controller support
  */
-public abstract class NucleusWidget extends BasicControllerNavigableWidget {
+public abstract class NucleusWidget extends BasicControllerNavigableWidget implements WorldWidget {
     protected NucleusWidget(int x, int y, int width, int height, Component title) {
         super(x, y, width, height, title);
     }

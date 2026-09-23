@@ -58,7 +58,7 @@ public class WorldWidgetBase extends NucleusWidget {
         renderTarget.drawTargetToWorld(poseStack, getWidth(), getHeight(), isDebug());
         for (GuiEventListener listener : children()) {
             if (listener instanceof WorldWidget worldWidget) {
-                worldWidget.renderInWorld(guiGraphics, currentMouseX, currentMouseY, partialTick);
+                worldWidget.renderInWorld(guiGraphics, currentMouseX, currentMouseY, partialTick, light, overlay);
             }
         }
     }

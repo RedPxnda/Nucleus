@@ -6,11 +6,15 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 
 public interface WorldWidget {
 
-    default void renderInWorld(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    /**
+     * ONLY called if attached to a {@link WorldWidgetBase} BER renderer.
+     * Renders during BER pass actually in-world with fake GuiGraphics
+     */
+    default void renderInWorld(GuiGraphics drawContext, int mouseX, int mouseY, float delta, int light, int overlay) {
         if (this instanceof NucleusWidget widget) {
             for (GuiEventListener listener : widget.children()) {
                 if (listener instanceof WorldWidget worldWidget) {
-                    worldWidget.renderInWorld(drawContext, mouseX, mouseY, delta);
+                    worldWidget.renderInWorld(drawContext, mouseX, mouseY, delta, light, overlay);
                 }
             }
         }
