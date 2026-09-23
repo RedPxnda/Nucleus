@@ -1,6 +1,6 @@
 {
   "id": "nucleus_widgets",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Nucleus (Widgets)",
   "description": "Small UI libariries to allow for sensible navigation and even inworld rendering of UIs.",
   "authors": [
