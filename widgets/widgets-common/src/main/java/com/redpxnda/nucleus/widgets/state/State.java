@@ -30,14 +30,16 @@ public class State<T> {
 
     public Subscription subscribe(Consumer<T> listener, Consumer<Subscription> removeFromListener) {
         listener.accept(get());
-        return new Subscription(listener, removeFromListener);
+        State<T>.Subscription sub = new Subscription(listener, removeFromListener);
+        listeners.add(sub);
+        return sub;
     }
 
     public List<Subscription> getListeners() {
         return List.copyOf(listeners);
     }
 
-    public void unSubscribeAll(){
+    public void unSubscribeAll() {
         getListeners().forEach(Subscription::unsubscribe);
     }
 

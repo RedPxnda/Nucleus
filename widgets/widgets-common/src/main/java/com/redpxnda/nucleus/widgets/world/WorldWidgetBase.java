@@ -28,11 +28,7 @@ public class WorldWidgetBase extends NucleusWidget {
     public Matrix4f localWidgetTransform = new Matrix4f();
     UiAnchor topLeftProjection = new UiAnchor(new Matrix4f(), new Matrix4f(), new Matrix4f(), new Vector3f());
 
-    protected WorldWidgetBase(
-            int width,
-            int height,
-            Component title
-    ) {
+    protected WorldWidgetBase(int width, int height, Component title) {
         super(0, 0, width, height, title);
     }
 
@@ -98,12 +94,7 @@ public class WorldWidgetBase extends NucleusWidget {
         );
     }
 
-    record UiAnchor(
-            Matrix4f model,
-            Matrix4f view,
-            Matrix4f projection,
-            Vector3f localPos
-    ) {
+    record UiAnchor(Matrix4f model, Matrix4f view, Matrix4f projection, Vector3f localPos) {
         public Vector2i getWorldPosFromScreen(int screenX, int screenY) {
             Minecraft mc = Minecraft.getInstance();
             Window window = mc.getWindow();
