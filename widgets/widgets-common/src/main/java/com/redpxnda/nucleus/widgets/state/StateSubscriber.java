@@ -7,13 +7,9 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("unused")
 public interface StateSubscriber {
+    <T> State<T>.Subscription subscribeTo(State<T> state, Consumer<T> onChange);
 
-    void subscribeTo(State<?> state);
+    void unSubscribe(State<?> state);
 
-    <T> State.Subscription subscribeTo(State<T> state, Consumer<T> onChange);
-
-    /**
-     * Called whenever one of the subscribed States changes.
-     */
-    <T> void onStateChanged(State<T> state, T value);
+    void unSubScribeAll();
 }

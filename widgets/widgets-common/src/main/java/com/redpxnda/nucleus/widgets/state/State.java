@@ -10,7 +10,7 @@ public class State<T> {
 
     private T value;
 
-    private final List<Consumer<T>> listeners = new ArrayList<>();
+    private final List<Subscription> listeners = new ArrayList<>();
 
     public State(T initialValue) {
         this.value = initialValue;
@@ -24,33 +24,43 @@ public class State<T> {
         if (Objects.equals(this.value, value))
             return;
         this.value = value;
-        for (Consumer<T> listener : List.copyOf(listeners))
-            listener.accept(value);
+        for (Subscription listener : List.copyOf(listeners))
+            listener.update(value);
     }
 
-    public void update(StateSubscriber stateSubscriber) {
-        stateSubscriber.onStateChanged(this, value);
+    public Subscription subscribe(Consumer<T> listener, Consumer<Subscription> removeFromListener) {
+        listener.accept(get());
+        return new Subscription(listener, removeFromListener);
     }
 
-    public Subscription subscribe(Consumer<T> listener) {
-        listeners.add(listener);
-        listener.accept(value);
-
-        return new Subscription() {
-            private boolean subscribed = true;
-
-            @Override
-            public void unsubscribe() {
-                if (!subscribed)
-                    return;
-
-                subscribed = false;
-                listeners.remove(listener);
-            }
-        };
+    public List<Subscription> getListeners() {
+        return List.copyOf(listeners);
     }
 
-    public interface Subscription {
-        void unsubscribe();
+    public void unSubscribeAll(){
+        getListeners().forEach(Subscription::unsubscribe);
+    }
+
+    public class Subscription {
+        private final Consumer<T> callback;
+        private final Consumer<Subscription> removeFromListener;
+
+        protected Subscription(Consumer<T> onChange, Consumer<Subscription> removeFromListener) {
+            this.callback = onChange;
+            this.removeFromListener = removeFromListener;
+        }
+
+        public State<T> getState() {
+            return State.this;
+        }
+
+        public void update(T data) {
+            callback.accept(data);
+        }
+
+        public void unsubscribe() {
+            listeners.remove(this);
+            removeFromListener.accept(this);
+        }
     }
 }

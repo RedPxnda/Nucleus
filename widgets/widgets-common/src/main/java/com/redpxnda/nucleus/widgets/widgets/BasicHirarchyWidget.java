@@ -423,6 +423,14 @@ abstract class BasicHirarchyWidget extends AbstractWidget implements Renderable,
         postSizeUpdate();
     }
 
+    public void setSize(int width, int height) {
+        this.width = width;
+        this.height = height;
+        sizeUpdate();
+        postSizeUpdate();
+    }
+
+
     public void updateDimensions(int x, int y, int width, int height) {
         super.setX(x);
         super.setY(y);
