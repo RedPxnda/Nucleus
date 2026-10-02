@@ -51,7 +51,7 @@ public class WorldWidgetBase extends NucleusWidget {
             int light, int overlay) {
 
         topLeftProjection = getPoint(getX(), getY(), guiGraphics);
-        renderTarget.drawTargetToWorld(poseStack, getWidth(), getHeight(), isDebug());
+        renderTarget.drawTargetToWorld(poseStack, getWidth(), getHeight(), light, overlay, isDebug());
         for (GuiEventListener listener : children()) {
             if (listener instanceof WorldWidget worldWidget) {
                 worldWidget.renderInWorld(guiGraphics, currentMouseX, currentMouseY, partialTick, light, overlay);

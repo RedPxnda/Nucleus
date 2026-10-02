@@ -397,47 +397,58 @@ abstract class BasicHirarchyWidget extends AbstractWidget implements Renderable,
 
     @Override
     public void setHeight(int height) {
-        super.setHeight(height);
-        sizeUpdate();
-        postSizeUpdate();
+        if (this.height != height) {
+            super.setHeight(height);
+            sizeUpdate();
+            postSizeUpdate();
+        }
     }
 
     @Override
     public void setWidth(int width) {
-        super.setWidth(width);
-        sizeUpdate();
-        postSizeUpdate();
+        if (this.width != width) {
+            super.setWidth(width);
+            sizeUpdate();
+            postSizeUpdate();
+        }
     }
 
     @Override
     public void setX(int x) {
-        super.setX(x);
-        sizeUpdate();
-        postSizeUpdate();
+        if (this.getX() != x) {
+            super.setX(x);
+            sizeUpdate();
+            postSizeUpdate();
+        }
     }
 
     @Override
     public void setY(int y) {
-        super.setY(y);
-        sizeUpdate();
-        postSizeUpdate();
+        if (this.getY() != y) {
+            super.setY(y);
+            sizeUpdate();
+            postSizeUpdate();
+        }
     }
 
     public void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
-        sizeUpdate();
-        postSizeUpdate();
+        if (this.width != width || this.height != height) {
+            this.width = width;
+            this.height = height;
+            sizeUpdate();
+            postSizeUpdate();
+        }
     }
 
-
     public void updateDimensions(int x, int y, int width, int height) {
-        super.setX(x);
-        super.setY(y);
-        super.setWidth(width);
-        super.setHeight(height);
-        sizeUpdate();
-        postSizeUpdate();
+        if (this.getX() != x || this.getY() != y || this.width != width || this.height != height) {
+            super.setX(x);
+            super.setY(y);
+            super.setWidth(width);
+            super.setHeight(height);
+            sizeUpdate();
+            postSizeUpdate();
+        }
     }
 
     /**

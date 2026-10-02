@@ -171,6 +171,8 @@ public class WidgetRenderTarget {
             PoseStack poseStack,
             int width,
             int height,
+            int light,
+            int overlay,
             boolean debug
     ) {
         if (!valid || target == null) {
@@ -193,7 +195,7 @@ public class WidgetRenderTarget {
 
         RenderSystem.colorMask(true, true, true, true);
 
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorLightmapShader);
         RenderSystem.setShaderTexture(
                 0,
                 target.getColorTextureId()
@@ -206,19 +208,23 @@ public class WidgetRenderTarget {
 
         buffer.addVertex(pose, 0.0F, height, 0.0F)
                 .setUv(0.0F, 0.0F)
-                .setColor(255, 255, 255, 255);
+                .setColor(255, 255, 255, 255)
+                .setLight(light);
 
         buffer.addVertex(pose, width, height, 0.0F)
                 .setUv(1.0F, 0.0F)
-                .setColor(255, 255, 255, 255);
+                .setColor(255, 255, 255, 255)
+                .setLight(light);
 
         buffer.addVertex(pose, width, 0, 0.0F)
                 .setUv(1.0F, 1.0F)
-                .setColor(255, 255, 255, 255);
+                .setColor(255, 255, 255, 255)
+                .setLight(light);
 
         buffer.addVertex(pose, 0.0F, 0, 0.0F)
                 .setUv(0.0F, 1.0F)
-                .setColor(255, 255, 255, 255);
+                .setColor(255, 255, 255, 255)
+                .setLight(light);
 
         MeshData mesh = buffer.buildOrThrow();
         BufferUploader.drawWithShader(mesh);
