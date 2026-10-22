@@ -21,13 +21,7 @@ public class TargetGuiGraphics extends GuiGraphics {
 
     private record Scissor(int left, int top, int right, int bottom) {}
 
-    public TargetGuiGraphics(
-            Minecraft minecraft,
-            MultiBufferSource.BufferSource bufferSource,
-            int targetWidth,
-            int targetHeight,
-            int scale
-    ) {
+    public TargetGuiGraphics(Minecraft minecraft, MultiBufferSource.BufferSource bufferSource, int targetWidth, int targetHeight, int scale) {
         super(minecraft, bufferSource);
         this.targetWidth = targetWidth;
         this.targetHeight = targetHeight;
@@ -73,12 +67,10 @@ public class TargetGuiGraphics extends GuiGraphics {
     public boolean containsPointInScissor(int x, int y) {
         Scissor scissor = scissors.peekLast();
         return scissor == null
-               || (
-                       x >= scissor.left
-                       && y >= scissor.top
-                       && x < scissor.right
-                       && y < scissor.bottom
-               );
+               || (x >= scissor.left
+                   && y >= scissor.top
+                   && x < scissor.right
+                   && y < scissor.bottom);
     }
 
     private void applyScissor(Scissor scissor) {
@@ -87,11 +79,9 @@ public class TargetGuiGraphics extends GuiGraphics {
         int y = targetHeight - scissor.bottom * scale;
         int width = Math.max(0, (scissor.right - scissor.left) * scale);
         int height = Math.max(0, (scissor.bottom - scissor.top) * scale);
-        RenderSystem.enableScissor(
-                x,
+        RenderSystem.enableScissor(x,
                 y,
                 width,
-                height
-        );
+                height);
     }
 }

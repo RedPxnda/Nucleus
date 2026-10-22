@@ -111,17 +111,39 @@ public class WidgetRenderTarget {
     }
 
     /**
-     * Call during world rendering.     * <p>     * Uses vanilla entity translucent rendering, including:     * * lighting     * * overlay     * * depth testing     * * blending     * * vanilla/Iris shader-pack integration
+     * Call during world rendering.
+     * <p>
+     * Uses vanilla entity translucent rendering, including:     * * lighting     * * overlay     * * depth testing     * * blending     * * vanilla/Iris shader-pack integration
      */
     public void drawTargetToWorld(PoseStack poseStack, MultiBufferSource buffers, int width, int height, int light, int overlay, boolean debug) {
         if (!valid || target == null) {return;}
         Matrix4f pose = poseStack.last().pose();
         if (debug) {drawDebugSquare(width, height, pose);}
         VertexConsumer buffer = buffers.getBuffer(RenderType.entityTranslucent(textureLocation));
-        buffer.addVertex(pose, 0, height, 0).setColor(255, 255, 255, 255).setUv(0, 0).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
-        buffer.addVertex(pose, width, height, 0).setColor(255, 255, 255, 255).setUv(1, 0).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
-        buffer.addVertex(pose, width, 0, 0).setColor(255, 255, 255, 255).setUv(1, 1).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
-        buffer.addVertex(pose, 0, 0, 0).setColor(255, 255, 255, 255).setUv(0, 1).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+        buffer.addVertex(pose, 0, height, 0)
+                .setColor(255, 255, 255, 255)
+                .setUv(0, 0)
+                .setOverlay(overlay)
+                .setLight(light)
+                .setNormal(0, 1, 0);
+        buffer.addVertex(pose, width, height, 0)
+                .setColor(255, 255, 255, 255)
+                .setUv(1, 0)
+                .setOverlay(overlay)
+                .setLight(light)
+                .setNormal(0, 1, 0);
+        buffer.addVertex(pose, width, 0, 0)
+                .setColor(255, 255, 255, 255)
+                .setUv(1, 1)
+                .setOverlay(overlay)
+                .setLight(light)
+                .setNormal(0, 1, 0);
+        buffer.addVertex(pose, 0, 0, 0)
+                .setColor(255, 255, 255, 255)
+                .setUv(0, 1)
+                .setOverlay(overlay)
+                .setLight(light)
+                .setNormal(0, 1, 0);
     }
 
     private static void drawDebugSquare(int width, int height, Matrix4f pose) {
