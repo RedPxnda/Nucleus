@@ -1,6 +1,7 @@
 package com.redpxnda.nucleus.widgets.widgets;
 
 import com.redpxnda.nucleus.widgets.controller.ControllerNavigable;
+import com.redpxnda.nucleus.widgets.layout.layouter.Layouter;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -13,11 +14,11 @@ import java.util.*;
  *
  * <p>Supports focus state, hierarchical navigation, explicit directional
  * neighbors, and child navigation.</p>
- *
+ * <p>
  * this is package private because its just one feature of the full {@link NucleusWidget}
  */
 @SuppressWarnings("unused")
-abstract class BasicControllerNavigableWidget extends BasicAttachAbleWidget implements ControllerNavigable {
+abstract class BasicControllerNavigableWidget extends BasicLayoutingWidget implements ControllerNavigable {
 
     private boolean focused;
     private ControllerNavigable navigationParent;
@@ -25,35 +26,45 @@ abstract class BasicControllerNavigableWidget extends BasicAttachAbleWidget impl
     private final Map<ScreenDirection, ControllerNavigable> neighbors = new EnumMap<>(ScreenDirection.class);
     private final List<ControllerNavigable> navigationChildren = new ArrayList<>();
 
-    protected BasicControllerNavigableWidget(int x, int y, int width, int height, Component title) {
-        super(x, y, width, height, title);
+    protected BasicControllerNavigableWidget(int x, int y, int width, int height, Component title, Layouter layouter) {
+        super(x, y, width, height, title, layouter);
     }
 
-    /** Returns whether this widget can receive focus. */
+    /**
+     * Returns whether this widget can receive focus.
+     */
     @Override
     public boolean isFocusable() {
         return true;
     }
 
-    /** Returns whether this widget currently has focus. */
+    /**
+     * Returns whether this widget currently has focus.
+     */
     @Override
     public boolean isFocused() {
         return focused;
     }
 
-    /** Updates the focus state. */
+    /**
+     * Updates the focus state.
+     */
     @Override
     public void setFocused(boolean focused) {
         this.focused = isFocusable() && focused;
     }
 
-    /** Returns the controller navigation parent. */
+    /**
+     * Returns the controller navigation parent.
+     */
     @Override
     public Optional<ControllerNavigable> getNavigationParent() {
         return Optional.ofNullable(navigationParent);
     }
 
-    /** Sets the controller navigation parent. */
+    /**
+     * Sets the controller navigation parent.
+     */
     public void setNavigationParent(@Nullable ControllerNavigable parent) {
         if (navigationParent == parent) {
             return;
@@ -70,7 +81,9 @@ abstract class BasicControllerNavigableWidget extends BasicAttachAbleWidget impl
         }
     }
 
-    /** Returns the explicit neighbor in the given direction. */
+    /**
+     * Returns the explicit neighbor in the given direction.
+     */
     @Override
     public Optional<ControllerNavigable> getNeighbor(ScreenDirection direction) {
         return Optional.ofNullable(neighbors.get(direction));
@@ -90,7 +103,9 @@ abstract class BasicControllerNavigableWidget extends BasicAttachAbleWidget impl
         }
     }
 
-    /** Returns this widget's controller-navigation children. */
+    /**
+     * Returns this widget's controller-navigation children.
+     */
     @Override
     public Iterable<? extends ControllerNavigable> getNavigationChildren() {
         return Collections.unmodifiableList(navigationChildren);
@@ -117,13 +132,17 @@ abstract class BasicControllerNavigableWidget extends BasicAttachAbleWidget impl
         return Optional.empty();
     }
 
-    /** Handles controller confirm input. */
+    /**
+     * Handles controller confirm input.
+     */
     @Override
     public boolean onConfirm() {
         return false;
     }
 
-    /** Handles controller back input. */
+    /**
+     * Handles controller back input.
+     */
     @Override
     public boolean onBack() {
         return false;
@@ -141,7 +160,9 @@ abstract class BasicControllerNavigableWidget extends BasicAttachAbleWidget impl
         }
     }
 
-    /** Removes a controller-navigation child. */
+    /**
+     * Removes a controller-navigation child.
+     */
     protected void removeNavigationChild(ControllerNavigable child) {
         navigationChildren.remove(child);
     }

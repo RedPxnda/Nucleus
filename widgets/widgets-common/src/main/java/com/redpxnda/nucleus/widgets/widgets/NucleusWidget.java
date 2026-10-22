@@ -1,5 +1,7 @@
 package com.redpxnda.nucleus.widgets.widgets;
 
+import com.redpxnda.nucleus.widgets.layout.layouter.Layouter;
+import com.redpxnda.nucleus.widgets.layout.layouter.NoLayoutLayouter;
 import com.redpxnda.nucleus.widgets.state.State;
 import com.redpxnda.nucleus.widgets.state.StateSubscriber;
 import com.redpxnda.nucleus.widgets.world.WorldWidget;
@@ -19,10 +21,14 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public abstract class NucleusWidget extends BasicControllerNavigableWidget implements WorldWidget, StateSubscriber {
     private final List<State<?>.Subscription> subscriptions = new ArrayList<>();
+
     protected NucleusWidget(int x, int y, int width, int height, Component title) {
-        super(x, y, width, height, title);
+        super(x, y, width, height, title, new NoLayoutLayouter());
     }
 
+    protected NucleusWidget(int x, int y, int width, int height, Component title, Layouter layouter) {
+        super(x, y, width, height, title, layouter);
+    }
 
     public <T> State<T>.Subscription subscribeTo(State<T> state, Consumer<T> onChange) {
         State<T>.Subscription subscription = state.subscribe(onChange, subscriptions::remove);

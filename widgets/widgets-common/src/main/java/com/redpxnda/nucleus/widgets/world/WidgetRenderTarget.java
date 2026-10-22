@@ -8,18 +8,27 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL11;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Custom Render Target class.
- * creates a second render target, renders UI to it to be later rendered to world
+ * Custom render target for world-space GUI widgets. * <p> * Renders GUI content into a TextureTarget and later renders that texture * through vanilla's entity translucent RenderType.
  */
 public class WidgetRenderTarget {
-
+    private static final AtomicInteger NEXT_TEXTURE_ID = new AtomicInteger();
     private final Minecraft minecraft;
-
+    private final TextureManager textureManager;
+    private final ResourceLocation textureLocation;
+    private final RenderTargetTexture texture;
     private TextureTarget target;
     private int width;
     private int height;
@@ -28,6 +37,11 @@ public class WidgetRenderTarget {
 
     public WidgetRenderTarget() {
         this.minecraft = Minecraft.getInstance();
+        this.textureManager = minecraft.getTextureManager();
+        int id = NEXT_TEXTURE_ID.getAndIncrement();
+        this.textureLocation = ResourceLocation.fromNamespaceAndPath("nucleus", "widget_target/" + id);
+        this.texture = new RenderTargetTexture();
+        this.textureManager.register(textureLocation, texture);
     }
 
     public void setResolutionScale(int scale) {
@@ -40,201 +54,74 @@ public class WidgetRenderTarget {
         height = Math.max(1, height);
         int targetWidth = width * resolutionScale;
         int targetHeight = height * resolutionScale;
-
-        if (target != null
-            && this.width == width
-            && this.height == height
-            && target.width == targetWidth
-            && target.height == targetHeight) {
+        if (target != null && this.width == width && this.height == height && target.width == targetWidth && target.height == targetHeight) {
             return;
         }
-        destroy();
-
+        destroyTarget();
         target = new TextureTarget(targetWidth, targetHeight, true, false);
-
         target.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-
         this.width = width;
         this.height = height;
-        this.valid = false;
+        texture.setTextureId(target.getColorTextureId());
+        valid = false;
     }
 
     /**
-     * should be called during Screen/ui rendering to avoid state issues
+     * Call during GUI/screen rendering.
      */
-    public void renderToTarget(
-            int width,
-            int height,
-            RenderCallback callback
-    ) {
+    public void renderToTarget(int width, int height, RenderCallback callback) {
         resize(width, height);
-
         RenderTarget previousTarget = minecraft.getMainRenderTarget();
-
         target.bindWrite(true);
-        RenderSystem.clear(
-                GL11.GL_COLOR_BUFFER_BIT,
-                Minecraft.ON_OSX
-        );
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
         int renderWidth = width * resolutionScale;
         int renderHeight = height * resolutionScale;
-        RenderSystem.viewport(
-                0,
-                0,
-                renderWidth,
-                renderHeight
-        );
+        RenderSystem.viewport(0, 0, renderWidth, renderHeight);
         RenderSystem.disableScissor();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(
-                1.0F,
-                1.0F,
-                1.0F,
-                1.0F
-        );
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disablePolygonOffset();
-
         RenderSystem.backupProjectionMatrix();
-
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
-
-        ByteBufferBuilder byteBufferBuilder =
-                new ByteBufferBuilder(256);
-
-        MultiBufferSource.BufferSource bufferSource =
-                MultiBufferSource.immediate(byteBufferBuilder);
-
+        ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(256);
+        MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(byteBufferBuilder);
         try {
-            RenderSystem.setProjectionMatrix(
-                    new Matrix4f().setOrtho(
-                            0.0F,
-                            (float) width,
-                            (float) height,
-                            0.0F,
-                            1000.0F,
-                            21000.0F
-                    ),
-                    VertexSorting.ORTHOGRAPHIC_Z
-            );
+            RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, width, height, 0.0F, 1000.0F, 21000.0F), VertexSorting.ORTHOGRAPHIC_Z);
             modelViewStack.translation(0.0F, 0.0F, -11000.0F);
             RenderSystem.applyModelViewMatrix();
-            TargetGuiGraphics graphics = new TargetGuiGraphics(
-                    minecraft,
-                    bufferSource,
-                    renderWidth,
-                    renderHeight,
-                    resolutionScale
-            );
-            graphics.pose().pushPose();
-            graphics.pose().scale(1, 1, 1);
+            TargetGuiGraphics graphics = new TargetGuiGraphics(minecraft, bufferSource, renderWidth, renderHeight, resolutionScale);
             callback.render(graphics);
-            //graphics.drawString(Minecraft.getInstance().font, "DEBUG", 10, 10, Color.RED.argb());
-            //graphics.fill(0, 0, width, height, Color.GREEN.withAlpha(0.4f).argb());
-            graphics.pose().popPose();
-
-            /*
-             * Flush while the TextureTarget is still bound.
-             */
             graphics.flush();
-
             valid = true;
         } finally {
             bufferSource.endBatch();
             byteBufferBuilder.close();
             modelViewStack.popMatrix();
             RenderSystem.applyModelViewMatrix();
-
             RenderSystem.restoreProjectionMatrix();
-
-            RenderSystem.setShaderColor(
-                    1.0F,
-                    1.0F,
-                    1.0F,
-                    1.0F
-            );
-
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
-
             previousTarget.bindWrite(true);
         }
     }
 
     /**
-     * can be called whenever, but is designed to be rendered during World Render to allow World Widgets
+     * Call during world rendering.     * <p>     * Uses vanilla entity translucent rendering, including:     * * lighting     * * overlay     * * depth testing     * * blending     * * vanilla/Iris shader-pack integration
      */
-    public void drawTargetToWorld(
-            PoseStack poseStack,
-            int width,
-            int height,
-            int light,
-            int overlay,
-            boolean debug
-    ) {
-        if (!valid || target == null) {
-            return;
-        }
-
+    public void drawTargetToWorld(PoseStack poseStack, MultiBufferSource buffers, int width, int height, int light, int overlay, boolean debug) {
+        if (!valid || target == null) {return;}
         Matrix4f pose = poseStack.last().pose();
-        if (debug) {
-            drawDebugSquare(width, height, pose);
-        }
-        RenderSystem.disableCull();
-        RenderSystem.disableScissor();
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.depthFunc(GL11.GL_LEQUAL);
-
-        RenderSystem.colorMask(true, true, true, true);
-
-        RenderSystem.setShader(GameRenderer::getPositionColorLightmapShader);
-        RenderSystem.setShaderTexture(
-                0,
-                target.getColorTextureId()
-        );
-
-        BufferBuilder buffer = Tesselator.getInstance().begin(
-                VertexFormat.Mode.QUADS,
-                DefaultVertexFormat.POSITION_TEX_COLOR
-        );
-
-        buffer.addVertex(pose, 0.0F, height, 0.0F)
-                .setUv(0.0F, 0.0F)
-                .setColor(255, 255, 255, 255)
-                .setLight(light);
-
-        buffer.addVertex(pose, width, height, 0.0F)
-                .setUv(1.0F, 0.0F)
-                .setColor(255, 255, 255, 255)
-                .setLight(light);
-
-        buffer.addVertex(pose, width, 0, 0.0F)
-                .setUv(1.0F, 1.0F)
-                .setColor(255, 255, 255, 255)
-                .setLight(light);
-
-        buffer.addVertex(pose, 0.0F, 0, 0.0F)
-                .setUv(0.0F, 1.0F)
-                .setColor(255, 255, 255, 255)
-                .setLight(light);
-
-        MeshData mesh = buffer.buildOrThrow();
-        BufferUploader.drawWithShader(mesh);
-
-        RenderSystem.enableCull();
-        RenderSystem.disableScissor();
-
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        RenderSystem.colorMask(true, true, true, true);
+        if (debug) {drawDebugSquare(width, height, pose);}
+        VertexConsumer buffer = buffers.getBuffer(RenderType.entityTranslucent(textureLocation));
+        buffer.addVertex(pose, 0, height, 0).setColor(255, 255, 255, 255).setUv(0, 0).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+        buffer.addVertex(pose, width, height, 0).setColor(255, 255, 255, 255).setUv(1, 0).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+        buffer.addVertex(pose, width, 0, 0).setColor(255, 255, 255, 255).setUv(1, 1).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
+        buffer.addVertex(pose, 0, 0, 0).setColor(255, 255, 255, 255).setUv(0, 1).setOverlay(overlay).setLight(light).setNormal(0, 0, 1);
     }
 
     private static void drawDebugSquare(int width, int height, Matrix4f pose) {
@@ -242,85 +129,68 @@ public class WidgetRenderTarget {
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-        BufferBuilder debugBuffer = Tesselator.getInstance().begin(
-                VertexFormat.Mode.DEBUG_LINES,
-                DefaultVertexFormat.POSITION_COLOR
-        );
-
-        // Corners:
-        // TL = (0,      0)
-        // TR = (width,  0)
-        // BR = (width,  height)
-        // BL = (0,      height)
-
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
         float r = 1.0F;
         float g = 0.0F;
         float b = 0.0F;
         float a = 1.0F;
-
-        // Top
-        debugBuffer.addVertex(pose, 0.0F, 0.0F, 0.0F)
-                .setColor(r, g, b, a);
-        debugBuffer.addVertex(pose, width, 0.0F, 0.0F)
-                .setColor(r, g, b, a);
-
-        // Right
-        debugBuffer.addVertex(pose, width, 0.0F, 0.0F)
-                .setColor(r, g, b, a);
-        debugBuffer.addVertex(pose, width, height, 0.0F)
-                .setColor(r, g, b, a);
-
-        // Bottom
-        debugBuffer.addVertex(pose, width, height, 0.0F)
-                .setColor(r, g, b, a);
-        debugBuffer.addVertex(pose, 0.0F, height, 0.0F)
-                .setColor(r, g, b, a);
-
-        // Left
-        debugBuffer.addVertex(pose, 0.0F, height, 0.0F)
-                .setColor(r, g, b, a);
-        debugBuffer.addVertex(pose, 0.0F, 0.0F, 0.0F)
-                .setColor(r, g, b, a);
-
-        // Center horizontal
+        buffer.addVertex(pose, 0, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, width, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, width, 0, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, width, height, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, width, height, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, 0, height, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, 0, height, 0).setColor(r, g, b, a);
+        buffer.addVertex(pose, 0, 0, 0).setColor(r, g, b, a);
         float centerX = width * 0.5F;
         float centerY = height * 0.5F;
-
-        debugBuffer.addVertex(pose, 0.0F, centerY, 0.0F)
-                .setColor(0.0F, 1.0F, 0.0F, 1.0F);
-        debugBuffer.addVertex(pose, width, centerY, 0.0F)
-                .setColor(0.0F, 1.0F, 0.0F, 1.0F);
-
-        // Center vertical
-        debugBuffer.addVertex(pose, centerX, 0.0F, 0.0F)
-                .setColor(0.0F, 1.0F, 0.0F, 1.0F);
-        debugBuffer.addVertex(pose, centerX, height, 0.0F)
-                .setColor(0.0F, 1.0F, 0.0F, 1.0F);
-
-        MeshData debugMesh = debugBuffer.buildOrThrow();
-        BufferUploader.drawWithShader(debugMesh);
+        buffer.addVertex(pose, 0, centerY, 0).setColor(0, 1, 0, 1);
+        buffer.addVertex(pose, width, centerY, 0).setColor(0, 1, 0, 1);
+        buffer.addVertex(pose, centerX, 0, 0).setColor(0, 1, 0, 1);
+        buffer.addVertex(pose, centerX, height, 0).setColor(0, 1, 0, 1);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
-    public boolean isValid() {
-        return valid;
-    }
+    public boolean isValid() {return valid;}
 
-    public int getTextureId() {
-        return target.getColorTextureId();
-    }
+    public int getTextureId() {return target != null ? target.getColorTextureId() : -1;}
 
     public void destroy() {
+        destroyTarget();
+        texture.setTextureId(-1);
+        textureManager.release(textureLocation);
+    }
+
+    private void destroyTarget() {
         if (target != null) {
             target.destroyBuffers();
             target = null;
         }
-
         valid = false;
         width = 0;
         height = 0;
+    }
+
+    /**
+     * Represents an existing OpenGL texture to Minecraft's TextureManager.     * <p>     * The RenderTarget owns the actual GL texture. Therefore this object     * must never delete or recreate the texture itself.
+     */
+    private static final class RenderTargetTexture extends AbstractTexture {
+        private RenderTargetTexture() {this.id = -1;}
+
+        private void setTextureId(int id) {this.id = id;}
+
+        @Override
+        public void load(ResourceManager resourceManager) {            /* The GL texture is owned by RenderTarget.*/ }
+
+        @Override
+        public void reset(TextureManager textureManager, ResourceManager resourceManager, ResourceLocation location, Executor executor) {            /* Never reload/recreate the RenderTarget's GL texture.*/ }
+
+        @Override
+        public void releaseId() {            /* RenderTarget owns the texture ID.*/ }
+
+        @Override
+        public void close() {            /* RenderTarget owns the texture lifetime.*/ }
     }
 
     @FunctionalInterface

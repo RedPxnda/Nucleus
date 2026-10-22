@@ -1,5 +1,6 @@
 package com.redpxnda.nucleus.test;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.serialization.Codec;
 import com.redpxnda.nucleus.Nucleus;
 import com.redpxnda.nucleus.config.ConfigBuilder;
@@ -16,10 +17,17 @@ import com.redpxnda.nucleus.registration.RegistryAnalyzer;
 import com.redpxnda.nucleus.test.codec.CodecTests;
 import com.redpxnda.nucleus.test.codec.OverWriteCodecTest;
 import com.redpxnda.nucleus.test.codec.RecordCodecTests;
+import com.redpxnda.nucleus.test.widget.DeferredScreen;
+import com.redpxnda.nucleus.test.widget.WidgetsTestScreen;
 import dev.architectury.event.EventResult;
+import dev.architectury.event.events.client.ClientCommandRegistrationEvent;
+import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.platform.Platform;
 import net.fabricmc.api.EnvType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -165,6 +173,26 @@ public class NucleusTest {
         if (Platform.getEnv() == EnvType.CLIENT) {
             ClientLoader.RENDER.add(ImGuiDebugPanels::onRender);
         }
+        ClientCommandRegistrationEvent.EVENT.register((serverCommandSourceCommandDispatcher, context1) -> {
+            LiteralArgumentBuilder<ClientCommandRegistrationEvent.ClientCommandSourceStack> openUi =
+                    ClientCommandRegistrationEvent
+                            .literal("nucleus-widget")
+                            .executes((context) -> {
+                                Minecraft.getInstance().execute(WidgetsTestScreen::open);
+                                return 1;
+                            });
+            serverCommandSourceCommandDispatcher.register(openUi);
+        });
+        CommandRegistrationEvent.EVENT.register((serverCommandSourceCommandDispatcher, registryAccess, listener) -> {
+            LiteralArgumentBuilder<CommandSourceStack> runPose = Commands
+                    .literal("nucleus").then(
+                            Commands.literal("widget-test").executes((context) -> {
+                                DeferredScreen.open(new WidgetsTestScreen());
+                                return 1;
+                            }));
+            serverCommandSourceCommandDispatcher.register(runPose);
+        });
+        DeferredScreen.register();
         RecordCodecTests.runAutoCodecTests();
         CodecTests.runAutoCodecClassTests();
         OverWriteCodecTest.runOverrideTests();
