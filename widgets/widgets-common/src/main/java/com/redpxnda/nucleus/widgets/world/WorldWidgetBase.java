@@ -63,6 +63,7 @@ public class WorldWidgetBase extends NucleusWidget {
     public void renderWidget(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         captureMouseXY(drawContext, mouseX, mouseY, delta);
         renderTarget.renderToTarget(
+                drawContext,
                 getWidth(),
                 getHeight(),
                 graphics -> renderContents(

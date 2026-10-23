@@ -69,43 +69,29 @@ public class WidgetRenderTarget {
     /**
      * Call during GUI/screen rendering.
      */
-    public void renderToTarget(int width, int height, RenderCallback callback) {
+    public void renderToTarget(GuiGraphics drawContext, int width, int height, RenderCallback callback) {
         resize(width, height);
-        RenderTarget previousTarget = minecraft.getMainRenderTarget();
+        RenderTarget previousTarget = Minecraft.getInstance().getMainRenderTarget();
         target.bindWrite(true);
         RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         int renderWidth = width * resolutionScale;
         int renderHeight = height * resolutionScale;
-        RenderSystem.viewport(0, 0, renderWidth, renderHeight);
-        RenderSystem.disableScissor();
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.disablePolygonOffset();
-        RenderSystem.backupProjectionMatrix();
+        Matrix4f previousProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
+        VertexSorting previousSorting = RenderSystem.getVertexSorting();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
-        ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(256);
-        MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(byteBufferBuilder);
         try {
             RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, width, height, 0.0F, 1000.0F, 21000.0F), VertexSorting.ORTHOGRAPHIC_Z);
             modelViewStack.translation(0.0F, 0.0F, -11000.0F);
-            RenderSystem.applyModelViewMatrix();
-            TargetGuiGraphics graphics = new TargetGuiGraphics(minecraft, bufferSource, renderWidth, renderHeight, resolutionScale);
+            TargetGuiGraphics graphics = new TargetGuiGraphics(Minecraft.getInstance(), drawContext.bufferSource(), renderWidth, renderHeight, resolutionScale);
             callback.render(graphics);
             graphics.flush();
             valid = true;
         } finally {
-            bufferSource.endBatch();
-            byteBufferBuilder.close();
             modelViewStack.popMatrix();
             RenderSystem.applyModelViewMatrix();
-            RenderSystem.restoreProjectionMatrix();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
+            RenderSystem.setProjectionMatrix(previousProjection, previousSorting);
             previousTarget.bindWrite(true);
         }
     }
