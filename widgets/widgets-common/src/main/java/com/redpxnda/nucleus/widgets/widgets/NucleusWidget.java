@@ -4,6 +4,7 @@ import com.redpxnda.nucleus.widgets.layout.layouter.Layouter;
 import com.redpxnda.nucleus.widgets.layout.layouter.NoLayoutLayouter;
 import com.redpxnda.nucleus.widgets.state.State;
 import com.redpxnda.nucleus.widgets.state.StateSubscriber;
+import com.redpxnda.nucleus.widgets.widgets.basic.BasicControllerNavigableWidget;
 import com.redpxnda.nucleus.widgets.world.WorldWidget;
 import net.minecraft.network.chat.Component;
 

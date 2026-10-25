@@ -1,7 +1,8 @@
-package com.redpxnda.nucleus.widgets.widgets;
+package com.redpxnda.nucleus.widgets.widgets.basic;
 
 import com.redpxnda.nucleus.widgets.controller.ControllerNavigable;
 import com.redpxnda.nucleus.widgets.layout.layouter.Layouter;
+import com.redpxnda.nucleus.widgets.widgets.NucleusWidget;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;

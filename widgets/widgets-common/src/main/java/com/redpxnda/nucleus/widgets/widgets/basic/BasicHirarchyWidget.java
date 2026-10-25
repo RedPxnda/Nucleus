@@ -1,8 +1,10 @@
-package com.redpxnda.nucleus.widgets.widgets;
+package com.redpxnda.nucleus.widgets.widgets.basic;
 
 import com.mojang.datafixers.util.Either;
 import com.redpxnda.nucleus.widgets.NucleusWidgets;
 import com.redpxnda.nucleus.widgets.state.UiAttachable;
+import com.redpxnda.nucleus.widgets.widgets.NucleusScreen;
+import com.redpxnda.nucleus.widgets.widgets.NucleusWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;

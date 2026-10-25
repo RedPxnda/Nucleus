@@ -1,5 +1,7 @@
 package com.redpxnda.nucleus.widgets.widgets;
 
+import com.redpxnda.nucleus.widgets.widgets.basic.BasicAttachAbleWidget;
+import com.redpxnda.nucleus.widgets.widgets.basic.BasicHirarchyWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;

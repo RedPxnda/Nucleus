@@ -1,6 +1,7 @@
-package com.redpxnda.nucleus.widgets.widgets;
+package com.redpxnda.nucleus.widgets.widgets.basic;
 
 import com.redpxnda.nucleus.widgets.state.UiAttachable;
+import com.redpxnda.nucleus.widgets.widgets.NucleusWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 
