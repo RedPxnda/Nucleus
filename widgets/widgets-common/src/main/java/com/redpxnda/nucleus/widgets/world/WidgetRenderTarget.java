@@ -24,16 +24,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Custom render target for world-space GUI widgets. * <p> * Renders GUI content into a TextureTarget and later renders that texture * through vanilla's entity translucent RenderType.
  */
 public class WidgetRenderTarget {
-    private static final AtomicInteger NEXT_TEXTURE_ID = new AtomicInteger();
-    private final Minecraft minecraft;
-    private final TextureManager textureManager;
-    private final ResourceLocation textureLocation;
-    private final RenderTargetTexture texture;
-    private TextureTarget target;
-    private int width;
-    private int height;
-    private boolean valid;
-    private int resolutionScale = 8;
+    public static final AtomicInteger NEXT_TEXTURE_ID = new AtomicInteger();
+    public final Minecraft minecraft;
+    public final TextureManager textureManager;
+    public final ResourceLocation textureLocation;
+    public final RenderTargetTexture texture;
+    public TextureTarget target;
+    public int width;
+    public int height;
+    public boolean valid;
+    public int resolutionScale = 8;
 
     public WidgetRenderTarget() {
         this.minecraft = Minecraft.getInstance();
@@ -84,9 +84,7 @@ public class WidgetRenderTarget {
         try {
             RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, width, height, 0.0F, 1000.0F, 21000.0F), VertexSorting.ORTHOGRAPHIC_Z);
             modelViewStack.translation(0.0F, 0.0F, -11000.0F);
-            TargetGuiGraphics graphics = new TargetGuiGraphics(Minecraft.getInstance(), drawContext.bufferSource(), renderWidth, renderHeight, resolutionScale);
-            callback.render(graphics);
-            graphics.flush();
+            callback.render(this, drawContext, callback, renderWidth, renderHeight, resolutionScale);
             valid = true;
         } finally {
             modelViewStack.popMatrix();
@@ -203,6 +201,6 @@ public class WidgetRenderTarget {
 
     @FunctionalInterface
     public interface RenderCallback {
-        void render(GuiGraphics graphics);
+        void render(WidgetRenderTarget target, GuiGraphics drawContext, RenderCallback callback, int renderWidth, int renderHeight, int resolutionScale);
     }
 }

@@ -36,7 +36,7 @@ import java.util.List;
  */
 @Environment(EnvType.CLIENT)
 @SuppressWarnings("unused")
-abstract class BasicHirarchyWidget extends AbstractWidget implements Renderable, GuiEventListener {
+public abstract class BasicHirarchyWidget extends AbstractWidget implements Renderable, GuiEventListener {
     protected final List<GuiEventListener> children = new ArrayList<>();
     protected final List<BasicHirarchyWidget> hoverElements = new ArrayList<>();
     public boolean debug = false;

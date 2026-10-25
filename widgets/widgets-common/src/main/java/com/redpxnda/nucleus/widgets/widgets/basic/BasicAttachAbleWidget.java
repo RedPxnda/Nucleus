@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
  * this is package private because its just one feature of the full {@link NucleusWidget}
  */
 @SuppressWarnings("unused")
-abstract class BasicAttachAbleWidget extends BasicHirarchyWidget implements UiAttachable {
+public abstract class BasicAttachAbleWidget extends BasicHirarchyWidget implements UiAttachable {
     //start attached.
     //yeah, if you create a widget and never attach it will always think its attached.
     //idk how to change that sensibly without accidental disconnects during widget initialisation

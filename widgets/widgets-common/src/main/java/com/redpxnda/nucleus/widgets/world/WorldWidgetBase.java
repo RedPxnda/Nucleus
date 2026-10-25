@@ -22,11 +22,11 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class WorldWidgetBase extends NucleusWidget {
-    private final WidgetRenderTarget renderTarget =
+    protected final WidgetRenderTarget renderTarget =
             new WidgetRenderTarget();
     protected final Matrix4f localWorldTransform = new Matrix4f();
     public Matrix4f localWidgetTransform = new Matrix4f();
-    UiAnchor topLeftProjection = new UiAnchor(new Matrix4f(), new Matrix4f(), new Matrix4f(), new Vector3f());
+    protected UiAnchor topLeftProjection = new UiAnchor(new Matrix4f(), new Matrix4f(), new Matrix4f(), new Vector3f());
 
     protected WorldWidgetBase(int width, int height, Component title) {
         super(0, 0, width, height, title);
@@ -51,7 +51,7 @@ public class WorldWidgetBase extends NucleusWidget {
             int light, int overlay) {
 
         topLeftProjection = getPoint(getX(), getY(), guiGraphics);
-        renderTarget.drawTargetToWorld(poseStack,buffers, getWidth(), getHeight(), light, overlay, isDebug());
+        renderTarget.drawTargetToWorld(poseStack, buffers, getWidth(), getHeight(), light, overlay, isDebug());
         for (GuiEventListener listener : children()) {
             if (listener instanceof WorldWidget worldWidget) {
                 worldWidget.renderInWorld(guiGraphics, currentMouseX, currentMouseY, partialTick, light, overlay);
@@ -62,14 +62,12 @@ public class WorldWidgetBase extends NucleusWidget {
     @Override
     public void renderWidget(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         captureMouseXY(drawContext, mouseX, mouseY, delta);
-        renderTarget.renderToTarget(
-                drawContext,
-                getWidth(),
-                getHeight(),
-                graphics -> renderContents(
-                        graphics,
-                        delta
-                )
+        renderTarget.renderToTarget(drawContext, getWidth(), getHeight(),
+                ((target, oldGraphics, callback, renderWidth, renderHeight, resolutionScale) -> {
+                    TargetGuiGraphics graphics = new TargetGuiGraphics(Minecraft.getInstance(), oldGraphics.bufferSource(), renderWidth, renderHeight, resolutionScale);
+                    renderContents(graphics, delta);
+                    graphics.flush();
+                })
         );
     }
 

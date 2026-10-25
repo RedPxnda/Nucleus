@@ -13,9 +13,9 @@ import java.util.ArrayDeque;
  * to allow {@link WidgetRenderTarget} to have standard working scissor logic.
  */
 public class TargetGuiGraphics extends GuiGraphics {
-    private final int targetWidth;
-    private final int targetHeight;
-    private final int scale;
+    protected final int targetWidth;
+    protected final int targetHeight;
+    protected final int scale;
 
     private final ArrayDeque<Scissor> scissors = new ArrayDeque<>();
 

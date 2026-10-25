@@ -19,7 +19,7 @@ import java.util.*;
  * this is package private because its just one feature of the full {@link NucleusWidget}
  */
 @SuppressWarnings("unused")
-abstract class BasicControllerNavigableWidget extends BasicLayoutingWidget implements ControllerNavigable {
+public abstract class BasicControllerNavigableWidget extends BasicLayoutingWidget implements ControllerNavigable {
 
     private boolean focused;
     private ControllerNavigable navigationParent;
